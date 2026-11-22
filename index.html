@@ -326,7 +326,7 @@ async function attachUser(user){
     wVisits = Object.assign({}, wVisits, rv); sVisits = Object.assign({}, sVisits, rh);   // dane z konta mają pierwszeństwo, lokalne tylko uzupełniają
     syncVisits(); saveLocal(); store.mode = "sb"; store.rev = r.data ? r.data.updated_at : "";
     dirty = true; await flush(); renderAll(); updateAcct(); closeAccount();
-  } catch(e){ store.mode = "local"; setSaveState("zalogowano, ale sync nie działa: " + String((e && (e.message || e.code)) || e).slice(0,90)); renderAll(); updateAcct(); }
+  } catch(e){ store.mode = "local"; setSaveState("zalogowano, ale sync nie działa: " + String((e && (e.message || e.code)) || e).slice(0,90)); renderAll(); updateAcct(); closeAccount(); }
 }
 async function pullSb(){
   if (store.mode !== "sb" || dirty || writing || curId) return;
@@ -368,7 +368,7 @@ async function initStore(){
 /* ---------- logika ---------- */
 const isVis = id => !!visits[id] && visits[id].s === "v";
 const isPlan = id => !!visits[id] && visits[id].s === "p";
-const newEntry = st => ({s: st, stays: [], pd: "", pr: 0, r: 0, t: "", n: "", done: {}, sz: {}});
+const newEntry = st => ({s: st, stays: [], pd: "", pr: 0, r: 0, t: "", n: "", done: {}, sz: {}, hr: {}});
 function setStatus(id, st){
   if (!visits[id]) visits[id] = newEntry(st); else visits[id].s = st;
   scheduleSave(); renderAll();
@@ -672,7 +672,8 @@ function bindAccount(){
     $("lmsg").textContent = "Chwilę…";
     const r = up ? await store.sb.auth.signUp({email: em, password: pa}) : await store.sb.auth.signInWithPassword({email: em, password: pa});
     if (r.error) { $("lmsg").textContent = (/invalid login/i.test(r.error.message) ? "Zły e-mail lub hasło (albo konto jeszcze nie istnieje)." : r.error.message); return; }
-    if (up && !r.data.session) $("lmsg").textContent = "Konto utworzone, ale Supabase wymaga potwierdzenia e-mailem. Wyłącz „Confirm email”.";
+    if (up && !r.data.session) { $("lmsg").textContent = "Konto utworzone, ale Supabase wymaga potwierdzenia e-mailem. Wyłącz „Confirm email”."; return; }
+    const u = r.data && (r.data.user || (r.data.session && r.data.session.user)); if (u && store.uid !== u.id) attachUser(u); closeAccount();
   };
   const pi = $("lin"), pu = $("lup"); if (pi) pi.onclick = () => pw(false); if (pu) pu.onclick = () => pw(true);
   const b = $("lsend"); if (b) b.onclick = async () => {
@@ -706,7 +707,7 @@ function renderStats(){
     ${yrows ? `<div class="card"><h3>Pobyty według roku</h3><table><tr><th>Rok</th><th class="r">Pobyty</th></tr>${yrows}</table></div>` : ""}
     <div class="card"><h3>Udostępnij i eksportuj</h3>
       <div class="sub">Obraz do wrzucenia na TikToka/Instagram oraz pliki z Twoimi miejscami do map.</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" id="shrank">🖼️ Obraz: ranking</button><button class="btn pri" id="shmap">🗺️ Obraz: mapa</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${W ? `<button class="btn pri" id="shrank">🖼️ Obraz: ranking</button>` : ""}<button class="btn pri" id="shmap">🗺️ Obraz: mapa</button></div>
       <div class="fld" style="margin-top:12px"><label>PODSUMOWANIE SEZONU / ROKU</label><div style="display:flex;gap:8px"><select class="sel" id="shper">${periodOptions().map(o => `<option value="${o.v}">${o.label}</option>`).join("") || `<option value="">brak pobytów</option>`}</select><button class="btn pri" id="shyear" style="white-space:nowrap">🗓️ Obraz</button></div><div class="small" style="margin-top:6px">Na podstawie dodanych pobytów (rok i miesiąc). Km to suma długości tras w ośrodkach, w których byłeś.</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="exgpx">Eksport GPX</button><button class="btn" id="exkml">Eksport KML (Google My Maps)</button></div>
       <div class="small" id="exmsg" style="margin-top:6px"></div>
@@ -719,7 +720,7 @@ function renderStats(){
     </div>
     <div class="small" style="margin:6px 4px 24px">Ośrodki: © współtwórcy OpenStreetMap / OpenSkiMap (licencja ODbL); długości tras bywają zaniżone tam, gdzie mapowanie jest niepełne. Szlaki letnie to ręcznie wybrana lista orientacyjna, czasy i trudność sprawdź w mapach turystycznych przed wyjściem.</div>`;
   $("shyear").onclick = () => { const o = periodOptions().find(x => x.v === $("shper").value); if (o) openShare("period", o); };
-  $("shrank").onclick = () => openShare("ranking"); $("shmap").onclick = () => openShare("map");
+  if ($("shrank")) $("shrank").onclick = () => openShare("ranking"); $("shmap").onclick = () => openShare("map");
   $("exgpx").onclick = () => saveBlob("ski-been-" + (MODE === "w" ? "zima" : "lato") + ".gpx", new Blob([exportGPX()], {type:"application/gpx+xml"}), $("exmsg"));
   $("exkml").onclick = () => saveBlob("ski-been-" + (MODE === "w" ? "zima" : "lato") + ".kml", new Blob([exportKML()], {type:"application/vnd.google-earth.kml+xml"}), $("exmsg"));
   $("bcopy").onclick = async () => { try { await navigator.clipboard.writeText(exportJSON()); $("bmsg").textContent = "Skopiowano ✓"; } catch(e){ $("bmsg").textContent = "Nie udało się skopiować, skopiuj ręcznie z pola poniżej."; $("bimp").value = exportJSON(); } };
@@ -742,7 +743,13 @@ function closeSheet(){ curId = null; $("sheetbg").style.display = "none"; $("she
 $("sheetbg").addEventListener("click", closeSheet);
 function toggleHike(i){
   if (!visits[curId]) visits[curId] = newEntry("v");
-  const v = visits[curId]; v.s = "v"; if (v.done[i]) delete v.done[i]; else v.done[i] = 1;
+  const v = visits[curId]; v.s = "v"; v.hr = v.hr || {}; if (v.done[i]) { delete v.done[i]; delete v.hr[i]; } else v.done[i] = 1;
+  scheduleSave(); renderAll(); renderSheet();
+}
+function setHikeRating(i, n){
+  if (!visits[curId]) visits[curId] = newEntry("v");
+  const v = visits[curId]; v.s = "v"; v.hr = v.hr || {}; v.done[i] = 1;
+  if (v.hr[i] === n) delete v.hr[i]; else v.hr[i] = n;
   scheduleSave(); renderAll(); renderSheet();
 }
 function toggleSz(sk){
@@ -764,6 +771,7 @@ function renderSheet(){
   const hikes = W ? "" : `<div class="sect"><div class="sh"><b>Dokąd można dojść</b></div><div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>${r.hikes.map((h,i) => { const d = !!(v && v.done[i]); const sh = (secOn && h.s && (i === 0 || r.hikes[i-1].s !== h.s)) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""; return sh + `<div class="hike ${d?"done":""}">
       <button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>
       <div class="hb"><b>${esc(h.n)}</b><div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>
+      <div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("")}</div>`;
   const sks = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
   const szsec = !sks.length ? "" : (v && v.s === "v"
@@ -801,7 +809,8 @@ function renderSheet(){
   $("sclose").onclick = closeSheet;
   document.querySelectorAll("#sheet .hike .tick").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
-  document.querySelectorAll("#sheet .szs button").forEach(b => b.onclick = () => setSzRating(b.dataset.sk, +b.dataset.i));
+  document.querySelectorAll("#sheet .hs button").forEach(b => b.onclick = () => setHikeRating(+b.dataset.h, +b.dataset.i));
+  document.querySelectorAll("#sheet .szs:not(.hs) button").forEach(b => b.onclick = () => setSzRating(b.dataset.sk, +b.dataset.i));
   if (!v) { $("sadd").onclick = () => { setStatus(curId, "v"); renderSheet(); }; $("splan").onclick = () => { setStatus(curId, "p"); renderSheet(); }; return; }
   $("sstat").onclick = e => { const b = e.target.closest("button"); if (!b) return; setStatus(curId, b.dataset.s); renderSheet(); };
   $("sdel").onclick = () => { if (!confirmDel) { confirmDel = true; renderSheet(); setTimeout(()=>{ if (confirmDel){ confirmDel=false; if (curId) renderSheet(); } }, 3500); } else { delete visits[curId]; scheduleSave(); confirmDel = false; renderAll(); renderSheet(); } };
@@ -957,7 +966,7 @@ function drawLand(geo){
 
 /* ---------- zakładki i tryb ---------- */
 function show(t){
-  if (!["mapa","lista","ranking","grupy","statystyki"].includes(t) || (t === "grupy" && MODE !== "w")) t = "mapa";
+  if (!["mapa","lista","ranking","grupy","statystyki"].includes(t) || ((t === "grupy" || t === "ranking") && MODE !== "w")) t = "mapa";
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t));
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   try { if (location.hash !== "#" + t && !/access_token|error_description/.test(location.hash)) history.replaceState(null, "", "#" + t); } catch(e){}
@@ -972,12 +981,13 @@ function setMode(m){
   document.body.classList.toggle("summer", m === "s");
   document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
   document.querySelector('#nav button[data-t="grupy"]').style.display = m === "w" ? "" : "none";
+  document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
   try { localStorage.setItem(LSM, m); } catch(e){}
   fCountry = ""; fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
   $("fsort").options[0].textContent = m === "w" ? "Najwięksi" : "Najwięcej szlaków";
   buildCountrySelect(); showAll = false; buildDots(); renderAll();
   const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
-  if (cur === "v-grupy") show("mapa"); else fit();
+  if (cur === "v-grupy" || cur === "v-ranking") show("mapa"); else fit();
 }
 $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); });
 function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); mapRefresh(); }
