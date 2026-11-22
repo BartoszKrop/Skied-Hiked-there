@@ -342,6 +342,7 @@ async function initSb(){
   store = {mode:"local", sb, uid:null, email:"", name:"", rev:""};
   setSaveState("zapis: ta przeglądarka");
   updateAcct(); $("acct").onclick = openAccount;
+  try { const hp = new URLSearchParams((location.hash||"").replace(/^#/,"") + "&" + (location.search||"").replace(/^\?/,"")); const er = hp.get("error_description") || hp.get("error"); if (er) { setSaveState("logowanie nie wyszło: " + decodeURIComponent(er.replace(/\+/g," ")).slice(0,90)); history.replaceState(null,"",location.pathname); } } catch(e){}
   sb.auth.onAuthStateChange((ev, ses) => {
     if (ses && ses.user && store.uid !== ses.user.id) setTimeout(() => attachUser(ses.user), 0);
     else if (!ses && store.mode === "sb") { store.mode = "local"; store.uid = null; store.name = ""; setSaveState("wylogowano · dane zostają w tej przeglądarce"); renderAll(); updateAcct(); }
