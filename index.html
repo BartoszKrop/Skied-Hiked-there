@@ -293,8 +293,9 @@ function migrate(o){
 }
 function syncVisits(){ visits = MODE === "w" ? wVisits : sVisits; }
 function loadLocal(){ try { const t = localStorage.getItem(LS); if (t) wVisits = migrate(JSON.parse(t)); const h = localStorage.getItem(LSH); if (h) sVisits = migrate(JSON.parse(h)); } catch(e){} syncVisits(); }
-function saveLocal(){ try { localStorage.setItem(LS, JSON.stringify(wVisits)); localStorage.setItem(LSH, JSON.stringify(sVisits)); } catch(e){} }
+function saveLocal(){ if (typeof store !== "undefined" && store && store.mode === "sb") return; try { localStorage.setItem(LS, JSON.stringify(wVisits)); localStorage.setItem(LSH, JSON.stringify(sVisits)); } catch(e){} }
 const exportJSON = pretty => JSON.stringify({visits: wVisits, hvisits: sVisits}, null, pretty ? 1 : 0);
+function wipeLocal(){ try { localStorage.removeItem(LS); localStorage.removeItem(LSH); } catch(e){} }
 function setSaveState(t){ $("saveState").textContent = t; }
 function scheduleSave(){
   saveLocal(); dirty = true;
@@ -323,8 +324,9 @@ async function attachUser(user){
     const r = await sb.from("profiles").select("data,updated_at").eq("user_id", user.id).maybeSingle();
     if (r.error) throw r.error;
     const rd = (r.data && r.data.data) || {}, rv = migrate(cloneJ(rd.visits)), rh = migrate(cloneJ(rd.hvisits));
-    wVisits = Object.assign({}, wVisits, rv); sVisits = Object.assign({}, sVisits, rh);   // dane z konta mają pierwszeństwo, lokalne tylko uzupełniają
-    syncVisits(); saveLocal(); store.mode = "sb"; store.rev = r.data ? r.data.updated_at : "";
+    const empty = !Object.keys(rv).length && !Object.keys(rh).length;   // pierwsze logowanie: dane gościa przechodzą na konto; potem konto jest jedynym źródłem
+    if (!empty) { wVisits = rv; sVisits = rh; }
+    syncVisits(); store.mode = "sb"; wipeLocal(); store.rev = r.data ? r.data.updated_at : "";
     dirty = true; await flush(); renderAll(); updateAcct(); closeAccount();
   } catch(e){ store.mode = "local"; setSaveState("zalogowano, ale sync nie działa: " + String((e && (e.message || e.code)) || e).slice(0,90)); renderAll(); updateAcct(); closeAccount(); }
 }
@@ -333,7 +335,7 @@ async function pullSb(){
   try {
     const r = await store.sb.from("profiles").select("data,updated_at").eq("user_id", store.uid).maybeSingle();
     if (r.error || !r.data || r.data.updated_at === store.rev) return;
-    const rd = r.data.data || {}; wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); syncVisits(); saveLocal(); store.rev = r.data.updated_at; renderAll(); setSaveState("zapisano ✓ · konto");
+    const rd = r.data.data || {}; wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); syncVisits(); store.rev = r.data.updated_at; renderAll(); setSaveState("zapisano ✓ · konto");
   } catch(e){}
 }
 async function initSb(){
@@ -345,7 +347,7 @@ async function initSb(){
   try { const hp = new URLSearchParams((location.hash||"").replace(/^#/,"") + "&" + (location.search||"").replace(/^\?/,"")); const er = hp.get("error_description") || hp.get("error"); if (er) { setSaveState("logowanie nie wyszło: " + decodeURIComponent(er.replace(/\+/g," ")).slice(0,90)); history.replaceState(null,"",location.pathname); } } catch(e){}
   sb.auth.onAuthStateChange((ev, ses) => {
     if (ses && ses.user && store.uid !== ses.user.id) setTimeout(() => attachUser(ses.user), 0);
-    else if (!ses && (store.mode === "sb" || store.authed)) { store.mode = "local"; store.authed = false; store.uid = null; store.name = ""; setSaveState("wylogowano · dane zostają w tej przeglądarce"); renderAll(); updateAcct(); }
+    else if (!ses && (store.mode === "sb" || store.authed)) { store.mode = "local"; store.authed = false; store.uid = null; store.name = ""; wipeLocal(); wVisits = {}; sVisits = {}; syncVisits(); closeSheet(); setSaveState("wylogowano · bez konta dane zapisują się tylko w tej przeglądarce"); renderAll(); updateAcct(); }
   });
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pullSb(); });
 }
@@ -640,7 +642,7 @@ function accountCard(){
   if (!SBC || !window.supabase) return "";
   const on = store.mode === "sb" || !!store.authed;
   return `<div class="card">` + (on ? `<h3>Konto</h3>` : "") + (on
-    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane synchronizują się z kontem, więc masz to samo na telefonie i komputerze.</div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
+    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
     : `<div class="lg"><div class="lgi">👤</div><h3 style="margin:6px 0 4px">Zaloguj się</h3>
        <div class="sub" style="margin-bottom:14px">Podaj e-mail i hasło. Dzięki temu masz te same dane na telefonie i komputerze.</div></div>
        <input id="lemail" class="lin" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com">
@@ -648,7 +650,7 @@ function accountCard(){
        <div style="display:flex;gap:8px"><button class="btn pri lbtn" id="lin" style="flex:1">Zaloguj</button><button class="btn lbtn" id="lup" style="flex:1">Załóż konto</button></div>
        <button class="btn lcl" id="lsend" style="margin-top:8px;font-size:13px">albo wyślij link na e-mail</button>
        <div class="small" id="lmsg" style="margin-top:10px;text-align:center;min-height:16px"></div>
-       <div class="small" style="margin-top:6px;text-align:center">Otwórz link na tym samym urządzeniu. Dane z tej przeglądarki dołączą do konta.</div>
+       <div class="small" style="margin-top:6px;text-align:center">Otwórz link na tym samym urządzeniu. Jeśli konto jest puste, dołączą do niego dane wpisane w tej przeglądarce.</div>
        <button class="btn lcl" id="lclose">Zamknij</button>`) + `</div>`;
 }
 function updateAcct(){
