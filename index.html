@@ -610,8 +610,7 @@ function renderTiers(){
   }).join("");
   const none = vis.filter(r => !visits[r.id].t);
   const plans = R.filter(r => isPlan(r.id));
-  const wish = plans.length ? `<div class="card" style="margin-top:14px"><h3>📅 Lista życzeń</h3><div class="sub">Plany według priorytetu (5 = bardzo mnie ciekawi).</div>` +
-    [5,4,3,2,1,0].map(p => { const a = plans.filter(r => visits[r.id].pr === p).sort((x,y)=>y.k-x.k); return a.length ? `<div class="small" style="margin:8px 0 4px">${p ? "Priorytet " + p : "Bez priorytetu"}</div><div class="members" style="margin-top:0">${a.map(r => `<button class="m" data-id="${esc(r.id)}" style="border-color:rgba(255,198,92,.5);color:var(--warn)">${esc(r.n)}${visits[r.id].pd ? " · " + esc(fmtPd(visits[r.id].pd)) : ""}</button>`).join("")}</div>` : ""; }).join("") + `</div>` : "";
+  const wish = plans.length ? `<div class="card" style="margin-top:14px"><h3>📅 Lista życzeń</h3><div class="members" style="margin-top:8px">${plans.slice().sort((x,y)=>y.k-x.k).map(r => `<button class="m" data-id="${esc(r.id)}" style="border-color:rgba(255,198,92,.5);color:var(--warn)">${esc(r.n)}</button>`).join("")}</div></div>` : "";
   $("tiers").innerHTML = (vis.length ? `<div class="hint">Przytrzymaj miejsce i przeciągnij do wybranego tieru (S–D). Z powrotem na dół, żeby zdjąć tier. Dotknięcie otwiera szczegóły.</div>` : `<div class="empty">Oznacz kilka miejsc jako "Byłem", a potem ułożysz je tutaj w tier listę.</div>`) + rows +
     (vis.length ? `<div class="card" style="margin-top:14px"><h3>Do ułożenia</h3><div class="sub">Miejsca, w których byłeś i które nie mają jeszcze tieru.</div><div class="members pool box" data-t="">${none.map(chip).join("") || `<span class="small">Wszystko ułożone ✓</span>`}</div></div>` : "") + wish;
 }
@@ -1040,11 +1039,9 @@ function renderSheet(){
       <div class="fld"><label>OCENA (GWIAZDKI)</label><div class="stars" id="sstars">${[1,2,3,4,5].map(i => `<button data-i="${i}" class="${(v.r||0)>=i?"on":""}">★</button>`).join("")}</div></div>
       `;
     } else {
-      mid = `<div class="fld"><label>KIEDY (OPCJONALNIE)</label><div style="display:flex;gap:8px"><select class="sel" id="spy">${yearOpts(v.pd.slice(0,4), cy, Math.max(cy + 8, +v.pd.slice(0,4) || 0), true)}</select><select class="sel" id="spm">${monthOpts(v.pd.slice(5,7))}</select></div></div>
-      <div class="fld"><label>JAK BARDZO CHCĘ TAM BYĆ</label><div class="prio" id="sprio">${[1,2,3,4,5].map(i => `<button data-i="${i}" class="${(v.pr||0)>=i?"on":""}">${i}</button>`).join("")}</div><div class="small" style="margin-top:6px">1 = kiedyś, bez przesady · 5 = bardzo mnie ciekawi</div></div>`;
+      mid = "";
     }
-    top = seg; body = mid + (v.s === "v" ? `<div class="fld"><label>NOTATKA / OPINIA</label><textarea id="snote" placeholder="np. śnieg, kolejki, z kim, gdzie jedliśmy…">${esc(v.n||"")}</textarea></div>` : "") + `
-      <button class="btn bad" id="sdel" style="width:100%">${confirmDel?"Na pewno? Dotknij ponownie":"Usuń z mojej listy"}</button>`;
+    top = seg; body = mid + (v.s === "v" ? `<div class="fld"><label>NOTATKA / OPINIA</label><textarea id="snote" placeholder="np. śnieg, kolejki, z kim, gdzie jedliśmy…">${esc(v.n||"")}</textarea></div>` : "") + ``;
   }
   const t1 = W ? `<div class="tile"><b>${Math.round(r.k*10)/10}</b><span>km tras zjazdowych</span></div>` : `<div class="tile"><b>${r.hikes.length}</b><span>szlaków poniżej</span></div>`;
   const t2 = W ? `<div class="tile"><b>${r.g.length ? esc(r.g[r.g.length-1]) : "—"}</b><span>${r.g.length ? "grupa" : "bez grupy"}</span></div>` : `<div class="tile"><b>${v ? Object.keys(v.done).length : 0}/${r.hikes.length}</b><span>zrobionych</span></div>`;
@@ -1061,13 +1058,15 @@ function renderSheet(){
   document.querySelectorAll("#sheet .hs button").forEach(b => b.onclick = () => setHikeRating(+b.dataset.h, +b.dataset.i));
   document.querySelectorAll("#sheet .szs:not(.hs) button").forEach(b => b.onclick = () => setSzRating(b.dataset.sk, +b.dataset.i));
   if (!v) { $("sadd").onclick = () => { setStatus(curId, "v"); renderSheet(); }; $("splan").onclick = () => { setStatus(curId, "p"); renderSheet(); }; return; }
-  $("sstat").onclick = e => { const b = e.target.closest("button"); if (!b) return; setStatus(curId, b.dataset.s); renderSheet(); };
-  $("sdel").onclick = () => { if (!confirmDel) { confirmDel = true; renderSheet(); setTimeout(()=>{ if (confirmDel){ confirmDel=false; if (curId) renderSheet(); } }, 3500); } else { delete visits[curId]; scheduleSave(); confirmDel = false; renderAll(); renderSheet(); } };
+  $("sstat").onclick = e => { const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.s === v.s) {
+      const has = (v.stays && v.stays.length) || v.r || (v.n || "").trim() || v.t || Object.keys(v.done || {}).length || Object.keys(v.hr || {}).length || Object.keys(v.hn || {}).length || Object.keys(v.sz || {}).length;
+      if (has && !confirm("Odznaczyć? Twoje oceny, notatki i wizyty dla tego miejsca zostaną usunięte.")) return;
+      delete visits[curId]; scheduleSave(); renderAll(); renderSheet(); return;
+    }
+    setStatus(curId, b.dataset.s); renderSheet(); };
   let nt; if ($("snote")) $("snote").oninput = e => { visits[curId].n = e.target.value; clearTimeout(nt); nt = setTimeout(scheduleSave, 400); };
   if (v.s === "p") {
-    const upd = () => { const y = $("spy").value, m = $("spm").value; visits[curId].pd = y ? (m ? y + "-" + m : y) : ""; scheduleSave(); renderAll(); };
-    $("spy").onchange = upd; $("spm").onchange = upd;
-    $("sprio").onclick = e => { const b = e.target.closest("button"); if (!b) return; const i = +b.dataset.i; visits[curId].pr = (visits[curId].pr === i) ? 0 : i; scheduleSave(); renderAll(); renderSheet(); };
     return;
   }
   $("saddstay").onclick = () => { visits[curId].stays.unshift({y: "", m: ""}); armedStay = -1; scheduleSave(); renderAll(); renderSheet(); };
