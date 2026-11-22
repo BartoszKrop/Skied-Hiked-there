@@ -208,7 +208,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
   <div class="brand">
     <div class="logo tg" role="button" aria-label="Przełącz zima/lato"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
     <h1 id="appname" class="tg" role="button" aria-label="Przełącz zima/lato">Skied there</h1><span class="tg swp" id="swp" role="button" aria-label="Przełącz zima/lato">⇄</span>
-    <div class="rt"><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="rfsh" class="acct" style="display:none;flex:none;padding:6px 10px;font-size:14px" aria-label="Odśwież dane z konta" title="Odśwież dane z konta">↻</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
+    <div class="rt"><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="rfsh" class="acct" style="display:none;flex:none;padding:6px 10px;font-size:14px" aria-label="Odśwież dane z konta" title="Odśwież dane z konta">↻</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
     <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div></div>
   </div>
   <div class="hstats" id="hstats"></div>
@@ -845,29 +845,39 @@ function updateAcct(){
   b.textContent = on ? "👤 " + (store.name || store.email) : "👤 Niezalogowany"; b.classList.toggle("on", on); { const rb = $("rfsh"); if (rb) rb.style.display = store.mode === "sb" ? "" : "none"; }
 }
 function friendsCard(){
-  if (!(SBC && window.supabase && store.sb)) return "";
-  return `<div class="card"><h3>Obserwowani</h3><div class="sub">Każdy może zobaczyć profile innych (tylko podgląd). Znajdź kogoś po nazwie użytkownika i kliknij „+ Obserwuj", a zostanie na liście poniżej.</div><div style="display:flex;gap:8px"><input id="fsq" class="lin" placeholder="nazwa użytkownika" autocapitalize="none" style="flex:1"><button class="btn pri" id="fsgo">Szukaj</button></div><div id="fsres" class="small" style="margin:8px 0"></div>${(store.friends || []).length ? `<div style="margin-top:6px">${store.friends.map(f => `<div class="frow"><span>@${esc(f)}</span><span><button class="btn sm pri fgo" data-u="${esc(f)}">Zobacz</button></span></div>`).join("")}</div>` : (store.authed ? `<div class="small">Jeszcze nikogo nie obserwujesz. Wejdź w czyjś profil i kliknij „+ Obserwuj".</div>` : `<div class="small">Zaloguj się, żeby obserwować profile.</div>`)}</div>`;
+  if (!(SBC && window.supabase && store.sb)) return `<div class="card"><h3>Znajomi</h3><div class="small">Znajomi działają po zalogowaniu na stronie z kontami.</div><div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
+  const fl = store.friends || [];
+  return `<div class="card"><h3>Znajomi</h3><div class="sub">Profile są publiczne (tylko podgląd). Wyszukaj kogoś po nazwie i dodaj do obserwowanych. Na karcie miejsca zobaczysz, kto z nich tam był.</div><div style="display:flex;gap:8px"><input id="fsq" class="lin" placeholder="nazwa użytkownika" autocapitalize="none" style="flex:1"><button class="btn pri" id="fsgo">Szukaj</button></div><div id="fsres" class="small" style="margin:8px 0"></div>${fl.length ? `<div class="small" style="margin:6px 0 2px;font-weight:700">Obserwowani (${fl.length})</div>${fl.map(f => `<div class="frow"><span>@${esc(f)}</span><span style="display:flex;gap:6px"><button class="btn sm pri fgo" data-u="${esc(f)}">Zobacz</button><button class="btn sm bad frm" data-u="${esc(f)}">Usuń</button></span></div>`).join("")}` : (store.authed ? `<div class="small">Jeszcze nikogo nie obserwujesz. Wyszukaj kogoś powyżej.</div>` : `<div class="small">Zaloguj się, żeby obserwować profile.</div>`)}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
 }
 function bindFriends(){
+  const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
   document.querySelectorAll("#acctov .fgo").forEach(b => b.onclick = () => openProfile(b.dataset.u));
+  const reopen = q => { openFriends(); if (q) { $("fsq").value = q; $("fsgo").click(); } };
+  document.querySelectorAll("#acctov .frm").forEach(b => b.onclick = async () => { const k = b.dataset.u; const q = ($("fsq") && $("fsq").value) || ""; b.disabled = true; await setFriends((store.friends || []).filter(x => x !== k)); reopen(q); });
   const fg = $("fsgo"); if (fg) { const go = async () => {
     const q = ($("fsq").value || "").trim().toLowerCase().replace(/^@/, ""), m = $("fsres"); if (q.length < 2) { m.textContent = "Wpisz co najmniej 2 znaki."; return; }
     m.textContent = "Szukam…";
     try { const r = await store.sb.rpc("search_profiles", {q}); if (r.error) throw r.error;
-      m.innerHTML = (r.data || []).length ? r.data.map(x => `<div class="frow"><span>@${esc(x.username)} <span class="small">· ${x.w || 0} zima, ${x.s || 0} lato</span></span><button class="btn sm pri fgo2" data-u="${esc(x.username)}">Zobacz</button></div>`).join("") : "Nikogo nie znaleziono.";
+      const fl = store.friends || [];
+      m.innerHTML = (r.data || []).length ? r.data.map(x => { const u = String(x.username).toLowerCase(), on = fl.includes(u); return `<div class="frow"><span>@${esc(x.username)} <span class="small">· ${x.w || 0} zima, ${x.s || 0} lato</span></span><span style="display:flex;gap:6px"><button class="btn sm fgo2" data-u="${esc(x.username)}">Zobacz</button>${store.authed ? `<button class="btn sm ${on ? "bad" : "pri"} ffo" data-u="${esc(u)}" data-on="${on ? 1 : 0}">${on ? "Usuń" : "+ Obserwuj"}</button>` : ""}</span></div>`; }).join("") : "Nikogo nie znaleziono.";
       m.querySelectorAll(".fgo2").forEach(b => b.onclick = () => openProfile(b.dataset.u));
+      m.querySelectorAll(".ffo").forEach(b => b.onclick = async () => { const k = b.dataset.u, cur = store.friends || []; b.disabled = true; await setFriends(b.dataset.on === "1" ? cur.filter(x => x !== k) : [...cur, k]); reopen(q); });
     } catch(e){ m.textContent = "Nie udało się wyszukać: " + String((e && e.message) || e).slice(0,70); } };
     fg.onclick = go; $("fsq").onkeydown = e => { if (e.key === "Enter") go(); }; }
 }
 function settingsCard(){
-  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>` + friendsCard();
+  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
+}
+function ovBox(){
+  let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
+  ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; return ov;
 }
 function openSettings(){
-  let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
-  ov.innerHTML = settingsCard(); ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center";
-  const cl = $("lclose"); if (cl) cl.onclick = closeAccount; bindFriends();
+  ovBox().innerHTML = settingsCard();
+  const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
 }
+function openFriends(){ ovBox().innerHTML = friendsCard(); bindFriends(); }
 function openAccount(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
   ov.innerHTML = accountCard(); ov.style.display = "flex"; bindAccount();
@@ -1255,7 +1265,7 @@ document.querySelectorAll(".brand .tg").forEach(el => el.addEventListener("click
 $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); });
 function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); mapRefresh(); }
 
-$("gear").onclick = openSettings; initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
+$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 initStore(); startI18n();
 </script>
