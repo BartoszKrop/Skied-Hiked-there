@@ -40,7 +40,7 @@ header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(1
 .logo svg{width:18px;height:18px;stroke:#071426;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .tg{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}.swp{font-size:15px;color:#8ea3c6;opacity:.85;margin-left:-3px}
 .brand h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-.2px}
-.brk{display:none}.swt{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 4px;border-radius:999px;border:1px solid var(--line);background:var(--glass);transition:transform .1s,border-color .2s}.swt:active{transform:scale(.97)}.swt[data-m=s]{border-color:rgba(255,198,92,.5)}.swt[data-m=s] .logo{background:linear-gradient(135deg,#ffc65c,#ff9f5c);box-shadow:0 4px 14px rgba(255,170,80,.35)}#mode{display:none!important}
+.brk{display:none}.sugg{text-align:center;padding:14px 0 6px}.swt{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 4px;border-radius:999px;border:1px solid var(--line);background:var(--glass);transition:transform .1s,border-color .2s}.swt:active{transform:scale(.97)}.swt[data-m=s]{border-color:rgba(255,198,92,.5)}.swt[data-m=s] .logo{background:linear-gradient(135deg,#ffc65c,#ff9f5c);box-shadow:0 4px 14px rgba(255,170,80,.35)}#mode{display:none!important}
 .rt{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
 .mode{margin-left:0;display:flex;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
 .mode button{background:none;border:0;color:var(--mute);padding:6px 11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
@@ -415,6 +415,7 @@ async function attachUser(user){
     if (r.error) throw r.error;
     const rd = (r.data && r.data.data) || {}, rv = migrate(cloneJ(rd.visits)), rh = migrate(cloneJ(rd.hvisits));
     store.friends = Array.isArray(rd.friends) ? rd.friends : []; store.prof = {username: (r.data && r.data.username) || "", is_public: !(r.data && r.data.is_public === false), show_notes: !(r.data && r.data.show_notes === false)};
+    store.admin = false; try { sb.from("admins").select("user_id").eq("user_id", user.id).maybeSingle().then(x => { store.admin = !!(x && x.data); }).catch(() => {}); } catch(e){}
     if (RO) { store.mode = "local"; setSaveState("podgląd profilu @" + RO.username); updateAcct(); renderRoBar(); renderStats(); return; }
     const empty = !Object.keys(rv).length && !Object.keys(rh).length;   // pierwsze logowanie: dane gościa przechodzą na konto; potem konto jest jedynym źródłem
     if (!empty) { wVisits = rv; sVisits = rh; }
@@ -601,6 +602,7 @@ function renderList(){
       <div class="kmb"><b>${W ? Math.round(r.k) : r.hikes.length}</b>${W ? "km" : plur(r.hikes.length,"szlak","szlaki","szlaków")}</div>
       <button class="tick ${isVis(r.id)?"on":isPlan(r.id)?"plan":""}" aria-label="Byłem">${isPlan(r.id)?"📅":"✓"}</button>
     </div>`; }).join("") : `<div class="empty">Nic nie pasuje do filtrów.</div>`;
+  if (!RO && SBC) $("list").insertAdjacentHTML("beforeend", `<div class="sugg"><button class="btn sm" id="sgbtn">+ Brakuje miejsca? Zgłoś</button></div>`);
   const fc = $("fcount"); if (fc) fc.textContent = a.length + " " + (MODE === "w" ? plur(a.length, "ośrodek", "ośrodki", "ośrodków") : plur(a.length, "miejsce", "miejsca", "miejsc"));
 }
 
@@ -830,7 +832,7 @@ function accountCard(){
   if (!SBC || !window.supabase) return "";
   const on = store.mode === "sb" || !!store.authed;
   return `<div class="card">` + (on ? `<h3>Konto</h3>` : "") + (on
-    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div>${(() => { const p = store.prof || {}; const link = p.username ? location.origin + location.pathname + "#u/" + p.username : ""; return `<div class="fld" style="margin-top:12px"><label>NAZWA UŻYTKOWNIKA (żeby inni Cię znaleźli)</label><div style="display:flex;gap:8px"><input id="uname" class="lin" value="${esc(p.username || "")}" placeholder="np. bartek_ski" autocapitalize="none" style="flex:1"><button class="btn pri" id="usave">Zapisz</button></div></div><label class="chk"><input type="checkbox" id="upub" ${p.is_public !== false ? "checked" : ""}> Profil publiczny: każdy może zobaczyć moją mapę</label><label class="chk"><input type="checkbox" id="unotes" ${p.show_notes !== false ? "checked" : ""}> Pokazuj moje notatki w profilu</label><div class="small" id="umsg" style="min-height:16px"></div>${link ? `<div class="small" style="word-break:break-all">Twój link: ${esc(link)} <button class="btn sm" id="ucopy">Kopiuj</button></div>` : ""}`; })()}<button class="btn" id="lrfsh" style="width:100%;margin-top:10px">↻ Odśwież dane z konta</button><div style="display:flex;gap:8px;margin-top:10px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
+    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div>${(() => { const p = store.prof || {}; const link = p.username ? location.origin + location.pathname + "#u/" + p.username : ""; return `<div class="fld" style="margin-top:12px"><label>NAZWA UŻYTKOWNIKA (żeby inni Cię znaleźli)</label><div style="display:flex;gap:8px"><input id="uname" class="lin" value="${esc(p.username || "")}" placeholder="np. bartek_ski" autocapitalize="none" style="flex:1"><button class="btn pri" id="usave">Zapisz</button></div></div><label class="chk"><input type="checkbox" id="upub" ${p.is_public !== false ? "checked" : ""}> Profil publiczny: każdy może zobaczyć moją mapę</label><label class="chk"><input type="checkbox" id="unotes" ${p.show_notes !== false ? "checked" : ""}> Pokazuj moje notatki w profilu</label><div class="small" id="umsg" style="min-height:16px"></div>${link ? `<div class="small" style="word-break:break-all">Twój link: ${esc(link)} <button class="btn sm" id="ucopy">Kopiuj</button></div>` : ""}`; })()}${store.admin ? `<button class="btn" id="ladm" style="width:100%;margin-top:10px">🛠 Zgłoszone miejsca (admin)</button>` : ""}<button class="btn" id="lrfsh" style="width:100%;margin-top:10px">↻ Odśwież dane z konta</button><div style="display:flex;gap:8px;margin-top:10px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
     : `<div class="lg"><div class="lgi">👤</div><h3 style="margin:6px 0 4px">Zaloguj się</h3>
        <div class="sub" style="margin-bottom:14px">Podaj e-mail i hasło. Dzięki temu masz te same dane na telefonie i komputerze.</div></div>
        <input id="lemail" class="lin" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com">
@@ -880,6 +882,27 @@ function openSettings(){
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
 }
+function openSuggest(q){
+  const W = MODE === "w";
+  if (!store.authed) { ovBox().innerHTML = `<div class="card"><h3>Zgłoś brakujące miejsce</h3><div class="sub">Zaloguj się, żeby zgłosić miejsce.</div><button class="btn" id="lclose" style="width:100%">Zamknij</button></div>`; $("lclose").onclick = closeAccount; return; }
+  ovBox().innerHTML = `<div class="card"><h3>Zgłoś brakujące miejsce</h3><div class="sub">Nie ma ${W ? "ośrodka" : "miejsca"}, którego szukasz? Napisz, co dodać. Zobaczę to i dopiszę.</div><div class="fld"><label>NAZWA</label><input id="sgn" class="lin" value="${esc(q || "")}" placeholder="${W ? "np. nazwa ośrodka" : "np. nazwa miejscowości"}"></div><div class="fld"><label>KRAJ / REGION</label><input id="sgc" class="lin" placeholder="np. Włochy, Dolomity"></div><div class="fld"><label>UWAGA (OPCJONALNIE)</label><textarea id="sgt" class="lin" rows="2" placeholder="np. link do strony, ile km tras"></textarea></div><div class="small" id="sgm" style="min-height:16px"></div><div style="display:flex;gap:8px"><button class="btn pri" id="sgsend" style="flex:1">Wyślij</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div></div>`;
+  $("lclose").onclick = closeAccount;
+  $("sgsend").onclick = async () => {
+    const n = $("sgn").value.trim(), m = $("sgm"); if (n.length < 2) { m.textContent = "Wpisz nazwę."; return; }
+    $("sgsend").disabled = true; m.textContent = "Wysyłam…";
+    try { const r = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: MODE, name: n.slice(0,120), country: $("sgc").value.trim().slice(0,120), note: $("sgt").value.trim().slice(0,500)});
+      if (r && r.error) throw r.error; m.textContent = "Dzięki! Zgłoszenie wysłane ✓"; $("sgsend").style.display = "none"; }
+    catch(e){ $("sgsend").disabled = false; m.textContent = "Nie udało się wysłać: " + String((e && e.message) || e).slice(0,80); }
+  };
+}
+async function openAdmin(){
+  ovBox().innerHTML = `<div class="card"><h3>Zgłoszone miejsca</h3><div class="small" id="adl">Wczytuję…</div><button class="btn" id="lclose" style="width:100%;margin-top:10px">Zamknij</button></div>`; $("lclose").onclick = closeAccount;
+  try { const r = await store.sb.from("suggestions").select("*").order("created_at", {ascending: false}).limit(200); if (r.error) throw r.error;
+    const a = r.data || [], box = $("adl");
+    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></div>`).join("") : "Brak zgłoszeń.";
+    box.querySelectorAll(".adel").forEach(b => b.onclick = async () => { b.disabled = true; const d = await store.sb.from("suggestions").delete().eq("id", b.dataset.id); if (!(d && d.error)) b.closest(".frow").remove(); });
+  } catch(e){ $("adl").textContent = "Nie udało się wczytać: " + String((e && e.message) || e).slice(0,80); }
+}
 function openFriends(){ ovBox().innerHTML = friendsCard(); bindFriends(); }
 function openAccount(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
@@ -896,6 +919,7 @@ function bindAccount(){
   const un = $("unotes"); if (un) un.onchange = () => saveProf({show_notes: un.checked}, $("umsg"));
   const uc = $("ucopy"); if (uc) uc.onclick = async () => { try { await navigator.clipboard.writeText(location.origin + location.pathname + "#u/" + store.prof.username); $("umsg").textContent = "Skopiowano ✓"; } catch(e){} };
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
+  const ad = $("ladm"); if (ad) ad.onclick = openAdmin;
   const rf = $("lrfsh"); if (rf) rf.onclick = async () => { rf.disabled = true; rf.textContent = "Odświeżam…"; await refreshSb(); closeAccount(); };
   const o = $("lout"); if (o) o.onclick = async () => { await store.sb.auth.signOut(); closeAccount(); };
   const pw = async up => {
@@ -1269,6 +1293,7 @@ document.querySelectorAll(".brand .tg").forEach(el => el.addEventListener("click
 $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); });
 function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); mapRefresh(); }
 
+document.addEventListener("click", e => { if (e.target && e.target.id === "sgbtn") openSuggest(fQ ? ($("q").value || "") : ""); });
 $("gear").onclick = openSettings; $("frbtn").onclick = openFriends; initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 initStore(); startI18n();
