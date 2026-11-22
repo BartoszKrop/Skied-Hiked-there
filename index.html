@@ -42,7 +42,12 @@ header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(1
 .mode{margin-left:auto;display:flex;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
 .mode button{background:none;border:0;color:var(--mute);padding:6px 11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
 .mode button.on{background:var(--grad);color:#071426}
-.savel{text-align:right;font-size:10.5px;color:var(--faint);margin-top:5px;min-height:14px}
+.savel{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--faint);margin-top:6px;min-height:26px}
+.savel #saveState{text-align:right}
+.acct{border:1px solid var(--line);background:var(--glass);color:var(--text);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct.on{border-color:rgba(56,224,160,.5);color:var(--ok);background:rgba(56,224,160,.08)}
+#acctov{position:fixed;inset:0;z-index:150;background:rgba(3,8,16,.75);display:none;align-items:flex-start;justify-content:center;padding:calc(70px + var(--safe-t)) 14px 14px}
+#acctov .card{max-width:420px;width:100%;margin:0;background:#0d1b30}
 .hstats{display:flex;gap:18px;margin-top:10px;align-items:flex-end}
 .hstats div{display:flex;flex-direction:column;line-height:1.1}
 .hstats b{font-size:22px;font-weight:800;letter-spacing:-.5px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -193,7 +198,7 @@ select.sel{width:100%;background:var(--glass2);border:1px solid var(--line);colo
   </div>
   <div class="hstats" id="hstats"></div>
   <div class="prog"><i id="progBar"></i></div>
-  <div class="savel"><span id="saveState"></span></div>
+  <div class="savel"><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button><span id="saveState"></span></div>
 </header>
 <main>
   <section class="view on" id="v-mapa">
@@ -305,15 +310,15 @@ async function flush(){
 const SBC = window.__SB__ || null;
 const cloneJ = o => JSON.parse(JSON.stringify(o || {}));
 async function attachUser(user){
-  const sb = store.sb; store.uid = user.id; store.email = user.email || ""; setSaveState("synchronizuję…");
+  const sb = store.sb; store.uid = user.id; store.email = user.email || ""; const um = user.user_metadata || {}; store.name = um.full_name || um.name || (user.email ? user.email.split("@")[0] : ""); setSaveState("synchronizuję…");
   try {
     const r = await sb.from("profiles").select("data,updated_at").eq("user_id", user.id).maybeSingle();
     if (r.error) throw r.error;
     const rd = (r.data && r.data.data) || {}, rv = migrate(cloneJ(rd.visits)), rh = migrate(cloneJ(rd.hvisits));
     wVisits = Object.assign({}, wVisits, rv); sVisits = Object.assign({}, sVisits, rh);   // dane z konta mają pierwszeństwo, lokalne tylko uzupełniają
     syncVisits(); saveLocal(); store.mode = "sb"; store.rev = r.data ? r.data.updated_at : "";
-    dirty = true; await flush(); renderAll();
-  } catch(e){ store.mode = "local"; setSaveState("błąd synchronizacji, dane są w tej przeglądarce"); renderAll(); }
+    dirty = true; await flush(); renderAll(); updateAcct(); closeAccount();
+  } catch(e){ store.mode = "local"; setSaveState("błąd synchronizacji, dane są w tej przeglądarce"); renderAll(); updateAcct(); }
 }
 async function pullSb(){
   if (store.mode !== "sb" || dirty || writing || curId) return;
@@ -326,11 +331,12 @@ async function pullSb(){
 async function initSb(){
   loadLocal(); renderAll();
   const sb = window.supabase.createClient(SBC.url, SBC.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
-  store = {mode:"local", sb, uid:null, email:"", rev:""};
-  setSaveState("zapis: ta przeglądarka · niezalogowany");
+  store = {mode:"local", sb, uid:null, email:"", name:"", rev:""};
+  setSaveState("zapis: ta przeglądarka");
+  updateAcct(); $("acct").onclick = openAccount;
   sb.auth.onAuthStateChange((ev, ses) => {
     if (ses && ses.user && store.uid !== ses.user.id) setTimeout(() => attachUser(ses.user), 0);
-    else if (!ses && store.mode === "sb") { store.mode = "local"; store.uid = null; setSaveState("wylogowano · dane zostają w tej przeglądarce"); renderAll(); }
+    else if (!ses && store.mode === "sb") { store.mode = "local"; store.uid = null; store.name = ""; setSaveState("wylogowano · dane zostają w tej przeglądarce"); renderAll(); updateAcct(); }
   });
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pullSb(); });
 }
@@ -621,15 +627,27 @@ function accountCard(){
   if (!SBC || !window.supabase) return "";
   const on = store.mode === "sb";
   return `<div class="card"><h3>Konto</h3>` + (on
-    ? `<div class="sub">Zalogowano jako <b>${esc(store.email)}</b>. Dane synchronizują się z kontem, więc masz to samo na telefonie i komputerze.</div><button class="btn" id="lout">Wyloguj</button>`
+    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane synchronizują się z kontem, więc masz to samo na telefonie i komputerze.</div><button class="btn bad" id="lout">Wyloguj</button> <button class="btn" id="lclose">Zamknij</button>`
     : `<div class="sub">Zaloguj się mailem, żeby mieć te same dane na telefonie i komputerze. Wyślemy Ci link do logowania, bez hasła. Otwórz go na tym samym urządzeniu. Dane z tej przeglądarki zostaną dołączone do konta.</div>
        <button class="btn" id="lgoogle" style="width:100%;margin-bottom:10px">Zaloguj przez Google</button>
        <div class="small" style="margin:0 0 8px">albo mailem:</div>
        <div class="fld"><label>E-MAIL</label><input id="lemail" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com"></div>
-       <button class="btn pri" id="lsend">Wyślij link logowania</button> <span class="small" id="lmsg"></span>`) + `</div>`;
+       <button class="btn pri" id="lsend">Wyślij link logowania</button> <button class="btn" id="lclose">Zamknij</button> <div class="small" id="lmsg" style="margin-top:8px"></div>`) + `</div>`;
 }
+function updateAcct(){
+  const b = $("acct"); if (!b) return;
+  if (!SBC || !window.supabase) { b.style.display = "none"; return; }
+  b.style.display = ""; const on = store.mode === "sb";
+  b.textContent = on ? "👤 " + (store.name || store.email) : "👤 Niezalogowany"; b.classList.toggle("on", on);
+}
+function openAccount(){
+  let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
+  ov.innerHTML = accountCard(); ov.style.display = "flex"; bindAccount();
+}
+function closeAccount(){ const ov = $("acctov"); if (ov) ov.style.display = "none"; }
 function bindAccount(){
-  const o = $("lout"); if (o) o.onclick = async () => { await store.sb.auth.signOut(); };
+  const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
+  const o = $("lout"); if (o) o.onclick = async () => { await store.sb.auth.signOut(); closeAccount(); };
   const g = $("lgoogle"); if (g) g.onclick = async () => {
     const r = await store.sb.auth.signInWithOAuth({provider: "google", options: {redirectTo: location.origin + location.pathname}});
     if (r.error) $("lmsg").textContent = "Google: " + r.error.message;
@@ -660,7 +678,6 @@ function renderStats(){
     : [[s.n, "miejsc z " + R.length], [s.countries.size, "krajów"], [s.stays, "pobytów"], [s.hikes, "zaliczonych szlaków"], [planned, "w planach"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
   $("stats").innerHTML = `
     <div class="big">${cards.map(c => `<div class="card"><div class="n">${c[0]}</div><div class="l">${c[1]}</div></div>`).join("")}</div>
-    ${accountCard()}
     ${W ? "" : szCard()}
     <div class="card"><h3>Według kraju</h3><table><tr><th>Kraj</th><th class="r">Byłem</th><th class="r">${W ? "Trasy" : "Szlaki"}</th></tr>${rows}</table></div>
     ${yrows ? `<div class="card"><h3>Pobyty według roku</h3><table><tr><th>Rok</th><th class="r">Pobyty</th></tr>${yrows}</table></div>` : ""}
@@ -678,7 +695,6 @@ function renderStats(){
       <button class="btn" id="bload">Wczytaj</button> <span class="small" id="bmsg"></span>
     </div>
     <div class="small" style="margin:6px 4px 24px">Ośrodki: © współtwórcy OpenStreetMap / OpenSkiMap (licencja ODbL); długości tras bywają zaniżone tam, gdzie mapowanie jest niepełne. Szlaki letnie to ręcznie wybrana lista orientacyjna, czasy i trudność sprawdź w mapach turystycznych przed wyjściem.</div>`;
-  bindAccount();
   $("shyear").onclick = () => { const o = periodOptions().find(x => x.v === $("shper").value); if (o) openShare("period", o); };
   $("shrank").onclick = () => openShare("ranking"); $("shmap").onclick = () => openShare("map");
   $("exgpx").onclick = () => saveBlob("ski-been-" + (MODE === "w" ? "zima" : "lato") + ".gpx", new Blob([exportGPX()], {type:"application/gpx+xml"}), $("exmsg"));
