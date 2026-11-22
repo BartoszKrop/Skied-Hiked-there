@@ -40,7 +40,7 @@ header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(1
 .logo svg{width:18px;height:18px;stroke:#071426;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .tg{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}.swp{font-size:15px;color:#8ea3c6;opacity:.85;margin-left:-3px}
 .brand h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-.2px}
-.brk{display:none}.sugg{text-align:center;padding:14px 0 6px}.swt{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 4px;border-radius:999px;border:1px solid var(--line);background:var(--glass);transition:transform .1s,border-color .2s}.swt:active{transform:scale(.97)}.swt[data-m=s]{border-color:rgba(255,198,92,.5)}.swt[data-m=s] .logo{background:linear-gradient(135deg,#ffc65c,#ff9f5c);box-shadow:0 4px 14px rgba(255,170,80,.35)}#mode{display:none!important}
+.brk{display:none}#instbar{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--safe-b,0px));z-index:60;background:var(--panel,#10203a);border:1px solid rgba(90,209,255,.4);border-radius:16px;padding:12px 14px;box-shadow:0 10px 36px rgba(0,0,0,.55);display:none;gap:10px;align-items:center}#instbar .t{flex:1;min-width:0;font-size:13px;line-height:1.35}#instbar .t b{display:block;font-size:14px;margin-bottom:2px}.sugg{text-align:center;padding:14px 0 6px}.swt{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 4px;border-radius:999px;border:1px solid var(--line);background:var(--glass);transition:transform .1s,border-color .2s}.swt:active{transform:scale(.97)}.swt[data-m=s]{border-color:rgba(255,198,92,.5)}.swt[data-m=s] .logo{background:linear-gradient(135deg,#ffc65c,#ff9f5c);box-shadow:0 4px 14px rgba(255,170,80,.35)}#mode{display:none!important}
 .rt{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
 .mode{margin-left:0;display:flex;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
 .mode button{background:none;border:0;color:var(--mute);padding:6px 11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
@@ -908,7 +908,7 @@ function bindFriends(){
     fg.onclick = go; $("fsq").onkeydown = e => { if (e.key === "Enter") go(); }; }
 }
 function settingsCard(){
-  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
+  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
 }
 function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
@@ -917,6 +917,7 @@ function ovBox(){
 function openSettings(){
   ovBox().innerHTML = settingsCard();
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
+  const ib = $("instset"); if (ib) ib.onclick = async () => { if (!(await doInstall())) $("instmsg").textContent = installText(); };
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
 }
 function openSuggest(q, fix){
@@ -1387,6 +1388,27 @@ $("mode").addEventListener("click", e => { const b = e.target.closest("button");
 function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); mapRefresh(); }
 
 document.addEventListener("click", e => { if (e.target && e.target.id === "sgbtn") openSuggest(fQ ? ($("q").value || "") : ""); });
+/* instalacja jako aplikacja (PWA) */
+let instPrompt = null;
+const isStandalone = () => (navigator.standalone === true) || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+function installText(){ return isIOS() ? "Dotknij ikony Udostępnij (kwadrat ze strzałką), potem „Dodaj do ekranu początkowego”." : "Otwórz menu przeglądarki (⋮) i wybierz „Zainstaluj aplikację” albo „Dodaj do ekranu głównego”."; }
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); instPrompt = e; scheduleInstBar(); });
+window.addEventListener("appinstalled", () => { instPrompt = null; hideInstBar(); });
+function hideInstBar(){ const b = $("instbar"); if (b) b.style.display = "none"; }
+async function doInstall(){ if (instPrompt) { instPrompt.prompt(); try { await instPrompt.userChoice; } catch(e){} instPrompt = null; hideInstBar(); return true; } return false; }
+function showInstBar(){
+  if (isStandalone() || !SBC || location.protocol.indexOf("http") !== 0) return;
+  try { if (localStorage.getItem("skibeen.instdismiss")) return; } catch(e){}
+  if (!instPrompt && !isIOS()) return;
+  let b = $("instbar"); if (!b) { b = document.createElement("div"); b.id = "instbar"; document.body.append(b); }
+  b.innerHTML = `<div class="t"><b>📲 Dodaj do ekranu głównego</b>${instPrompt ? "Aplikacja działa na pełnym ekranie, także bez zasięgu." : esc(installText())}</div>${instPrompt ? `<button class="btn pri sm" id="instgo">Zainstaluj</button>` : ""}<button class="btn sm" id="instx" aria-label="Zamknij">✕</button>`;
+  b.style.display = "flex";
+  const go = $("instgo"); if (go) go.onclick = doInstall;
+  $("instx").onclick = () => { hideInstBar(); try { localStorage.setItem("skibeen.instdismiss", "1"); } catch(e){} };
+}
+let instT = null; function scheduleInstBar(){ if (instT) return; instT = setTimeout(showInstBar, 25000); }
+if (isIOS()) scheduleInstBar();
 $("gear").onclick = openSettings; $("frbtn").onclick = openFriends; initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 initStore(); startI18n();
