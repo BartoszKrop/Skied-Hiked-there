@@ -39,12 +39,14 @@ header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(1
 .logo{width:28px;height:28px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(90,209,255,.35)}
 .logo svg{width:18px;height:18px;stroke:#071426;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .brand h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-.2px}
-.mode{margin-left:auto;display:flex;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.rt{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
+.mode{margin-left:0;display:flex;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
 .mode button{background:none;border:0;color:var(--mute);padding:6px 11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
 .mode button.on{background:var(--grad);color:#071426}
-.savel{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--faint);margin-top:6px;min-height:26px}
+.savel{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:10.5px;color:var(--faint);margin-top:6px;min-height:14px}
 .savel #saveState{text-align:right}
-.acct{border:1px solid var(--line);background:var(--glass);color:var(--text);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct{border:1px solid var(--line);background:var(--glass);color:var(--text);border-radius:999px;padding:6px 9px;font-size:11px;font-weight:600;cursor:pointer;min-width:0;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
+@media(max-width:430px){.brand .logo{display:none}.brand h1{font-size:16px;white-space:nowrap}.mode button{padding:6px 7px;font-size:11.5px}.rt{gap:6px}}
 .acct.on{border-color:rgba(56,224,160,.5);color:var(--ok);background:rgba(56,224,160,.08)}
 #acctov{position:fixed;inset:0;z-index:150;background:rgba(3,8,16,.75);display:none;align-items:flex-start;justify-content:center;padding:calc(70px + var(--safe-t)) 14px 14px}
 #acctov .lg{text-align:center}.lgi{width:54px;height:54px;margin:0 auto;border-radius:18px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:26px}
@@ -197,11 +199,12 @@ select.sel{width:100%;background:var(--glass2);border:1px solid var(--line);colo
   <div class="brand">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
     <h1>Ski Been</h1>
-    <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div>
+    <div class="rt"><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
+    <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div></div>
   </div>
   <div class="hstats" id="hstats"></div>
   <div class="prog"><i id="progBar"></i></div>
-  <div class="savel"><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button><span id="saveState"></span></div>
+  <div class="savel"><span id="saveState"></span></div>
 </header>
 <main>
   <section class="view on" id="v-mapa">
