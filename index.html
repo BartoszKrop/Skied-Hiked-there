@@ -150,6 +150,7 @@ textarea:focus,input[type=date]:focus{border-color:rgba(90,209,255,.5)}
 #sheetbg{position:fixed;inset:0;background:rgba(3,8,16,.62);backdrop-filter:blur(2px);display:none;z-index:10}
 #sheet{position:fixed;left:0;right:0;bottom:0;max-height:90%;overflow:auto;background:linear-gradient(180deg,#14233d,#0e1b31);border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;padding:8px 16px calc(18px + var(--safe-b));z-index:11;display:none;box-shadow:0 -20px 60px rgba(0,0,0,.5)}
 #sheet.open{animation:up .28s cubic-bezier(.2,.8,.2,1)}
+@media(min-width:720px){#sheet{left:0;right:0;margin:0 auto;width:min(640px,100%);border:1px solid var(--line);border-bottom:0}#sheet .hero h2{font-size:22px}#sheet .tile b{font-size:18px}}
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .grab{width:42px;height:4px;border-radius:4px;background:var(--glass2);margin:2px auto 12px}
 .hero{display:flex;gap:12px;align-items:center;position:relative;padding-right:36px}.gpill{display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0;color:var(--accent);background:var(--accentbg);border:1px solid rgba(90,209,255,.35);white-space:nowrap}.hgear{position:absolute;top:-2px;right:0;width:30px;height:30px;border-radius:10px;border:0;background:rgba(255,255,255,.07);color:var(--mute);font-size:16px;line-height:1;cursor:pointer;padding:0}.hgear:active{background:rgba(255,255,255,.15)}
