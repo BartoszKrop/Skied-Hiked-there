@@ -905,12 +905,12 @@ function openSettings(){
 function openSuggest(q){
   const W = MODE === "w";
   if (!store.authed) { ovBox().innerHTML = `<div class="card"><h3>Zgłoś brakujące miejsce</h3><div class="sub">Zaloguj się, żeby zgłosić miejsce.</div><button class="btn" id="lclose" style="width:100%">Zamknij</button></div>`; $("lclose").onclick = closeAccount; return; }
-  ovBox().innerHTML = `<div class="card"><h3>Zgłoś brakujące miejsce</h3><div class="sub">Nie ma ${W ? "ośrodka" : "miejsca"}, którego szukasz? Napisz, co dodać. Zobaczę to i dopiszę.</div><div class="fld"><label>NAZWA</label><input id="sgn" class="lin" value="${esc(q || "")}" placeholder="${W ? "np. nazwa ośrodka" : "np. nazwa miejscowości"}"></div><div class="fld"><label>KRAJ / REGION</label><input id="sgc" class="lin" placeholder="np. Włochy, Dolomity"></div><div class="fld"><label>UWAGA (OPCJONALNIE)</label><textarea id="sgt" class="lin" rows="2" placeholder="np. link do strony, ile km tras"></textarea></div><div class="small" id="sgm" style="min-height:16px"></div><div style="display:flex;gap:8px"><button class="btn pri" id="sgsend" style="flex:1">Wyślij</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div></div>`;
+  ovBox().innerHTML = `<div class="card"><h3>Zgłoś brakujące miejsce</h3><div class="sub">Nie ma ${W ? "ośrodka" : "miejsca"}, którego szukasz? Napisz, co dodać. Zobaczę to i dopiszę.</div><div class="fld"><label>NAZWA</label><input id="sgn" class="lin" value="${esc(q || "")}" placeholder="${W ? "np. nazwa ośrodka" : "np. nazwa miejscowości"}"></div><div class="fld"><label>KRAJ / REGION</label><input id="sgc" class="lin" placeholder="np. Włochy, Dolomity"></div>${W ? `<div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS (OPCJONALNIE)</label><input id="sgk" class="lin" inputmode="decimal" placeholder="np. 120"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ M (OPC.)</label><input id="sge" class="lin" inputmode="numeric" placeholder="np. 2800"></div></div>` : ""}<div class="fld"><label>UWAGA (OPCJONALNIE)</label><textarea id="sgt" class="lin" rows="2" placeholder="np. link do strony, ile km tras"></textarea></div><div class="small" id="sgm" style="min-height:16px"></div><div style="display:flex;gap:8px"><button class="btn pri" id="sgsend" style="flex:1">Wyślij</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div></div>`;
   $("lclose").onclick = closeAccount;
   $("sgsend").onclick = async () => {
     const n = $("sgn").value.trim(), m = $("sgm"); if (n.length < 2) { m.textContent = "Wpisz nazwę."; return; }
     $("sgsend").disabled = true; m.textContent = "Wysyłam…";
-    try { const r = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: MODE, name: n.slice(0,120), country: $("sgc").value.trim().slice(0,120), note: $("sgt").value.trim().slice(0,500)});
+    try { const r = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: MODE, name: n.slice(0,120), country: $("sgc").value.trim().slice(0,120), note: [(W && $("sgk") && $("sgk").value.trim()) ? "km: " + $("sgk").value.trim().replace(",", ".") : "", (W && $("sge") && $("sge").value.trim()) ? "wys.: " + $("sge").value.trim() + " m" : "", $("sgt").value.trim()].filter(Boolean).join(" · ").slice(0,500)});
       if (r && r.error) throw r.error; m.textContent = "Dzięki! Zgłoszenie wysłane ✓"; $("sgsend").style.display = "none"; }
     catch(e){ $("sgsend").disabled = false; m.textContent = "Nie udało się wysłać: " + String((e && e.message) || e).slice(0,80); }
   };
@@ -938,14 +938,18 @@ function openAddPlace(sg){
     <div style="display:flex;gap:8px"><button class="btn pri" id="apsave" style="flex:1">Zapisz</button><button class="btn" id="apback" style="flex:1">Wstecz</button></div></div>`;
   const sync = () => { const s = $("apm").value === "s"; $("apw").style.display = s ? "none" : ""; $("aps").style.display = s ? "" : "none"; };
   $("apm").value = w0 ? "w" : "s"; $("apm").onchange = sync; sync();
+  if (sg && sg.note) { const mk = /km:\s*([\d.,]+)/i.exec(sg.note), me = /wys\.?:\s*(\d+)/i.exec(sg.note); if (mk) $("apk").value = mk[1].replace(",", "."); if (me) $("ape").value = me[1]; }
   $("apback").onclick = openAdmin;
   $("apg").onclick = async () => {
     const q = $("apn").value.trim(), m = $("apmsg"); if (q.length < 2) return; m.textContent = "Szukam…";
-    try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&accept-language=en&q=" + encodeURIComponent(q)); const j = await r.json();
+    try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&accept-language=en&q=" + encodeURIComponent(q)); const j = await r.json();
       if (!j.length) { m.textContent = "Nic nie znaleziono. Wpisz współrzędne ręcznie."; return; }
-      const a = j[0].address || {}; $("apy").value = (+j[0].lat).toFixed(4); $("apx").value = (+j[0].lon).toFixed(4);
-      if (a.country_code) $("apc").value = a.country_code.toUpperCase(); $("apr").value = a.state || a.region || a.county || "";
-      m.textContent = "Znaleziono: " + String(j[0].display_name).slice(0, 90);
+      m.innerHTML = j.map((p, k) => `<div class="frow" style="align-items:flex-start"><span style="min-width:0">${esc(String(p.display_name).slice(0, 110))}</span><button class="btn sm pri apuse" data-k="${k}">Użyj</button></div>`).join("");
+      m.querySelectorAll(".apuse").forEach(b => b.onclick = () => { const p = j[+b.dataset.k], a = p.address || {};
+        $("apy").value = (+p.lat).toFixed(4); $("apx").value = (+p.lon).toFixed(4);
+        if (a.country_code) $("apc").value = a.country_code.toUpperCase(); $("apr").value = a.state || a.region || a.county || "";
+        if (p.name) $("apn").value = p.name;
+        m.textContent = "Użyto: " + String(p.display_name).slice(0, 90); });
     } catch(e){ m.textContent = "Nie udało się połączyć. Wpisz dane ręcznie."; } };
   $("apsave").onclick = async () => {
     const st = $("apst"), n = $("apn").value.trim(), mode = $("apm").value, c = $("apc").value.trim().toUpperCase(), y = parseFloat($("apy").value), x = parseFloat($("apx").value);
