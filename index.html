@@ -560,6 +560,28 @@ function periodData(per){
   const stays = places.reduce((a, r) => a + visits[r.id].stays.filter(per.test).length, 0);
   return {places, countries:cs, stays, km:places.reduce((a, r) => a + r.k, 0)};
 }
+let GEO = null, GEOP = null;
+function decodeTopo(t){
+  const k = t.transform || {scale:[1,1], translate:[0,0]};
+  const arcs = t.arcs.map(a => { let x = 0, y = 0; return a.map(p => { x += p[0]; y += p[1]; return [x * k.scale[0] + k.translate[0], y * k.scale[1] + k.translate[1]]; }); });
+  const ring = idx => { const out = []; idx.forEach(i => { const a = i >= 0 ? arcs[i] : arcs[~i].slice().reverse(); out.push(...(out.length ? a.slice(1) : a)); }); return out; };
+  const rings = [];
+  const obj = t.objects.countries || t.objects[Object.keys(t.objects)[0]];
+  (obj.geometries || []).forEach(g => {
+    if (g.type === "Polygon") g.arcs.forEach(r => rings.push(ring(r)));
+    else if (g.type === "MultiPolygon") g.arcs.forEach(p => p.forEach(r => rings.push(ring(r))));
+  });
+  return rings;
+}
+function loadGeo(){
+  if (GEO) return Promise.resolve(GEO);
+  if (GEOP) return GEOP;
+  GEOP = new Promise(res => {
+    const ac = typeof AbortController !== "undefined" ? new AbortController() : null, to = setTimeout(() => { try { ac && ac.abort(); } catch(e){} res(null); }, 7000);
+    fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json", ac ? {signal: ac.signal} : {}).then(r => r.json()).then(j => { clearTimeout(to); GEO = decodeTopo(j); res(GEO); }).catch(() => { clearTimeout(to); res(null); });
+  }).then(g => { if (!g) GEOP = null; return g; });
+  return GEOP;
+}
 function shareCanvas(kind, per){
   const W = MODE === "w", S = stats(), cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1350;
   const c = cv.getContext("2d"), F = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif";
@@ -616,6 +638,24 @@ function shareCanvas(kind, per){
       const xs = pts.map(r => px(r.x)), ys = pts.map(r => py(r.y)); let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
       const pad = Math.max(0.6, (x1 - x0) * 0.08); x0 -= pad; x1 += pad; y0 -= pad * 0.9; y1 += pad * 0.9;
       const sc = Math.min(920 / (x1 - x0), 840 / (y1 - y0)), ox = 60 + (960 - (x1 - x0) * sc) / 2, oy = 350 + (880 - (y1 - y0) * sc) / 2;
+      const TX = x => ox + (x - x0) * sc, TY = y => oy + (y - y0) * sc;
+      c.save(); c.beginPath(); c.roundRect(60, 350, 960, 880, 26); c.clip();
+      const lx0 = x0 / COS, lx1 = x1 / COS, la0 = -y1, la1 = -y0;
+      if (GEO) {
+        c.fillStyle = "rgba(255,255,255,.075)"; c.strokeStyle = "rgba(255,255,255,.3)"; c.lineWidth = 1.6; c.lineJoin = "round";
+        GEO.forEach(rg => {
+          let a = 1e9, b = -1e9, d = 1e9, e = -1e9; for (const p of rg) { if (p[0] < a) a = p[0]; if (p[0] > b) b = p[0]; if (p[1] < d) d = p[1]; if (p[1] > e) e = p[1]; }
+          if (b < lx0 || a > lx1 || e < la0 || d > la1) return;
+          c.beginPath(); rg.forEach((p, i) => { const X = TX(px(p[0])), Y = TY(py(p[1])); if (i) c.lineTo(X, Y); else c.moveTo(X, Y); }); c.closePath(); c.fill(); c.stroke();
+        });
+      } else {
+        const span = Math.max(lx1 - lx0, la1 - la0), st = span > 60 ? 10 : span > 25 ? 5 : span > 10 ? 2 : 1;
+        c.strokeStyle = "rgba(255,255,255,.09)"; c.lineWidth = 1.5; c.font = `500 18px ${F}`; c.fillStyle = "rgba(255,255,255,.35)";
+        for (let lo = Math.ceil(lx0 / st) * st; lo <= lx1; lo += st) { const X = TX(px(lo)); c.beginPath(); c.moveTo(X, 350); c.lineTo(X, 1230); c.stroke(); c.fillText(lo + "°", X + 4, 1218); }
+        for (let la = Math.ceil(la0 / st) * st; la <= la1; la += st) { const Y = TY(py(la)); c.beginPath(); c.moveTo(60, Y); c.lineTo(1020, Y); c.stroke(); c.fillText(la + "°", 68, Y - 4); }
+      }
+      c.fillStyle = "rgba(255,255,255,.22)"; R.forEach(r => { if (visits[r.id]) return; const X = TX(px(r.x)), Y = TY(py(r.y)); if (X > 60 && X < 1020 && Y > 350 && Y < 1230) { c.beginPath(); c.arc(X, Y, 4, 0, 7); c.fill(); } });
+      c.restore();
       pts.slice().sort((a, b) => b.k - a.k).forEach((r, i) => {
         const X = ox + (px(r.x) - x0) * sc, Y = oy + (py(r.y) - y0) * sc, v = isVis(r.id);
         c.fillStyle = v ? "rgba(56,224,160,.28)" : "rgba(255,198,92,.28)"; c.beginPath(); c.arc(X, Y, 22, 0, 7); c.fill();
@@ -629,8 +669,9 @@ function shareCanvas(kind, per){
   c.fillStyle = "#6f86ad"; c.font = `500 22px ${F}`; c.textAlign = "right"; c.fillText(W ? "Skied there" : "Hiked there", 1020, 1315); c.textAlign = "left";
   return cv;
 }
-function openShare(kind, per){
+async function openShare(kind, per){
   let ov = $("shareov"); if (!ov) { ov = document.createElement("div"); ov.id = "shareov"; document.body.append(ov); }
+  if (kind === "map" && !GEO) { ov.innerHTML = `<div class="small" style="color:#cdd8ee;text-align:center;padding:30px">Ładuję kontury map…</div>`; ov.style.display = "flex"; await loadGeo(); }
   const cv = shareCanvas(kind, per); ov.innerHTML = ""; ov.append(cv);
   const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px";
   const sv = Object.assign(document.createElement("button"), {className:"btn pri", textContent:"Pobierz obraz"}), cl = Object.assign(document.createElement("button"), {className:"btn", textContent:"Zamknij"});
