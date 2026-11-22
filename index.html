@@ -198,6 +198,7 @@ body.ro #sheet button:not(#sclose),body.ro #sheet select,body.ro #sheet textarea
 body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
 #robar{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;font-size:13px;background:rgba(90,209,255,.1);border-bottom:1px solid var(--line)}
 #robar .sp{flex:1}
+.hnote{margin:6px 0 4px;min-height:48px;font-size:13px}.hnro{margin:6px 0 4px;font-size:13px;color:var(--text);opacity:.9;white-space:pre-wrap}
 .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0;color:var(--text)}.chk input{width:18px;height:18px}
 .frow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14px}.frow:last-child{border-bottom:0}
 </style>
@@ -433,7 +434,7 @@ async function initStore(){
 /* ---------- logika ---------- */
 const isVis = id => !!visits[id] && visits[id].s === "v";
 const isPlan = id => !!visits[id] && visits[id].s === "p";
-const newEntry = st => ({s: st, stays: [], pd: "", pr: 0, r: 0, t: "", n: "", done: {}, sz: {}, hr: {}});
+const newEntry = st => ({s: st, stays: [], pd: "", pr: 0, r: 0, t: "", n: "", done: {}, sz: {}, hr: {}, hn: {}});
 function setStatus(id, st){
   if (!visits[id]) visits[id] = newEntry(st); else visits[id].s = st;
   scheduleSave(); renderAll();
@@ -905,15 +906,23 @@ function renderSheet(){
   const href = (W && r.w) ? esc(r.w) : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze");
   const link = `<a class="lnk" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Strona ośrodka: cennik i status tras ↗" : "Szukaj cen karnetów ↗") : "Szukaj szlaków i informacji ↗"}</a>`;
   const secOn = r.id === "h-camino";
-  const hikes = W ? "" : `<div class="sect"><div class="sh"><b>Dokąd można dojść</b></div><div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>${r.hikes.map((h,i) => { const d = !!(v && v.done[i]); const sh = (secOn && h.s && (i === 0 || r.hikes[i-1].s !== h.s)) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""; return sh + `<div class="hike ${d?"done":""}">
+  let lastSec = null;
+  const hikeCards = W ? "" : r.hikes.map((h, i) => {
+    const d = !!(v && v.done[i]); if (RO && !d) return "";
+    const sh = (secOn && h.s && h.s !== lastSec) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""; if (secOn && h.s) lastSec = h.s;
+    const note = (v && v.hn && v.hn[i]) || "";
+    const noteUi = RO ? (note ? `<div class="hnro">📝 ${esc(note)}</div>` : "") : (d ? `<textarea class="hnote" data-h="${i}" rows="2" placeholder="Notatka do tego szlaku…">${esc(note)}</textarea>` : "");
+    return sh + `<div class="hike ${d?"done":""}">
       <button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>
       <div class="hb"><b>${esc(h.n)}</b><div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>
-      <div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>
-      <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("")}</div>`;
-  const sks = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
+      <div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>${noteUi}
+      <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
+  const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b></div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
+  const sks0 = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
+  const sks = RO ? sks0.filter(sk => v && v.sz && v.sz[sk]) : sks0;
   const szsec = !sks.length ? "" : (v && v.s === "v"
-    ? `<div class="sect"><div class="sh"><b>🥧 Szarlotki w schroniskach</b></div>${sks.map(sk => { const z = v.sz && v.sz[sk]; return `<div class="szrow"><span style="flex:1;min-width:140px">${esc(sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; }).join("")}</div>`
-    : `<div class="small" style="margin:14px 2px">🥧 Po zaznaczeniu „Byłem” możesz tu ocenić szarlotki w schroniskach (${sks.length}).</div>`);
+    ? `<div class="sect"><div class="sh"><b>Szarlotki w schroniskach</b></div>${sks.map(sk => { const z = v.sz && v.sz[sk]; return `<div class="szrow"><span style="flex:1;min-width:140px">${esc(sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; }).join("")}</div>`
+    : `<div class="small" style="margin:14px 2px">Po zaznaczeniu „Byłem” możesz tu ocenić szarlotki w schroniskach (${sks.length}).</div>`);
   let body = "", top = "";
   if (!v) {
     top = `<div class="two" style="margin:4px 0 12px"><button class="btn ok" id="sadd">✓ Byłem</button><button class="btn warn" id="splan">📅 Planuję</button></div>`;
@@ -944,6 +953,7 @@ function renderSheet(){
     ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${top}${hikes}${szsec}${body}
     <div style="margin-top:12px"><button class="btn" id="sclose" style="width:100%">Zamknij</button></div>`;
   $("sclose").onclick = closeSheet;
+  document.querySelectorAll("#sheet .hnote").forEach(t => t.oninput = () => { const v = visits[curId]; if (!v) return; v.hn = v.hn || {}; const i = +t.dataset.h; if (t.value.trim()) v.hn[i] = t.value; else delete v.hn[i]; scheduleSave(); });
   document.querySelectorAll("#sheet .hike .tick").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
   document.querySelectorAll("#sheet .hs button").forEach(b => b.onclick = () => setHikeRating(+b.dataset.h, +b.dataset.i));
