@@ -411,7 +411,7 @@ function renderHeader(){
 }
 
 /* ---------- lista ---------- */
-let statRank = {w:"visits", s:"rating"}, fStat = "all", fCountry = "", fSort = "k", fQ = "", fMinKm = 0, fMinEl = 0;
+let statRank = {w:"visits", s:"hikerate"}, fStat = "all", fCountry = "", fSort = "k", fQ = "", fMinKm = 0, fMinEl = 0;
 function buildCountrySelect(){
   const cs = {}; R.forEach(r => r.c.split(",").forEach(c => cs[c] = (cs[c]||0) + 1));
   $("fcountry").innerHTML = `<option value="">Wszystkie kraje</option>` +
@@ -738,8 +738,8 @@ function bindAccount(){
 function szCard(){
   const m = {}; R.forEach(r => { const v = visits[r.id]; if (v && v.sz) Object.keys(v.sz).forEach(k => { (m[k] = m[k] || {hub:r.n, rs:[]}).rs.push(v.sz[k].r || 0); }); });
   const a = Object.keys(m).map(k => ({k, hub:m[k].hub, r:Math.max(...m[k].rs)})).sort((x,y) => y.r - x.r || x.k.localeCompare(y.k, "pl"));
-  if (!a.length) return `<div class="card"><h3>🥧 Ranking szarlotek</h3><div class="sub">Przy szlakach do schronisk w Polsce zaznacz „Jadłem” i oceń szarlotkę. Tu pojawi się ranking.</div></div>`;
-  return `<div class="card"><h3>🥧 Ranking szarlotek</h3><div class="sub">Zjedzonych: ${a.length}</div><table>` + a.map(x => `<tr><td>${esc(x.k)}</td><td class="r" style="color:var(--warn)">${x.r ? "★".repeat(x.r) : "bez oceny"}</td></tr>`).join("") + `</table></div>`;
+  if (!a.length) return `<div class="card"><h3>Ranking szarlotek</h3><div class="sub">Przy szlakach do schronisk w Polsce zaznacz „Jadłem” i oceń szarlotkę. Tu pojawi się ranking.</div></div>`;
+  return `<div class="card"><h3>Ranking szarlotek</h3><div class="sub">Zjedzonych: ${a.length}</div><table>` + a.map(x => `<tr><td>${esc(x.k)}</td><td class="r" style="color:var(--warn)">${x.r ? "★".repeat(x.r) : "bez oceny"}</td></tr>`).join("") + `</table></div>`;
 }
 function renderStats(){
   const s = stats(), W = MODE === "w";
@@ -750,13 +750,15 @@ function renderStats(){
   const stars = n => n ? `<span style="color:var(--warn)">${"★".repeat(n)}</span>` : `<span class="small">bez oceny</span>`;
   const OPTS = W
     ? [["visits", "Najczęściej odwiedzane"], ["rating", "Najwyżej oceniane"], ["km", "Największe (km tras)"], ["country", "Według kraju"], ["year", "Wizyty według roku"]]
-    : [["rating", "Najwyżej oceniane"], ["hikes", "Najwięcej szlaków"], ["country", "Według kraju"], ["year", "Odwiedzone miejsca według roku"], ["sz", "🥧 Szarlotki"]];
+    : [["hikerate", "Najwyżej oceniane szlaki"], ["rating", "Najwyżej oceniane miejsca"], ["hikes", "Najwięcej szlaków"], ["country", "Według kraju"], ["year", "Odwiedzone miejsca według roku"], ["sz", "Szarlotki"]];
   if (!OPTS.some(o => o[0] === statRank[MODE])) statRank[MODE] = OPTS[0][0];
   const pick = statRank[MODE];
   const by = {}; R.forEach(r => { const c = r.c.split(",")[0]; (by[c] = by[c] || {t:0, v:0, m:0}); by[c].t++; if (isVis(r.id)) { by[c].v++; by[c].m += W ? r.k : hd(r); } });
   const years = {}; vis.forEach(r => { const seen = new Set(); visits[r.id].stays.forEach(st => { const k = st.y || "bez roku"; if (W) years[k] = (years[k]||0) + 1; else if (!seen.has(k)) { seen.add(k); years[k] = (years[k]||0) + 1; } }); });
   let rankBody = "";
   if (pick === "visits") rankBody = tb(["#  Ośrodek", "Wizyty", "Ostatnio"], vis.slice().sort((a, b) => nv(b) - nv(a) || (lastYear(b.id) || "").localeCompare(lastYear(a.id) || "") || b.k - a.k).map((r, k) => `<tr><td>${k + 1}. ${nm(r)}</td><td class="r">${nv(r)}</td><td class="r">${lastYear(r.id) || "–"}</td></tr>`));
+  else if (pick === "hikerate") { const hr = []; vis.forEach(r => { const m = visits[r.id].hr || {}; Object.keys(m).forEach(i => { if (m[i] && r.hikes[i]) hr.push({h: r.hikes[i], r, v: m[i]}); }); });
+    rankBody = tb(["#  Szlak / miejsce", "Ocena"], hr.sort((a, b) => b.v - a.v || a.h.n.localeCompare(b.h.n, "pl")).map((x, k) => `<tr><td>${k + 1}. ${esc(x.h.n)}<div class="small">${flag(x.r.c.split(",")[0])} ${esc(x.r.n)}</div></td><td class="r">${stars(x.v)}</td></tr>`)); }
   else if (pick === "rating") rankBody = tb(["#  " + (W ? "Ośrodek" : "Miejsce"), "Ocena"], vis.filter(r => rt(r)).sort((a, b) => rt(b) - rt(a) || (W ? b.k - a.k : hd(b) - hd(a))).map((r, k) => `<tr><td>${k + 1}. ${nm(r)}</td><td class="r">${stars(rt(r))}</td></tr>`));
   else if (pick === "km") rankBody = tb(["#  Ośrodek", "Trasy"], vis.slice().sort((a, b) => b.k - a.k).map((r, k) => `<tr><td>${k + 1}. ${nm(r)}</td><td class="r">${Math.round(r.k)} km</td></tr>`));
   else if (pick === "hikes") rankBody = tb(["#  Miejsce", "Szlaki"], vis.filter(r => hd(r)).sort((a, b) => hd(b) - hd(a)).map((r, k) => `<tr><td>${k + 1}. ${nm(r)}</td><td class="r">${hd(r)} / ${r.hikes.length}</td></tr>`));
