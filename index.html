@@ -869,7 +869,7 @@ function accountCard(){
   if (!SBC || !window.supabase) return "";
   const on = store.mode === "sb" || !!store.authed;
   return `<div class="card">` + (on ? `<h3>Konto</h3>` : "") + (on
-    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div>${(() => { const p = store.prof || {}; const link = p.username ? location.origin + location.pathname + "#u/" + p.username : ""; return `<div class="fld" style="margin-top:12px"><label>NAZWA UŻYTKOWNIKA (żeby inni Cię znaleźli)</label><div style="display:flex;gap:8px"><input id="uname" class="lin" value="${esc(p.username || "")}" placeholder="np. bartek_ski" autocapitalize="none" style="flex:1"><button class="btn pri" id="usave">Zapisz</button></div></div><label class="chk"><input type="checkbox" id="upub" ${p.is_public !== false ? "checked" : ""}> Profil publiczny: każdy może zobaczyć moją mapę</label><label class="chk"><input type="checkbox" id="unotes" ${p.show_notes !== false ? "checked" : ""}> Pokazuj moje notatki w profilu</label><div class="small" id="umsg" style="min-height:16px"></div>${link ? `<div class="small" style="word-break:break-all">Twój link: ${esc(link)} <button class="btn sm" id="ucopy">Kopiuj</button></div>` : ""}`; })()}${store.admin ? `<button class="btn" id="ladm" style="width:100%;margin-top:10px">🛠 Zgłoszone miejsca (admin)</button>` : ""}<button class="btn" id="lrfsh" style="width:100%;margin-top:10px">↻ Odśwież dane z konta</button><div style="display:flex;gap:8px;margin-top:10px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
+    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div>${(() => { const p = store.prof || {}; const link = p.username ? location.origin + location.pathname + "#u/" + p.username : ""; return `<div class="fld" style="margin-top:12px"><label>NAZWA UŻYTKOWNIKA (żeby inni Cię znaleźli)</label><div style="display:flex;gap:8px"><input id="uname" class="lin" value="${esc(p.username || "")}" placeholder="np. bartek_ski" autocapitalize="none" style="flex:1"><button class="btn pri" id="usave">Zapisz</button></div></div><label class="chk"><input type="checkbox" id="upub" ${p.is_public !== false ? "checked" : ""}> Profil publiczny: każdy może zobaczyć moją mapę</label><label class="chk"><input type="checkbox" id="unotes" ${p.show_notes !== false ? "checked" : ""}> Pokazuj moje notatki w profilu</label><div class="small" style="margin:-2px 0 6px">Publiczne notatki i gwiazdki pokazują się też jako opinie na kartach miejsc.</div><div class="small" id="umsg" style="min-height:16px"></div>${link ? `<div class="small" style="word-break:break-all">Twój link: ${esc(link)} <button class="btn sm" id="ucopy">Kopiuj</button></div>` : ""}`; })()}${store.admin ? `<button class="btn" id="ladm" style="width:100%;margin-top:10px">🛠 Zgłoszone miejsca (admin)</button>` : ""}<button class="btn" id="lrfsh" style="width:100%;margin-top:10px">↻ Odśwież dane z konta</button><div style="display:flex;gap:8px;margin-top:10px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
     : `<div class="lg"><div class="lgi">👤</div><h3 style="margin:6px 0 4px">Zaloguj się</h3>
        <div class="sub" style="margin-bottom:14px">Podaj e-mail i hasło. Dzięki temu masz te same dane na telefonie i komputerze.</div></div>
        <input id="lemail" class="lin" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com">
@@ -919,6 +919,36 @@ function openSettings(){
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
   const ib = $("instset"); if (ib) ib.onclick = async () => { if (!(await doInstall())) $("instmsg").textContent = installText(); };
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
+}
+/* opinie społeczności (Supabase: get_place_opinions + opinion_likes) */
+const OPN = {};
+const opKey = id => MODE + "|" + id;
+function opinionsHtml(id){
+  const o = OPN[opKey(id)]; if (!o) return "";
+  if (!o.list.length) return `<div class="sect"><div class="sh"><b>Opinie</b></div><div class="small">Jeszcze nikt nie dodał opinii. Zaznacz „Byłem”, daj gwiazdki i napisz notatkę, a pojawi się tutaj.</div></div>`;
+  const L = o.all ? o.list : o.list.slice(0, 3);
+  return `<div class="sect"><div class="sh"><b>Opinie (${o.list.length})</b></div>${L.map(x => { const me = x.author === store.uid; return `<div class="frow" style="align-items:flex-start;gap:8px"><div style="min-width:0;flex:1"><b>@${esc(x.username)}</b>${me ? ` <span class="small">(Ty)</span>` : ""}${x.rating ? ` <span style="color:var(--warn)">${"★".repeat(x.rating)}</span>` : ""}${x.note ? `<div class="small" style="white-space:pre-wrap;margin-top:2px">${esc(x.note)}</div>` : ""}</div><button class="btn sm opl ${x.liked ? "pri" : ""}" data-a="${esc(x.author)}" ${me ? "disabled" : ""}>♥ ${x.likes}</button></div>`; }).join("")}${o.list.length > 3 && !o.all ? `<button class="btn sm opall" style="margin-top:6px">Pokaż wszystkie (${o.list.length})</button>` : ""}</div>`;
+}
+function bindOpinions(id){
+  document.querySelectorAll("#opsec .opl").forEach(b => b.onclick = () => likeOpinion(id, b.dataset.a));
+  const a = document.querySelector("#opsec .opall"); if (a) a.onclick = () => { OPN[opKey(id)].all = true; paintOpinions(id); };
+}
+function paintOpinions(id){ if (curId !== id) return; const b = $("opsec"); if (!b) return; b.innerHTML = opinionsHtml(id); bindOpinions(id); }
+async function loadOpinions(id){
+  const k = opKey(id), o = OPN[k]; if (o && Date.now() - o.t < 60000) { bindOpinions(id); return; }
+  try { const r = await store.sb.rpc("get_place_opinions", {pid: id, md: MODE}); if (r.error) throw r.error;
+    OPN[k] = {t: Date.now(), list: (r.data || []).map(x => Object.assign({}, x, {likes: +x.likes || 0})), all: !!(o && o.all)};
+  } catch(e){ return; }
+  paintOpinions(id);
+}
+async function likeOpinion(id, author){
+  if (!store.authed) { openAccount(); return; }
+  if (author === store.uid) return;
+  const o = OPN[opKey(id)], x = o && o.list.find(y => y.author === author); if (!x) return;
+  const was = x.liked; x.liked = !was; x.likes += x.liked ? 1 : -1; paintOpinions(id);
+  try { const r = x.liked ? await store.sb.from("opinion_likes").insert({author, place_id: id, mode: MODE, liker: store.uid}) : await store.sb.from("opinion_likes").delete().eq("author", author).eq("place_id", id).eq("mode", MODE).eq("liker", store.uid);
+    if (r && r.error) throw r.error; }
+  catch(e){ x.liked = was; x.likes += was ? 1 : -1; paintOpinions(id); }
 }
 function openSuggest(q, fix){
   const W = MODE === "w";
@@ -1187,12 +1217,13 @@ function renderSheet(){
   $("sheet").innerHTML = `<div class="grab"></div>
     <div class="hero"><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}</div></div></div>
     <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : `<div class="tile"><b>${r.c.split(",").length > 1 ? r.c.replace(/,/g," / ") : esc(r.c)}</b><span>kraj</span></div>`}</div>
-    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${(W && r.auto && !RO && SBC) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy. <button class="btn sm" id="sgfix" style="margin-left:4px">Zaproponuj poprawę</button></div>` : (W && r.auto) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy.</div>` : ""}${top}${fsec}${hikes}${szsec}${body}
+    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${(W && r.auto && !RO && SBC) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy. <button class="btn sm" id="sgfix" style="margin-left:4px">Zaproponuj poprawę</button></div>` : (W && r.auto) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy.</div>` : ""}${top}${fsec}${(!RO && SBC && store.sb) ? `<div id="opsec">${opinionsHtml(r.id)}</div>` : ""}${hikes}${szsec}${body}
     <div style="margin-top:12px"><button class="btn" id="sclose" style="width:100%">Zamknij</button></div>`;
   $("sclose").onclick = closeSheet;
   document.querySelectorAll("#sheet .fgo3").forEach(b => b.onclick = () => openProfile(b.dataset.u));
   document.querySelectorAll("#sheet .hnote").forEach(t => t.oninput = () => { const v = visits[curId]; if (!v) return; v.hn = v.hn || {}; const i = +t.dataset.h; if (t.value.trim()) v.hn[i] = t.value; else delete v.hn[i]; scheduleSave(); });
   { const fx = $("sgfix"); if (fx) fx.onclick = () => { closeSheet(); openSuggest(r.n, r); }; }
+  if (!RO && SBC && store.sb) loadOpinions(r.id);
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
   document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
