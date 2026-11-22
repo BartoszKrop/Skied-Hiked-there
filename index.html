@@ -642,9 +642,11 @@ function accountCard(){
   return `<div class="card">` + (on ? `<h3>Konto</h3>` : "") + (on
     ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane synchronizują się z kontem, więc masz to samo na telefonie i komputerze.</div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
     : `<div class="lg"><div class="lgi">👤</div><h3 style="margin:6px 0 4px">Zaloguj się</h3>
-       <div class="sub" style="margin-bottom:14px">Wpisz e-mail, a wyślemy Ci link do logowania. Bez hasła. Dzięki temu masz te same dane na telefonie i komputerze.</div></div>
+       <div class="sub" style="margin-bottom:14px">Podaj e-mail i hasło. Dzięki temu masz te same dane na telefonie i komputerze.</div></div>
        <input id="lemail" class="lin" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com">
-       <button class="btn pri lbtn" id="lsend">Wyślij link logowania</button>
+       <input id="lpass" class="lin" type="password" autocomplete="current-password" placeholder="hasło (min. 6 znaków)" style="margin-top:8px">
+       <div style="display:flex;gap:8px"><button class="btn pri lbtn" id="lin" style="flex:1">Zaloguj</button><button class="btn lbtn" id="lup" style="flex:1">Załóż konto</button></div>
+       <button class="btn lcl" id="lsend" style="margin-top:8px;font-size:13px">albo wyślij link na e-mail</button>
        <div class="small" id="lmsg" style="margin-top:10px;text-align:center;min-height:16px"></div>
        <div class="small" style="margin-top:6px;text-align:center">Otwórz link na tym samym urządzeniu. Dane z tej przeglądarki dołączą do konta.</div>
        <button class="btn lcl" id="lclose">Zamknij</button>`) + `</div>`;
@@ -663,6 +665,16 @@ function closeAccount(){ const ov = $("acctov"); if (ov) ov.style.display = "non
 function bindAccount(){
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
   const o = $("lout"); if (o) o.onclick = async () => { await store.sb.auth.signOut(); closeAccount(); };
+  const pw = async up => {
+    const em = ($("lemail").value || "").trim(), pa = $("lpass").value || "";
+    if (!/^\S+@\S+\.\S+$/.test(em)) { $("lmsg").textContent = "Podaj poprawny adres e-mail."; return; }
+    if (pa.length < 6) { $("lmsg").textContent = "Hasło: minimum 6 znaków."; return; }
+    $("lmsg").textContent = "Chwilę…";
+    const r = up ? await store.sb.auth.signUp({email: em, password: pa}) : await store.sb.auth.signInWithPassword({email: em, password: pa});
+    if (r.error) { $("lmsg").textContent = (/invalid login/i.test(r.error.message) ? "Zły e-mail lub hasło (albo konto jeszcze nie istnieje)." : r.error.message); return; }
+    if (up && !r.data.session) $("lmsg").textContent = "Konto utworzone, ale Supabase wymaga potwierdzenia e-mailem. Wyłącz „Confirm email”.";
+  };
+  const pi = $("lin"), pu = $("lup"); if (pi) pi.onclick = () => pw(false); if (pu) pu.onclick = () => pw(true);
   const b = $("lsend"); if (b) b.onclick = async () => {
     const em = ($("lemail").value || "").trim(); if (!/^\S+@\S+\.\S+$/.test(em)) { $("lmsg").textContent = "Podaj poprawny adres e-mail."; return; }
     b.disabled = true; $("lmsg").textContent = "Wysyłam…";
