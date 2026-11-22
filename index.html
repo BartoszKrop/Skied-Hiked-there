@@ -623,11 +623,17 @@ function accountCard(){
   return `<div class="card"><h3>Konto</h3>` + (on
     ? `<div class="sub">Zalogowano jako <b>${esc(store.email)}</b>. Dane synchronizują się z kontem, więc masz to samo na telefonie i komputerze.</div><button class="btn" id="lout">Wyloguj</button>`
     : `<div class="sub">Zaloguj się mailem, żeby mieć te same dane na telefonie i komputerze. Wyślemy Ci link do logowania, bez hasła. Otwórz go na tym samym urządzeniu. Dane z tej przeglądarki zostaną dołączone do konta.</div>
+       <button class="btn" id="lgoogle" style="width:100%;margin-bottom:10px">Zaloguj przez Google</button>
+       <div class="small" style="margin:0 0 8px">albo mailem:</div>
        <div class="fld"><label>E-MAIL</label><input id="lemail" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com"></div>
        <button class="btn pri" id="lsend">Wyślij link logowania</button> <span class="small" id="lmsg"></span>`) + `</div>`;
 }
 function bindAccount(){
   const o = $("lout"); if (o) o.onclick = async () => { await store.sb.auth.signOut(); };
+  const g = $("lgoogle"); if (g) g.onclick = async () => {
+    const r = await store.sb.auth.signInWithOAuth({provider: "google", options: {redirectTo: location.origin + location.pathname}});
+    if (r.error) $("lmsg").textContent = "Google: " + r.error.message;
+  };
   const b = $("lsend"); if (b) b.onclick = async () => {
     const em = ($("lemail").value || "").trim(); if (!/^\S+@\S+\.\S+$/.test(em)) { $("lmsg").textContent = "Podaj poprawny adres e-mail."; return; }
     b.disabled = true; $("lmsg").textContent = "Wysyłam…";
