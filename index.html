@@ -344,7 +344,7 @@ function applyExtra(rows){
   (rows || []).forEach(x => { try {
     const d = x.data || {}, w = x.mode !== "s", map = w ? byIdW : byIdS; if (!x.id || map[x.id] || !d.n) return;
     const c = String(d.c || "").toUpperCase(), lat = +d.y, lon = +d.x;
-    const r = w ? {id:x.id, n:d.n, full:d.n, c, r:d.r || "", l:d.l || "", k:+d.k || 0, g:[], x:lon, y:lat, w:d.w || "", e:+d.e || 0}
+    const r = w ? {id:x.id, n:d.n, full:d.n, c, r:d.r || "", l:d.l || "", k:+d.k || 0, g:[], x:lon, y:lat, w:d.w || "", e:+d.e || 0, auto:!!d.auto}
                 : {id:x.id, n:d.n, full:d.n, c, r:d.r || "", l:"", k:(d.hikes || []).length, g:[], x:lon, y:lat, hikes:d.hikes || []};
     r.s = norm([r.full, r.n, r.l, r.r, c.split(",").map(cname).join(" ")].join(" "));
     (w ? WINTER : SUMMER).R.push(r); map[x.id] = r; n++;
@@ -902,15 +902,16 @@ function openSettings(){
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
 }
-function openSuggest(q){
+function openSuggest(q, fix){
   const W = MODE === "w";
   if (!store.authed) { ovBox().innerHTML = `<div class="card"><h3>Zgłoś brakujące miejsce</h3><div class="sub">Zaloguj się, żeby zgłosić miejsce.</div><button class="btn" id="lclose" style="width:100%">Zamknij</button></div>`; $("lclose").onclick = closeAccount; return; }
-  ovBox().innerHTML = `<div class="card"><h3>Zgłoś brakujące miejsce</h3><div class="sub">Nie ma ${W ? "ośrodka" : "miejsca"}, którego szukasz? Napisz, co dodać. Zobaczę to i dopiszę.</div><div class="fld"><label>NAZWA</label><input id="sgn" class="lin" value="${esc(q || "")}" placeholder="${W ? "np. nazwa ośrodka" : "np. nazwa miejscowości"}"></div><div class="fld"><label>KRAJ / REGION</label><input id="sgc" class="lin" placeholder="np. Włochy, Dolomity"></div>${W ? `<div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS (OPCJONALNIE)</label><input id="sgk" class="lin" inputmode="decimal" placeholder="np. 120"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ M (OPC.)</label><input id="sge" class="lin" inputmode="numeric" placeholder="np. 2800"></div></div>` : ""}<div class="fld"><label>UWAGA (OPCJONALNIE)</label><textarea id="sgt" class="lin" rows="2" placeholder="np. link do strony, ile km tras"></textarea></div><div class="small" id="sgm" style="min-height:16px"></div><div style="display:flex;gap:8px"><button class="btn pri" id="sgsend" style="flex:1">Wyślij</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div></div>`;
+  ovBox().innerHTML = `<div class="card"><h3>${fix ? "Zaproponuj poprawę" : "Zgłoś brakujące miejsce"}</h3><div class="sub">${fix ? "Podaj poprawne wartości dla: <b>" + esc(fix.n) + "</b>. Obecnie: " + Math.round(fix.k) + " km tras, " + (fix.e || "?") + " m." : "Nie ma " + (W ? "ośrodka" : "miejsca") + ", którego szukasz? Napisz, co dodać. Zobaczę to i dopiszę."}</div><div class="fld"${fix ? ' style="display:none"' : ""}><label>NAZWA</label><input id="sgn" class="lin" value="${esc(q || "")}" placeholder="${W ? "np. nazwa ośrodka" : "np. nazwa miejscowości"}"></div><div class="fld"${fix ? ' style="display:none"' : ""}><label>KRAJ / REGION</label><input id="sgc" class="lin" placeholder="np. Włochy, Dolomity"></div>${W ? `<div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS (OPCJONALNIE)</label><input id="sgk" class="lin" inputmode="decimal" placeholder="np. 120"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ M (OPC.)</label><input id="sge" class="lin" inputmode="numeric" placeholder="np. 2800"></div></div>` : ""}<div class="fld"><label>UWAGA (OPCJONALNIE)</label><textarea id="sgt" class="lin" rows="2" placeholder="np. link do strony, ile km tras"></textarea></div><div class="small" id="sgm" style="min-height:16px"></div><div style="display:flex;gap:8px"><button class="btn pri" id="sgsend" style="flex:1">Wyślij</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div></div>`;
   $("lclose").onclick = closeAccount;
   $("sgsend").onclick = async () => {
     const n = $("sgn").value.trim(), m = $("sgm"); if (n.length < 2) { m.textContent = "Wpisz nazwę."; return; }
+    if (fix && !($("sgk") && $("sgk").value.trim()) && !($("sge") && $("sge").value.trim()) && !$("sgt").value.trim()) { m.textContent = "Wpisz poprawne km, wysokość albo uwagę."; return; }
     $("sgsend").disabled = true; m.textContent = "Wysyłam…";
-    try { const r = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: MODE, name: n.slice(0,120), country: $("sgc").value.trim().slice(0,120), note: [(W && $("sgk") && $("sgk").value.trim()) ? "km: " + $("sgk").value.trim().replace(",", ".") : "", (W && $("sge") && $("sge").value.trim()) ? "wys.: " + $("sge").value.trim() + " m" : "", $("sgt").value.trim()].filter(Boolean).join(" · ").slice(0,500)});
+    try { const r = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: MODE, name: (fix ? "Poprawka: " : "") + n.slice(0,112), country: $("sgc").value.trim().slice(0,120), note: [fix ? "#id:" + fix.id : "", (W && $("sgk") && $("sgk").value.trim()) ? "km: " + $("sgk").value.trim().replace(",", ".") : "", (W && $("sge") && $("sge").value.trim()) ? "wys.: " + $("sge").value.trim() + " m" : "", $("sgt").value.trim()].filter(Boolean).join(" · ").slice(0,500)});
       if (r && r.error) throw r.error; m.textContent = "Dzięki! Zgłoszenie wysłane ✓"; $("sgsend").style.display = "none"; }
     catch(e){ $("sgsend").disabled = false; m.textContent = "Nie udało się wysłać: " + String((e && e.message) || e).slice(0,80); }
   };
@@ -920,7 +921,17 @@ async function openAdmin(){
   try { const ex = await store.sb.from("extra_places").select("id,mode,data"); if (!ex.error && (ex.data || []).length) { $("aex").innerHTML = `<div class="small" style="margin:10px 0 4px;font-weight:700">Dodane przez panel (${ex.data.length})</div>` + ex.data.map(x => `<div class="frow"><span>${esc(x.data.n)} <span class="small">${x.mode === "s" ? "lato" : "zima"} · ${esc(x.data.c || "")}</span></span><button class="btn sm bad aexdel" data-id="${esc(x.id)}">Usuń</button></div>`).join(""); document.querySelectorAll(".aexdel").forEach(b => b.onclick = async () => { if (!confirm("Usunąć to miejsce z bazy? Zniknie u wszystkich.")) return; b.disabled = true; const d = await store.sb.from("extra_places").delete().eq("id", b.dataset.id); if (!(d && d.error)) { try { localStorage.removeItem("skibeen.extra"); } catch(e){} b.closest(".frow").remove(); } }); } } catch(e){}
   try { const r = await store.sb.from("suggestions").select("*").order("created_at", {ascending: false}).limit(200); if (r.error) throw r.error;
     const a = r.data || [], box = $("adl");
-    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri aadd" data-i="${esc(x.id)}">Dodaj</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
+    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri ${/^Poprawka:/.test(x.name) ? "afix" : "aadd"}" data-i="${esc(x.id)}">${/^Poprawka:/.test(x.name) ? "Zastosuj" : "Dodaj"}</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
+    box.querySelectorAll(".afix").forEach(b => b.onclick = async () => { const x = a.find(y => String(y.id) === b.dataset.i), pid = /#id:(\S+)/.exec(x.note || ""), mk = /km:\s*([\d.,]+)/i.exec(x.note || ""), me = /wys\.?:\s*(\d+)/i.exec(x.note || "");
+      if (!pid || (!mk && !me)) { alert("Ta poprawka nie ma km ani wysokości. Popraw ręcznie lub usuń zgłoszenie."); return; }
+      b.disabled = true;
+      try { const cur = await store.sb.from("extra_places").select("data").eq("id", pid[1]).maybeSingle(); if (cur.error || !cur.data) throw new Error("nie ma takiego miejsca (tylko dodane z panelu)");
+        const nd = Object.assign({}, cur.data.data, {auto: false}); if (mk) nd.k = parseFloat(mk[1].replace(",", ".")) || nd.k; if (me) nd.e = parseInt(me[1]) || nd.e;
+        const u = await store.sb.from("extra_places").update({data: nd}).eq("id", pid[1]); if (u.error) throw u.error;
+        await store.sb.from("suggestions").delete().eq("id", x.id); try { localStorage.removeItem("skibeen.extra"); } catch(e){}
+        const rr = byIdW[pid[1]]; if (rr) { rr.k = nd.k; rr.e = nd.e; rr.auto = false; renderAll(); }
+        b.closest(".frow").remove();
+      } catch(e){ b.disabled = false; alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); } });
     box.querySelectorAll(".aadd").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i); openAddPlace(x); });
     box.querySelectorAll(".adel").forEach(b => b.onclick = async () => { b.disabled = true; const d = await store.sb.from("suggestions").delete().eq("id", b.dataset.id); if (!(d && d.error)) b.closest(".frow").remove(); });
   } catch(e){ $("adl").textContent = "Nie udało się wczytać: " + String((e && e.message) || e).slice(0,80); }
@@ -932,7 +943,7 @@ function openAddPlace(sg){
     <div class="fld"><label>NAZWA</label><div style="display:flex;gap:8px"><input id="apn" class="lin" value="${esc((sg && sg.name) || "")}" style="flex:1"><button class="btn pri" id="apg">Znajdź</button></div><div class="small" id="apmsg" style="min-height:16px">„Znajdź" wypełni kraj, region i współrzędne z OpenStreetMap.</div></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KRAJ (KOD)</label><input id="apc" class="lin" maxlength="2" placeholder="IT" value=""></div><div class="fld" style="flex:2"><label>REGION</label><input id="apr" class="lin"></div></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>SZEROKOŚĆ (LAT)</label><input id="apy" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>DŁUGOŚĆ (LON)</label><input id="apx" class="lin" inputmode="decimal"></div></div>
-    <div id="apw"><div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS</label><input id="apk" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ (M)</label><input id="ape" class="lin" inputmode="numeric"></div></div><div class="fld"><label>STRONA WWW</label><input id="apu" class="lin" placeholder="https://"></div></div>
+    <div id="apw"><div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS</label><input id="apk" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ (M)</label><input id="ape" class="lin" inputmode="numeric"></div></div><div class="fld"><label>STRONA WWW</label><input id="apu" class="lin" placeholder="https://"></div><div style="display:flex;gap:8px;align-items:center"><select class="sel" id="apr2" style="flex:1"><option value="3000">promień 3 km</option><option value="5000" selected>promień 5 km</option><option value="10000">promień 10 km</option></select><button class="btn" id="apauto" style="flex:2">Oblicz km i wysokość (OSM)</button></div><div class="small" id="apam" style="min-height:16px"></div></div>
     <div id="aps" style="display:none"><div class="fld"><label>SZLAKI (JEDEN W LINII: nazwa; łatwa/średnia/trudna; czas; opis)</label><textarea id="aph" class="lin" rows="5" placeholder="Five Lakes Walk; średnia; 3–4 h; Pięć jezior z widokiem na Matterhorn"></textarea></div></div>
     <div class="small" id="apst" style="min-height:16px"></div>
     <div style="display:flex;gap:8px"><button class="btn pri" id="apsave" style="flex:1">Zapisz</button><button class="btn" id="apback" style="flex:1">Wstecz</button></div></div>`;
@@ -951,11 +962,31 @@ function openAddPlace(sg){
         if (p.name) $("apn").value = p.name;
         m.textContent = "Użyto: " + String(p.display_name).slice(0, 90); });
     } catch(e){ m.textContent = "Nie udało się połączyć. Wpisz dane ręcznie."; } };
+  let autoUsed = false;
+  $("apk").oninput = $("ape").oninput = () => { autoUsed = false; };
+  $("apauto").onclick = async () => {
+    const y = parseFloat($("apy").value), x = parseFloat($("apx").value), am = $("apam"), R0 = $("apr2").value;
+    if (!isFinite(x) || !isFinite(y)) { am.textContent = "Najpierw ustaw współrzędne (Znajdź → Użyj)."; return; }
+    $("apauto").disabled = true; am.textContent = "Liczę (to może chwilę potrwać)…";
+    try {
+      const q = `[out:json][timeout:25];way["piste:type"="downhill"](around:${R0},${y},${x});out geom;`;
+      const r = await fetch("https://overpass-api.de/api/interpreter", {method: "POST", body: "data=" + encodeURIComponent(q)}); const j = await r.json();
+      const rad = d => d * Math.PI / 180, hv = (a, b) => { const dl = rad(b.lat - a.lat), dn = rad(b.lon - a.lon), h = Math.sin(dl/2)**2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dn/2)**2; return 12742 * Math.asin(Math.sqrt(h)); };
+      let km = 0; const pts = [];
+      (j.elements || []).forEach(w => { const g = w.geometry || []; for (let i = 1; i < g.length; i++) km += hv(g[i-1], g[i]); g.forEach((p, i) => { if (i % 2 === 0) pts.push(p); }); });
+      if (!pts.length) { am.textContent = "OSM nie ma tras zjazdowych w tym promieniu. Wpisz ręcznie."; $("apauto").disabled = false; return; }
+      const step = Math.max(1, Math.ceil(pts.length / 100)), sm = pts.filter((p, i) => i % step === 0).slice(0, 100);
+      const er = await fetch("https://api.open-meteo.com/v1/elevation?latitude=" + sm.map(p => p.lat.toFixed(4)).join(",") + "&longitude=" + sm.map(p => p.lon.toFixed(4)).join(",")); const ej = await er.json();
+      const mx = Math.max.apply(null, ej.elevation || [0]);
+      $("apk").value = Math.round(km * 10) / 10; if (mx > 0) $("ape").value = Math.round(mx / 10) * 10; autoUsed = true;
+      am.textContent = "Obliczono: " + (Math.round(km * 10) / 10) + " km (" + j.elements.length + " tras w OSM), max ok. " + (Math.round(mx / 10) * 10) + " m. Sprawdź i popraw. Przy zapisie miejsce dostanie adnotację „dodane automatycznie”.";
+    } catch(e){ am.textContent = "Nie udało się pobrać danych z OSM. Wpisz ręcznie."; }
+    $("apauto").disabled = false; };
   $("apsave").onclick = async () => {
     const st = $("apst"), n = $("apn").value.trim(), mode = $("apm").value, c = $("apc").value.trim().toUpperCase(), y = parseFloat($("apy").value), x = parseFloat($("apx").value);
     if (n.length < 2 || !/^[A-Z]{2}$/.test(c) || !isFinite(x) || !isFinite(y)) { st.textContent = "Uzupełnij nazwę, kod kraju (2 litery) i współrzędne."; return; }
     const d = {n, c, r: $("apr").value.trim(), x, y};
-    if (mode === "w") { d.k = parseFloat($("apk").value) || 0; d.e = parseInt($("ape").value) || 0; d.w = $("apu").value.trim(); }
+    if (mode === "w") { d.k = parseFloat($("apk").value) || 0; d.e = parseInt($("ape").value) || 0; d.w = $("apu").value.trim(); if (autoUsed) d.auto = true; }
     else { d.hikes = $("aph").value.split("\n").map(l => l.trim()).filter(Boolean).map(l => { const p = l.split(";").map(z => z.trim()); return {n: p[0], d: ["łatwa","średnia","trudna"].includes(p[1]) ? p[1] : "średnia", t: p[2] || "", o: p.slice(3).join("; ") || "", s: ""}; }); }
     const id = "x-" + (mode === "s" ? "s-" : "w-") + n.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
     $("apsave").disabled = true; st.textContent = "Zapisuję…";
@@ -1158,11 +1189,12 @@ function renderSheet(){
   $("sheet").innerHTML = `<div class="grab"></div>
     <div class="hero"><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}</div></div></div>
     <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : `<div class="tile"><b>${r.c.split(",").length > 1 ? r.c.replace(/,/g," / ") : esc(r.c)}</b><span>kraj</span></div>`}</div>
-    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${top}${fsec}${hikes}${szsec}${body}
+    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${(W && r.auto && !RO && SBC) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy. <button class="btn sm" id="sgfix" style="margin-left:4px">Zaproponuj poprawę</button></div>` : (W && r.auto) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy.</div>` : ""}${top}${fsec}${hikes}${szsec}${body}
     <div style="margin-top:12px"><button class="btn" id="sclose" style="width:100%">Zamknij</button></div>`;
   $("sclose").onclick = closeSheet;
   document.querySelectorAll("#sheet .fgo3").forEach(b => b.onclick = () => openProfile(b.dataset.u));
   document.querySelectorAll("#sheet .hnote").forEach(t => t.oninput = () => { const v = visits[curId]; if (!v) return; v.hn = v.hn || {}; const i = +t.dataset.h; if (t.value.trim()) v.hn[i] = t.value; else delete v.hn[i]; scheduleSave(); });
+  { const fx = $("sgfix"); if (fx) fx.onclick = () => { closeSheet(); openSuggest(r.n, r); }; }
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
   document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
