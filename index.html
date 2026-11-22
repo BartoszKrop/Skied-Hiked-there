@@ -394,7 +394,7 @@ function renderHeader(){
     `<div><b>${s.n}</b><small>z ${R.length} ${W ? "ośrodków" : "miejsc"}</small></div>` +
     `<div><b>${s.countries.size}</b><small>${s.countries.size===1?"kraj":"krajów"}</small></div>` +
     `<div><b>${W ? Math.round(s.km) : s.hikes}</b><small>${W ? "km tras" : plur(s.hikes,"szlak","szlaki","szlaków")}</small></div>` +
-    `<div><b>${s.stays}</b><small>${plur(s.stays,"pobyt","pobyty","pobytów")}</small></div>`;
+    (W ? `<div><b>${s.stays}</b><small>${plur(s.stays,"pobyt","pobyty","pobytów")}</small></div>` : (() => { const pl = R.filter(r => isPlan(r.id)).length; return `<div><b>${pl}</b><small>${pl===1?"w planach":"w planach"}</small></div>`; })());
 }
 
 /* ---------- lista ---------- */
@@ -440,7 +440,7 @@ function renderList(){
     const v = visits[r.id]; let extra = "";
     if (v && v.s === "v") {
       const n = v.stays.length;
-      extra = " · " + (n ? n + " " + plur(n,"pobyt","pobyty","pobytów") + (lastYear(r.id) ? ", ostatnio " + lastYear(r.id) : "") : "byłem") + (v.t ? " · tier " + v.t : "");
+      extra = " · " + (W ? (n ? n + " " + plur(n,"pobyt","pobyty","pobytów") + (lastYear(r.id) ? ", ostatnio " + lastYear(r.id) : "") : "byłem") : (() => { const ys = [...new Set(v.stays.map(x => x.y).filter(Boolean))].sort(); return ys.length ? "byłem: " + ys.join(", ") : "byłem"; })()) + (v.t ? " · tier " + v.t : "");
       if (!W) { const dn = Object.keys(v.done).length; if (dn) extra += " · " + dn + "/" + r.hikes.length + " szlaków"; }
     } else if (v && v.s === "p") extra = " · planuję" + (v.pr ? " · priorytet " + v.pr : "") + (v.pd ? " · " + esc(fmtPd(v.pd)) : "");
     return `<div class="item ${v ? (v.s==="v"?"v":"p") : ""}" data-id="${esc(r.id)}">
@@ -592,13 +592,13 @@ function shareCanvas(kind, per){
   c.textAlign = "left"; c.fillStyle = "#fff"; c.font = `800 58px ${F}`; c.fillText(per ? per.label : (W ? "Moje ośrodki narciarskie" : "Moje górskie szlaki"), 60, 105);
   c.fillStyle = acc; c.font = `600 30px ${F}`; c.fillText((W ? "Skied there  ·  ❄️" : "Hiked there  ·  ☀️"), 60, 152);
   const PD = per ? periodData(per) : null;
-  const st = PD ? (W ? [[PD.places.length, "ośrodków"], [PD.countries.size, "krajów"], [Math.round(PD.km), "km tras"], [PD.stays, "pobytów"]] : [[PD.places.length, "miejsc"], [PD.countries.size, "krajów"], [PD.stays, "pobytów"], [0, ""]].slice(0, 3)) : W ? [[S.n, "ośrodków"], [S.countries.size, "krajów"], [Math.round(S.km), "km tras"], [S.stays, "pobytów"]] : [[S.n, "miejsc"], [S.countries.size, "krajów"], [S.hikes, "szlaków"], [S.stays, "pobytów"]];
+  const st = PD ? (W ? [[PD.places.length, "ośrodków"], [PD.countries.size, "krajów"], [Math.round(PD.km), "km tras"], [PD.stays, "pobytów"]] : [[PD.places.length, "miejsc"], [PD.countries.size, "krajów"]]) : W ? [[S.n, "ośrodków"], [S.countries.size, "krajów"], [Math.round(S.km), "km tras"], [S.stays, "pobytów"]] : [[S.n, "miejsc"], [S.countries.size, "krajów"], [S.hikes, "szlaków"]];
   st.forEach((x, i) => { const px0 = 60 + i * 240; c.fillStyle = "rgba(255,255,255,.07)"; c.beginPath(); c.roundRect(px0, 190, 225, 130, 22); c.fill(); c.fillStyle = "#fff"; c.font = `800 52px ${F}`; c.fillText(String(x[0]), px0 + 22, 255); c.fillStyle = "#9db0d0"; c.font = `500 24px ${F}`; c.fillText(x[1], px0 + 22, 295); });
   const vis = R.filter(r => isVis(r.id));
   if (kind === "period") {
     const pl = PD.places.slice().sort((a, b) => b.k - a.k);
     c.fillStyle = "rgba(255,255,255,.05)"; c.beginPath(); c.roundRect(60, 350, 960, 520, 26); c.fill();
-    if (!pl.length) { c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText("Brak pobytów w tym okresie.", 100, 420); }
+    if (!pl.length) { c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText(W ? "Brak pobytów w tym okresie." : "Brak miejsc w tym okresie.", 100, 420); }
     else {
       const xs = pl.map(r => px(r.x)), ys = pl.map(r => py(r.y)); let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
       const pad = Math.max(0.6, (x1 - x0) * 0.1); x0 -= pad; x1 += pad; y0 -= pad * 0.9; y1 += pad * 0.9;
@@ -738,21 +738,21 @@ function renderStats(){
   const by = {}; R.forEach(r => { const c = r.c.split(",")[0]; (by[c] = by[c] || {t:0, v:0, m:0}); by[c].t++; if (isVis(r.id)) { by[c].v++; by[c].m += W ? r.k : Object.keys(visits[r.id].done).length; } });
   const rows = Object.keys(by).sort((a,b)=>by[b].v-by[a].v || by[b].t-by[a].t).map(c =>
     `<tr><td>${flag(c)} ${esc(cname(c))}</td><td class="r">${by[c].v} / ${by[c].t}</td><td class="r">${Math.round(by[c].m)}${W ? " km" : ""}</td></tr>`).join("");
-  const years = {}; R.forEach(r => { if (isVis(r.id)) visits[r.id].stays.forEach(st => { const k = st.y || "bez roku"; years[k] = (years[k]||0) + 1; }); });
-  const yrows = Object.keys(years).sort().reverse().map(y => `<tr><td>${y}</td><td class="r">${years[y]} ${plur(years[y],"pobyt","pobyty","pobytów")}</td></tr>`).join("");
+  const years = {}; R.forEach(r => { if (isVis(r.id)) { const seen = new Set(); visits[r.id].stays.forEach(st => { const k = st.y || "bez roku"; if (W) years[k] = (years[k]||0) + 1; else if (!seen.has(k)) { seen.add(k); years[k] = (years[k]||0) + 1; } }); } });
+  const yrows = Object.keys(years).sort().reverse().map(y => `<tr><td>${y}</td><td class="r">${years[y]} ${W ? plur(years[y],"pobyt","pobyty","pobytów") : plur(years[y],"miejsce","miejsca","miejsc")}</td></tr>`).join("");
   const planned = R.filter(r => isPlan(r.id)).length;
   const cards = W
     ? [[s.n, "ośrodków z " + R.length], [s.countries.size, "krajów"], [s.stays, "pobytów"], [Math.round(s.km), "km tras w tych ośrodkach"], [planned, "w planach"], [s.gdone, "kompletnych grup"]]
-    : [[s.n, "miejsc z " + R.length], [s.countries.size, "krajów"], [s.stays, "pobytów"], [s.hikes, "zaliczonych szlaków"], [planned, "w planach"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
+    : [[s.n, "miejsc z " + R.length], [s.countries.size, "krajów"], [R.filter(r => isVis(r.id) && visits[r.id].stays.some(x => x.y === String(new Date().getFullYear()))).length, "miejsc w tym roku"], [s.hikes, "zaliczonych szlaków"], [planned, "w planach"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
   $("stats").innerHTML = `
     <div class="big">${cards.map(c => `<div class="card"><div class="n">${c[0]}</div><div class="l">${c[1]}</div></div>`).join("")}</div>
     ${W ? "" : szCard()}
     <div class="card"><h3>Według kraju</h3><table><tr><th>Kraj</th><th class="r">Byłem</th><th class="r">${W ? "Trasy" : "Szlaki"}</th></tr>${rows}</table></div>
-    ${yrows ? `<div class="card"><h3>Pobyty według roku</h3><table><tr><th>Rok</th><th class="r">Pobyty</th></tr>${yrows}</table></div>` : ""}
+    ${yrows ? `<div class="card"><h3>${W ? "Pobyty według roku" : "Odwiedzone miejsca według roku"}</h3><table><tr><th>Rok</th><th class="r">${W ? "Pobyty" : "Miejsca"}</th></tr>${yrows}</table></div>` : ""}
     <div class="card"><h3>Udostępnij i eksportuj</h3>
       <div class="sub">Obraz do wrzucenia na TikToka/Instagram oraz pliki z Twoimi miejscami do map.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">${W ? `<button class="btn pri" id="shrank">🖼️ Obraz: ranking</button>` : ""}<button class="btn pri" id="shmap">🗺️ Obraz: mapa</button></div>
-      <div class="fld" style="margin-top:12px"><label>PODSUMOWANIE SEZONU / ROKU</label><div style="display:flex;gap:8px"><select class="sel" id="shper">${periodOptions().map(o => `<option value="${o.v}">${o.label}</option>`).join("") || `<option value="">brak pobytów</option>`}</select><button class="btn pri" id="shyear" style="white-space:nowrap">🗓️ Obraz</button></div><div class="small" style="margin-top:6px">Na podstawie dodanych pobytów (rok i miesiąc). Km to suma długości tras w ośrodkach, w których byłeś.</div></div>
+      <div class="fld" style="margin-top:12px"><label>PODSUMOWANIE SEZONU / ROKU</label><div style="display:flex;gap:8px"><select class="sel" id="shper">${periodOptions().map(o => `<option value="${o.v}">${o.label}</option>`).join("") || `<option value="">${W ? "brak pobytów" : "brak lat"}</option>`}</select><button class="btn pri" id="shyear" style="white-space:nowrap">🗓️ Obraz</button></div><div class="small" style="margin-top:6px">${W ? "Na podstawie dodanych pobytów (rok i miesiąc). Km to suma długości tras w ośrodkach, w których byłeś." : "Na podstawie dodanych lat (i miesięcy) przy odwiedzonych miejscach."}</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="exgpx">Eksport GPX</button><button class="btn" id="exkml">Eksport KML (Google My Maps)</button></div>
       <div class="small" id="exmsg" style="margin-top:6px"></div>
     </div>
@@ -828,11 +828,11 @@ function renderSheet(){
     const seg = `<div class="seg" id="sstat" style="margin:4px 0 2px"><button data-s="v" class="${v.s==="v"?"on":""}">✓ Byłem</button><button data-s="p" class="${v.s==="p"?"on":""}">📅 Planuję</button></div>`;
     let mid = "";
     if (v.s === "v") {
-      mid = `<div class="sect"><div class="sh"><b>Pobyty</b><button class="btn sm pri" id="saddstay">+ Dodaj pobyt</button></div>
+      mid = `<div class="sect"><div class="sh"><b>${W ? "Pobyty" : "Kiedy byłem"}</b><button class="btn sm pri" id="saddstay">${W ? "+ Dodaj pobyt" : "+ Dodaj rok"}</button></div>
         ${v.stays.length ? v.stays.map((st,i) => `<div class="stay" data-i="${i}">
             <div class="dt"><label>Rok</label><select class="sel" data-k="y">${yearOpts(st.y, cy, Math.min(1980, +st.y || 1980), true)}</select></div>
             <div class="dt"><label>Miesiąc (opcjonalnie)</label><select class="sel" data-k="m">${monthOpts(st.m)}</select></div>
-            <button class="x ${armedStay===i?"arm":""}" data-del="${i}">${armedStay===i?"Usunąć?":"Usuń"}</button></div>`).join("") : `<div class="small">Jeszcze bez pobytów. Dodaj pobyt z rokiem (i opcjonalnie miesiącem).</div>`}
+            <button class="x ${armedStay===i?"arm":""}" data-del="${i}">${armedStay===i?"Usunąć?":"Usuń"}</button></div>`).join("") : `<div class="small">${W ? "Jeszcze bez pobytów. Dodaj pobyt z rokiem (i opcjonalnie miesiącem)." : "Jeszcze bez roku. Dodaj rok (i opcjonalnie miesiąc), w którym tu byłeś."}</div>`}
       </div>
       <div class="fld"><label>OCENA (GWIAZDKI)</label><div class="stars" id="sstars">${[1,2,3,4,5].map(i => `<button data-i="${i}" class="${(v.r||0)>=i?"on":""}">★</button>`).join("")}</div></div>
       `;
