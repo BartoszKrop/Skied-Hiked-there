@@ -943,7 +943,7 @@ function openAddPlace(sg){
     <div class="fld"><label>NAZWA</label><div style="display:flex;gap:8px"><input id="apn" class="lin" value="${esc((sg && sg.name) || "")}" style="flex:1"><button class="btn pri" id="apg">Znajdź</button></div><div class="small" id="apmsg" style="min-height:16px">„Znajdź" wypełni kraj, region i współrzędne z OpenStreetMap.</div></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KRAJ (KOD)</label><input id="apc" class="lin" maxlength="2" placeholder="IT" value=""></div><div class="fld" style="flex:2"><label>REGION</label><input id="apr" class="lin"></div></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>SZEROKOŚĆ (LAT)</label><input id="apy" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>DŁUGOŚĆ (LON)</label><input id="apx" class="lin" inputmode="decimal"></div></div>
-    <div id="apw"><div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS</label><input id="apk" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ (M)</label><input id="ape" class="lin" inputmode="numeric"></div></div><div class="fld"><label>STRONA WWW</label><input id="apu" class="lin" placeholder="https://"></div><div style="display:flex;gap:8px;align-items:center"><select class="sel" id="apr2" style="flex:1"><option value="3000">promień 3 km</option><option value="5000" selected>promień 5 km</option><option value="10000">promień 10 km</option></select><button class="btn" id="apauto" style="flex:2">Oblicz km i wysokość (OSM)</button></div><div class="small" id="apam" style="min-height:16px"></div></div>
+    <div id="apw"><div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS</label><input id="apk" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ (M)</label><input id="ape" class="lin" inputmode="numeric"></div></div><div class="fld"><label>STRONA WWW</label><input id="apu" class="lin" placeholder="https://"></div></div>
     <div id="aps" style="display:none"><div class="fld"><label>SZLAKI (JEDEN W LINII: nazwa; łatwa/średnia/trudna; czas; opis)</label><textarea id="aph" class="lin" rows="5" placeholder="Five Lakes Walk; średnia; 3–4 h; Pięć jezior z widokiem na Matterhorn"></textarea></div></div>
     <div class="small" id="apst" style="min-height:16px"></div>
     <div style="display:flex;gap:8px"><button class="btn pri" id="apsave" style="flex:1">Zapisz</button><button class="btn" id="apback" style="flex:1">Wstecz</button></div></div>`;
@@ -962,31 +962,11 @@ function openAddPlace(sg){
         if (p.name) $("apn").value = p.name;
         m.textContent = "Użyto: " + String(p.display_name).slice(0, 90); });
     } catch(e){ m.textContent = "Nie udało się połączyć. Wpisz dane ręcznie."; } };
-  let autoUsed = false;
-  $("apk").oninput = $("ape").oninput = () => { autoUsed = false; };
-  $("apauto").onclick = async () => {
-    const y = parseFloat($("apy").value), x = parseFloat($("apx").value), am = $("apam"), R0 = $("apr2").value;
-    if (!isFinite(x) || !isFinite(y)) { am.textContent = "Najpierw ustaw współrzędne (Znajdź → Użyj)."; return; }
-    $("apauto").disabled = true; am.textContent = "Liczę (to może chwilę potrwać)…";
-    try {
-      const q = `[out:json][timeout:25];way["piste:type"="downhill"](around:${R0},${y},${x});out geom;`;
-      const r = await fetch("https://overpass-api.de/api/interpreter", {method: "POST", body: "data=" + encodeURIComponent(q)}); const j = await r.json();
-      const rad = d => d * Math.PI / 180, hv = (a, b) => { const dl = rad(b.lat - a.lat), dn = rad(b.lon - a.lon), h = Math.sin(dl/2)**2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dn/2)**2; return 12742 * Math.asin(Math.sqrt(h)); };
-      let km = 0; const pts = [];
-      (j.elements || []).forEach(w => { const g = w.geometry || []; for (let i = 1; i < g.length; i++) km += hv(g[i-1], g[i]); g.forEach((p, i) => { if (i % 2 === 0) pts.push(p); }); });
-      if (!pts.length) { am.textContent = "OSM nie ma tras zjazdowych w tym promieniu. Wpisz ręcznie."; $("apauto").disabled = false; return; }
-      const step = Math.max(1, Math.ceil(pts.length / 100)), sm = pts.filter((p, i) => i % step === 0).slice(0, 100);
-      const er = await fetch("https://api.open-meteo.com/v1/elevation?latitude=" + sm.map(p => p.lat.toFixed(4)).join(",") + "&longitude=" + sm.map(p => p.lon.toFixed(4)).join(",")); const ej = await er.json();
-      const mx = Math.max.apply(null, ej.elevation || [0]);
-      $("apk").value = Math.round(km * 10) / 10; if (mx > 0) $("ape").value = Math.round(mx / 10) * 10; autoUsed = true;
-      am.textContent = "Obliczono: " + (Math.round(km * 10) / 10) + " km (" + j.elements.length + " tras w OSM), max ok. " + (Math.round(mx / 10) * 10) + " m. Sprawdź i popraw. Przy zapisie miejsce dostanie adnotację „dodane automatycznie”.";
-    } catch(e){ am.textContent = "Nie udało się pobrać danych z OSM. Wpisz ręcznie."; }
-    $("apauto").disabled = false; };
   $("apsave").onclick = async () => {
     const st = $("apst"), n = $("apn").value.trim(), mode = $("apm").value, c = $("apc").value.trim().toUpperCase(), y = parseFloat($("apy").value), x = parseFloat($("apx").value);
     if (n.length < 2 || !/^[A-Z]{2}$/.test(c) || !isFinite(x) || !isFinite(y)) { st.textContent = "Uzupełnij nazwę, kod kraju (2 litery) i współrzędne."; return; }
     const d = {n, c, r: $("apr").value.trim(), x, y};
-    if (mode === "w") { d.k = parseFloat($("apk").value) || 0; d.e = parseInt($("ape").value) || 0; d.w = $("apu").value.trim(); if (autoUsed) d.auto = true; }
+    if (mode === "w") { d.k = parseFloat($("apk").value) || 0; d.e = parseInt($("ape").value) || 0; d.w = $("apu").value.trim(); }
     else { d.hikes = $("aph").value.split("\n").map(l => l.trim()).filter(Boolean).map(l => { const p = l.split(";").map(z => z.trim()); return {n: p[0], d: ["łatwa","średnia","trudna"].includes(p[1]) ? p[1] : "średnia", t: p[2] || "", o: p.slice(3).join("; ") || "", s: ""}; }); }
     const id = "x-" + (mode === "s" ? "s-" : "w-") + n.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
     $("apsave").disabled = true; st.textContent = "Zapisuję…";
