@@ -38,6 +38,7 @@ header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(1
 .brand{display:flex;align-items:center;gap:9px}
 .logo{width:28px;height:28px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(90,209,255,.35)}
 .logo svg{width:18px;height:18px;stroke:#071426;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tg{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}.swp{font-size:15px;color:#8ea3c6;opacity:.85;margin-left:-3px}
 .brand h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-.2px}
 .rt{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
 .mode{margin-left:0;display:flex;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
@@ -197,8 +198,8 @@ select.sel{width:100%;background:var(--glass2);border:1px solid var(--line);colo
 <body>
 <header>
   <div class="brand">
-    <div class="logo"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
-    <h1 id="appname">Skied there</h1>
+    <div class="logo tg" role="button" aria-label="Przełącz zima/lato"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
+    <h1 id="appname" class="tg" role="button" aria-label="Przełącz zima/lato">Skied there</h1><span class="tg swp" id="swp" role="button" aria-label="Przełącz zima/lato">⇄</span>
     <div class="rt"><button id="rfsh" class="acct" style="display:none;flex:none;padding:6px 10px;font-size:14px" aria-label="Odśwież dane z konta" title="Odśwież dane z konta">↻</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
     <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div></div>
   </div>
@@ -1040,6 +1041,7 @@ function setMode(m){
   const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
   if (cur === "v-grupy" || cur === "v-ranking") show("mapa"); else fit();
 }
+document.querySelectorAll(".brand .tg").forEach(el => el.addEventListener("click", () => setMode(MODE === "w" ? "s" : "w")));
 $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); });
 function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); mapRefresh(); }
 
