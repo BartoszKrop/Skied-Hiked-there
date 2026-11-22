@@ -747,11 +747,15 @@ function renderSheet(){
   const tags = W ? r.g.map(g => `<span>${esc(g)}</span>`).join("") : "";
   const href = (W && r.w) ? esc(r.w) : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze");
   const link = `<a class="lnk" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Strona ośrodka: cennik i status tras ↗" : "Szukaj cen karnetów ↗") : "Szukaj szlaków i informacji ↗"}</a>`;
-  const hikes = W ? "" : `<div class="sect"><div class="sh"><b>Najpopularniejsze szlaki</b></div><div class="small" style="margin:-4px 0 8px">Nie musisz zaznaczać szlaku. „Byłem” powyżej wystarczy, jeśli nie pamiętasz nazwy.</div>${r.hikes.map((h,i) => { const d = !!(v && v.done[i]); const sh = (h.s && (i === 0 || r.hikes[i-1].s !== h.s)) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""; return sh + `<div class="hike ${d?"done":""}">
+  const secOn = r.id === "h-camino";
+  const hikes = W ? "" : `<div class="sect"><div class="sh"><b>Dokąd można dojść</b></div><div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>${r.hikes.map((h,i) => { const d = !!(v && v.done[i]); const sh = (secOn && h.s && (i === 0 || r.hikes[i-1].s !== h.s)) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""; return sh + `<div class="hike ${d?"done":""}">
       <button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>
       <div class="hb"><b>${esc(h.n)}</b><div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>
-      ${h.sk ? (() => { const z = v && v.sz && v.sz[h.sk]; return `<div class="szrow"><span>🥧 Szarlotka: ${esc(h.sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(h.sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(h.sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; })() : ""}
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("")}</div>`;
+  const sks = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
+  const szsec = !sks.length ? "" : (v && v.s === "v"
+    ? `<div class="sect"><div class="sh"><b>🥧 Szarlotki w schroniskach</b></div>${sks.map(sk => { const z = v.sz && v.sz[sk]; return `<div class="szrow"><span style="flex:1;min-width:140px">${esc(sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; }).join("")}</div>`
+    : `<div class="small" style="margin:14px 2px">🥧 Po zaznaczeniu „Byłem” możesz tu ocenić szarlotki w schroniskach (${sks.length}).</div>`);
   let body = "", top = "";
   if (!v) {
     top = `<div class="two" style="margin:4px 0 12px"><button class="btn ok" id="sadd">✓ Byłem</button><button class="btn warn" id="splan">📅 Planuję</button></div>`;
@@ -779,7 +783,7 @@ function renderSheet(){
   $("sheet").innerHTML = `<div class="grab"></div>
     <div class="hero"><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}</div></div></div>
     <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : `<div class="tile"><b>${r.c.split(",").length > 1 ? r.c.replace(/,/g," / ") : esc(r.c)}</b><span>kraj</span></div>`}</div>
-    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${top}${hikes}${body}
+    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${top}${hikes}${szsec}${body}
     <div style="margin-top:12px"><button class="btn" id="sclose" style="width:100%">Zamknij</button></div>`;
   $("sclose").onclick = closeSheet;
   document.querySelectorAll("#sheet .hike .tick").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
