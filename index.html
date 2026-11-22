@@ -338,6 +338,26 @@ const cname = cc => CN[cc] || cc;
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const norm = s => String(s||"").toLowerCase().replace(/ł/g,"l").normalize("NFD").replace(/[̀-ͯ]/g,"");
 [...WINTER.R, ...SUMMER.R].forEach(r => { r.s = norm([r.full, r.n, r.l, r.r, r.c.split(",").map(cname).join(" ")].join(" ")); });
+/* miejsca dodane z panelu admina (Supabase: extra_places) */
+function applyExtra(rows){
+  let n = 0;
+  (rows || []).forEach(x => { try {
+    const d = x.data || {}, w = x.mode !== "s", map = w ? byIdW : byIdS; if (!x.id || map[x.id] || !d.n) return;
+    const c = String(d.c || "").toUpperCase(), lat = +d.y, lon = +d.x;
+    const r = w ? {id:x.id, n:d.n, full:d.n, c, r:d.r || "", l:d.l || "", k:+d.k || 0, g:[], x:lon, y:lat, w:d.w || "", e:+d.e || 0}
+                : {id:x.id, n:d.n, full:d.n, c, r:d.r || "", l:"", k:(d.hikes || []).length, g:[], x:lon, y:lat, hikes:d.hikes || []};
+    r.s = norm([r.full, r.n, r.l, r.r, c.split(",").map(cname).join(" ")].join(" "));
+    (w ? WINTER : SUMMER).R.push(r); map[x.id] = r; n++;
+  } catch(e){} });
+  return n;
+}
+try { applyExtra(JSON.parse(localStorage.getItem("skibeen.extra") || "[]")); } catch(e){}
+async function loadExtra(){
+  try { const r = await store.sb.from("extra_places").select("id,mode,data"); if (r.error || !r.data) return;
+    try { localStorage.setItem("skibeen.extra", JSON.stringify(r.data)); } catch(e){}
+    if (applyExtra(r.data)) { buildCountrySelect(); buildDots(); renderAll(); }
+  } catch(e){}
+}
 const todayISO = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
 const $ = id => document.getElementById(id);
 const useCap = n => (window.claude && claude.use) ? claude.use(n) : Promise.resolve(null);
@@ -494,7 +514,7 @@ async function initSb(){
   const sb = window.supabase.createClient(SBC.url, SBC.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
   store = {mode:"local", sb, uid:null, email:"", name:"", rev:""};
   setSaveState("zapis: ta przeglądarka");
-  updateAcct(); $("acct").onclick = openAccount; renderStats();
+  updateAcct(); $("acct").onclick = openAccount; renderStats(); loadExtra();
   if (RO) loadRO();
   try { const hp = new URLSearchParams((location.hash||"").replace(/^#/,"") + "&" + (location.search||"").replace(/^\?/,"")); const er = hp.get("error_description") || hp.get("error"); if (er) { setSaveState("logowanie nie wyszło: " + decodeURIComponent(er.replace(/\+/g," ")).slice(0,90)); history.replaceState(null,"",location.pathname); } } catch(e){}
   sb.auth.onAuthStateChange((ev, ses) => {
@@ -896,12 +916,52 @@ function openSuggest(q){
   };
 }
 async function openAdmin(){
-  ovBox().innerHTML = `<div class="card"><h3>Zgłoszone miejsca</h3><div class="small" id="adl">Wczytuję…</div><button class="btn" id="lclose" style="width:100%;margin-top:10px">Zamknij</button></div>`; $("lclose").onclick = closeAccount;
+  ovBox().innerHTML = `<div class="card"><h3>Zgłoszone miejsca</h3><button class="btn pri" id="anew" style="width:100%;margin-bottom:10px">+ Dodaj nowe miejsce</button><div class="small" id="adl">Wczytuję…</div><div id="aex"></div><button class="btn" id="lclose" style="width:100%;margin-top:10px">Zamknij</button></div>`; $("lclose").onclick = closeAccount; $("anew").onclick = () => openAddPlace(null);
+  try { const ex = await store.sb.from("extra_places").select("id,mode,data"); if (!ex.error && (ex.data || []).length) { $("aex").innerHTML = `<div class="small" style="margin:10px 0 4px;font-weight:700">Dodane przez panel (${ex.data.length})</div>` + ex.data.map(x => `<div class="frow"><span>${esc(x.data.n)} <span class="small">${x.mode === "s" ? "lato" : "zima"} · ${esc(x.data.c || "")}</span></span><button class="btn sm bad aexdel" data-id="${esc(x.id)}">Usuń</button></div>`).join(""); document.querySelectorAll(".aexdel").forEach(b => b.onclick = async () => { if (!confirm("Usunąć to miejsce z bazy? Zniknie u wszystkich.")) return; b.disabled = true; const d = await store.sb.from("extra_places").delete().eq("id", b.dataset.id); if (!(d && d.error)) { try { localStorage.removeItem("skibeen.extra"); } catch(e){} b.closest(".frow").remove(); } }); } } catch(e){}
   try { const r = await store.sb.from("suggestions").select("*").order("created_at", {ascending: false}).limit(200); if (r.error) throw r.error;
     const a = r.data || [], box = $("adl");
-    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></div>`).join("") : "Brak zgłoszeń.";
+    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri aadd" data-i="${esc(x.id)}">Dodaj</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
+    box.querySelectorAll(".aadd").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i); openAddPlace(x); });
     box.querySelectorAll(".adel").forEach(b => b.onclick = async () => { b.disabled = true; const d = await store.sb.from("suggestions").delete().eq("id", b.dataset.id); if (!(d && d.error)) b.closest(".frow").remove(); });
   } catch(e){ $("adl").textContent = "Nie udało się wczytać: " + String((e && e.message) || e).slice(0,80); }
+}
+function openAddPlace(sg){
+  const w0 = !(sg && sg.mode === "s");
+  ovBox().innerHTML = `<div class="card"><h3>Dodaj miejsce</h3>
+    <div class="fld"><label>TRYB</label><select class="sel" id="apm"><option value="w">Zima (ośrodek)</option><option value="s">Lato (miejsce do chodzenia)</option></select></div>
+    <div class="fld"><label>NAZWA</label><div style="display:flex;gap:8px"><input id="apn" class="lin" value="${esc((sg && sg.name) || "")}" style="flex:1"><button class="btn pri" id="apg">Znajdź</button></div><div class="small" id="apmsg" style="min-height:16px">„Znajdź" wypełni kraj, region i współrzędne z OpenStreetMap.</div></div>
+    <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KRAJ (KOD)</label><input id="apc" class="lin" maxlength="2" placeholder="IT" value=""></div><div class="fld" style="flex:2"><label>REGION</label><input id="apr" class="lin"></div></div>
+    <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>SZEROKOŚĆ (LAT)</label><input id="apy" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>DŁUGOŚĆ (LON)</label><input id="apx" class="lin" inputmode="decimal"></div></div>
+    <div id="apw"><div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS</label><input id="apk" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ (M)</label><input id="ape" class="lin" inputmode="numeric"></div></div><div class="fld"><label>STRONA WWW</label><input id="apu" class="lin" placeholder="https://"></div></div>
+    <div id="aps" style="display:none"><div class="fld"><label>SZLAKI (JEDEN W LINII: nazwa; łatwa/średnia/trudna; czas; opis)</label><textarea id="aph" class="lin" rows="5" placeholder="Five Lakes Walk; średnia; 3–4 h; Pięć jezior z widokiem na Matterhorn"></textarea></div></div>
+    <div class="small" id="apst" style="min-height:16px"></div>
+    <div style="display:flex;gap:8px"><button class="btn pri" id="apsave" style="flex:1">Zapisz</button><button class="btn" id="apback" style="flex:1">Wstecz</button></div></div>`;
+  const sync = () => { const s = $("apm").value === "s"; $("apw").style.display = s ? "none" : ""; $("aps").style.display = s ? "" : "none"; };
+  $("apm").value = w0 ? "w" : "s"; $("apm").onchange = sync; sync();
+  $("apback").onclick = openAdmin;
+  $("apg").onclick = async () => {
+    const q = $("apn").value.trim(), m = $("apmsg"); if (q.length < 2) return; m.textContent = "Szukam…";
+    try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&accept-language=en&q=" + encodeURIComponent(q)); const j = await r.json();
+      if (!j.length) { m.textContent = "Nic nie znaleziono. Wpisz współrzędne ręcznie."; return; }
+      const a = j[0].address || {}; $("apy").value = (+j[0].lat).toFixed(4); $("apx").value = (+j[0].lon).toFixed(4);
+      if (a.country_code) $("apc").value = a.country_code.toUpperCase(); $("apr").value = a.state || a.region || a.county || "";
+      m.textContent = "Znaleziono: " + String(j[0].display_name).slice(0, 90);
+    } catch(e){ m.textContent = "Nie udało się połączyć. Wpisz dane ręcznie."; } };
+  $("apsave").onclick = async () => {
+    const st = $("apst"), n = $("apn").value.trim(), mode = $("apm").value, c = $("apc").value.trim().toUpperCase(), y = parseFloat($("apy").value), x = parseFloat($("apx").value);
+    if (n.length < 2 || !/^[A-Z]{2}$/.test(c) || !isFinite(x) || !isFinite(y)) { st.textContent = "Uzupełnij nazwę, kod kraju (2 litery) i współrzędne."; return; }
+    const d = {n, c, r: $("apr").value.trim(), x, y};
+    if (mode === "w") { d.k = parseFloat($("apk").value) || 0; d.e = parseInt($("ape").value) || 0; d.w = $("apu").value.trim(); }
+    else { d.hikes = $("aph").value.split("\n").map(l => l.trim()).filter(Boolean).map(l => { const p = l.split(";").map(z => z.trim()); return {n: p[0], d: ["łatwa","średnia","trudna"].includes(p[1]) ? p[1] : "średnia", t: p[2] || "", o: p.slice(3).join("; ") || "", s: ""}; }); }
+    const id = "x-" + (mode === "s" ? "s-" : "w-") + n.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
+    $("apsave").disabled = true; st.textContent = "Zapisuję…";
+    try { const r = await store.sb.from("extra_places").insert({id, mode, data: d}); if (r && r.error) throw r.error;
+      if (sg && sg.id !== undefined) { try { await store.sb.from("suggestions").delete().eq("id", sg.id); } catch(e){} }
+      try { localStorage.removeItem("skibeen.extra"); } catch(e){}
+      applyExtra([{id, mode, data: d}]); buildCountrySelect(); buildDots(); renderAll();
+      st.textContent = "Dodano ✓ Miejsce jest już widoczne dla wszystkich."; $("apsave").style.display = "none"; $("apback").textContent = "Wróć do zgłoszeń";
+    } catch(e){ $("apsave").disabled = false; st.textContent = "Nie udało się: " + String((e && e.message) || e).slice(0, 90); }
+  };
 }
 function openFriends(){ ovBox().innerHTML = friendsCard(); bindFriends(); }
 function openAccount(){
