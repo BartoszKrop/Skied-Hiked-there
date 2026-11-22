@@ -198,7 +198,7 @@ select.sel{width:100%;background:var(--glass2);border:1px solid var(--line);colo
 <header>
   <div class="brand">
     <div class="logo"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
-    <h1>Ski Been</h1>
+    <h1 id="appname">Skied there</h1>
     <div class="rt"><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
     <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div></div>
   </div>
@@ -388,6 +388,7 @@ const lastYear = id => { const y = visits[id].stays.map(x => x.y).filter(Boolean
 /* ---------- nagłówek ---------- */
 function renderHeader(){
   const s = stats(), W = MODE === "w";
+  $("appname").textContent = W ? "Skied there" : "Hiked there"; document.title = (W ? "Skied there" : "Hiked there") + (typeof SBC !== "undefined" && SBC ? " · Skied & Hiked There" : "");
   $("progBar").style.width = (100 * s.n / R.length) + "%";
   $("hstats").innerHTML =
     `<div><b>${s.n}</b><small>z ${R.length} ${W ? "ośrodków" : "miejsc"}</small></div>` +
@@ -536,12 +537,12 @@ function noteFor(r, v){
 }
 function exportGPX(){
   const w = markedList().map(({r, v}) => `<wpt lat="${r.y}" lon="${r.x}"><name>${xmlEsc(r.n)}</name><desc>${xmlEsc(noteFor(r, v))}</desc><type>${v.s === "v" ? "visited" : "planned"}</type></wpt>`).join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Ski Been" xmlns="http://www.topografix.com/GPX/1/1">\n${w}\n</gpx>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Skied there / Hiked there" xmlns="http://www.topografix.com/GPX/1/1">\n${w}\n</gpx>`;
 }
 function exportKML(){
   const pm = markedList().map(({r, v}) => `<Placemark><name>${xmlEsc(r.n)}</name><description>${xmlEsc(noteFor(r, v))}</description><styleUrl>#${v.s}</styleUrl><Point><coordinates>${r.x},${r.y},0</coordinates></Point></Placemark>`).join("\n");
   const st = (id, col) => `<Style id="${id}"><IconStyle><color>${col}</color><scale>1.1</scale></IconStyle></Style>`;
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Ski Been</name>${st("v","ff8ae038")}${st("p","ff5cc6ff")}\n${pm}\n</Document></kml>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Skied there / Hiked there</name>${st("v","ff8ae038")}${st("p","ff5cc6ff")}\n${pm}\n</Document></kml>`;
 }
 function periodOptions(){
   const ys = new Set(); R.forEach(r => { if (isVis(r.id)) visits[r.id].stays.forEach(x => { if (+x.y) ys.add(+x.y); }); });
@@ -567,7 +568,7 @@ function shareCanvas(kind, per){
   c.fillStyle = g; c.fillRect(0, 0, 1080, 1350);
   const acc = W ? "#5ad1ff" : "#ffd35a";
   c.textAlign = "left"; c.fillStyle = "#fff"; c.font = `800 58px ${F}`; c.fillText(per ? per.label : (W ? "Moje ośrodki narciarskie" : "Moje górskie szlaki"), 60, 105);
-  c.fillStyle = acc; c.font = `600 30px ${F}`; c.fillText("Ski Been" + (W ? "  ·  ❄️" : "  ·  ☀️"), 60, 152);
+  c.fillStyle = acc; c.font = `600 30px ${F}`; c.fillText((W ? "Skied there  ·  ❄️" : "Hiked there  ·  ☀️"), 60, 152);
   const PD = per ? periodData(per) : null;
   const st = PD ? (W ? [[PD.places.length, "ośrodków"], [PD.countries.size, "krajów"], [Math.round(PD.km), "km tras"], [PD.stays, "pobytów"]] : [[PD.places.length, "miejsc"], [PD.countries.size, "krajów"], [PD.stays, "pobytów"], [0, ""]].slice(0, 3)) : W ? [[S.n, "ośrodków"], [S.countries.size, "krajów"], [Math.round(S.km), "km tras"], [S.stays, "pobytów"]] : [[S.n, "miejsc"], [S.countries.size, "krajów"], [S.hikes, "szlaków"], [S.stays, "pobytów"]];
   st.forEach((x, i) => { const px0 = 60 + i * 240; c.fillStyle = "rgba(255,255,255,.07)"; c.beginPath(); c.roundRect(px0, 190, 225, 130, 22); c.fill(); c.fillStyle = "#fff"; c.font = `800 52px ${F}`; c.fillText(String(x[0]), px0 + 22, 255); c.fillStyle = "#9db0d0"; c.font = `500 24px ${F}`; c.fillText(x[1], px0 + 22, 295); });
@@ -625,7 +626,7 @@ function shareCanvas(kind, per){
     c.fillStyle = "#38e0a0"; c.beginPath(); c.arc(90, 1275, 10, 0, 7); c.fill(); c.fillStyle = "#cdd8ee"; c.font = `500 24px ${F}`; c.fillText("byłem", 110, 1283);
     c.fillStyle = "#ffc65c"; c.beginPath(); c.arc(250, 1275, 10, 0, 7); c.fill(); c.fillStyle = "#cdd8ee"; c.fillText("planuję", 270, 1283);
   }
-  c.fillStyle = "#6f86ad"; c.font = `500 22px ${F}`; c.textAlign = "right"; c.fillText("Ski Been", 1020, 1315); c.textAlign = "left";
+  c.fillStyle = "#6f86ad"; c.font = `500 22px ${F}`; c.textAlign = "right"; c.fillText(W ? "Skied there" : "Hiked there", 1020, 1315); c.textAlign = "left";
   return cv;
 }
 function openShare(kind, per){
