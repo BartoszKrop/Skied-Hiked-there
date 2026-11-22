@@ -318,7 +318,7 @@ async function flush(){
 const SBC = window.__SB__ || null;
 const cloneJ = o => JSON.parse(JSON.stringify(o || {}));
 async function attachUser(user){
-  const sb = store.sb; store.uid = user.id; store.email = user.email || ""; const um = user.user_metadata || {}; store.name = um.full_name || um.name || (user.email ? user.email.split("@")[0] : ""); setSaveState("synchronizuję…");
+  const sb = store.sb; store.uid = user.id; store.authed = true; store.email = user.email || ""; const um = user.user_metadata || {}; store.name = um.full_name || um.name || (user.email ? user.email.split("@")[0] : ""); setSaveState("synchronizuję…");
   try {
     const r = await sb.from("profiles").select("data,updated_at").eq("user_id", user.id).maybeSingle();
     if (r.error) throw r.error;
@@ -326,7 +326,7 @@ async function attachUser(user){
     wVisits = Object.assign({}, wVisits, rv); sVisits = Object.assign({}, sVisits, rh);   // dane z konta mają pierwszeństwo, lokalne tylko uzupełniają
     syncVisits(); saveLocal(); store.mode = "sb"; store.rev = r.data ? r.data.updated_at : "";
     dirty = true; await flush(); renderAll(); updateAcct(); closeAccount();
-  } catch(e){ store.mode = "local"; setSaveState("błąd synchronizacji, dane są w tej przeglądarce"); renderAll(); updateAcct(); }
+  } catch(e){ store.mode = "local"; setSaveState("zalogowano, ale sync nie działa: " + String((e && (e.message || e.code)) || e).slice(0,90)); renderAll(); updateAcct(); }
 }
 async function pullSb(){
   if (store.mode !== "sb" || dirty || writing || curId) return;
@@ -345,7 +345,7 @@ async function initSb(){
   try { const hp = new URLSearchParams((location.hash||"").replace(/^#/,"") + "&" + (location.search||"").replace(/^\?/,"")); const er = hp.get("error_description") || hp.get("error"); if (er) { setSaveState("logowanie nie wyszło: " + decodeURIComponent(er.replace(/\+/g," ")).slice(0,90)); history.replaceState(null,"",location.pathname); } } catch(e){}
   sb.auth.onAuthStateChange((ev, ses) => {
     if (ses && ses.user && store.uid !== ses.user.id) setTimeout(() => attachUser(ses.user), 0);
-    else if (!ses && store.mode === "sb") { store.mode = "local"; store.uid = null; store.name = ""; setSaveState("wylogowano · dane zostają w tej przeglądarce"); renderAll(); updateAcct(); }
+    else if (!ses && (store.mode === "sb" || store.authed)) { store.mode = "local"; store.authed = false; store.uid = null; store.name = ""; setSaveState("wylogowano · dane zostają w tej przeglądarce"); renderAll(); updateAcct(); }
   });
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pullSb(); });
 }
@@ -638,7 +638,7 @@ function openShare(kind, per){
 }
 function accountCard(){
   if (!SBC || !window.supabase) return "";
-  const on = store.mode === "sb";
+  const on = store.mode === "sb" || !!store.authed;
   return `<div class="card">` + (on ? `<h3>Konto</h3>` : "") + (on
     ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane synchronizują się z kontem, więc masz to samo na telefonie i komputerze.</div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
     : `<div class="lg"><div class="lgi">👤</div><h3 style="margin:6px 0 4px">Zaloguj się</h3>
@@ -652,7 +652,7 @@ function accountCard(){
 function updateAcct(){
   const b = $("acct"); if (!b) return;
   if (!SBC || !window.supabase) { b.style.display = "none"; return; }
-  b.style.display = ""; const on = store.mode === "sb";
+  b.style.display = ""; const on = store.mode === "sb" || !!store.authed;
   b.textContent = on ? "👤 " + (store.name || store.email) : "👤 Niezalogowany"; b.classList.toggle("on", on);
 }
 function openAccount(){
