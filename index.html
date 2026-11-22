@@ -1402,7 +1402,7 @@ function showInstBar(){
   try { if (localStorage.getItem("skibeen.instdismiss")) return; } catch(e){}
   if (!instPrompt && !isIOS()) return;
   let b = $("instbar"); if (!b) { b = document.createElement("div"); b.id = "instbar"; document.body.append(b); }
-  b.innerHTML = `<div class="t"><b>📲 Dodaj do ekranu głównego</b>${instPrompt ? "Aplikacja działa na pełnym ekranie, także bez zasięgu." : esc(installText())}</div>${instPrompt ? `<button class="btn pri sm" id="instgo">Zainstaluj</button>` : ""}<button class="btn sm" id="instx" aria-label="Zamknij">✕</button>`;
+  b.innerHTML = `<div class="t"><b>📲 Dodaj do ekranu głównego</b>${instPrompt ? "Dzięki temu strona będzie działała jak aplikacja: na pełnym ekranie, także bez zasięgu." : "Dzięki temu strona będzie działała jak aplikacja. " + esc(installText())}</div>${instPrompt ? `<button class="btn pri sm" id="instgo">Zainstaluj</button>` : ""}<button class="btn sm" id="instx" aria-label="Zamknij">✕</button>`;
   b.style.display = "flex";
   const go = $("instgo"); if (go) go.onclick = doInstall;
   $("instx").onclick = () => { hideInstBar(); try { localStorage.setItem("skibeen.instdismiss", "1"); } catch(e){} };
