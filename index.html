@@ -13,7 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Skied Hiked">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -477,8 +477,8 @@ function renderRoBar(){
   const b = $("robar"); if (!b) return; if (!RO) { b.style.display = "none"; return; }
   const fr = (store.friends || []).includes(RO.username.toLowerCase());
   b.style.display = "flex";
-  b.innerHTML = `<span>👁 Podgląd: <b>@${esc(RO.username)}</b>${RO.ok ? "" : " (nie wczytano)"} · tylko do odczytu</span><span class="sp"></span>${store.authed && RO.ok ? `<button class="btn sm" id="rofr">${fr ? "Przestań obserwować" : "+ Obserwuj"}</button>` : ""}<button class="btn sm pri" id="roback">Moja mapa</button>`;
-  $("roback").onclick = () => { history.replaceState(null, "", location.pathname); location.reload(); };
+  b.innerHTML = `<span>👁 Podgląd: <b>@${esc(RO.username)}</b>${RO.ok ? "" : " (nie wczytano)"} · tylko do odczytu</span><span class="sp"></span>${store.authed && RO.ok ? `<button class="btn sm" id="rofr">${fr ? "Przestań obserwować" : "+ Obserwuj"}</button>` : ""}<button class="btn sm pri" id="roback">${store.authed ? "Moja mapa" : "✨ Zrób swoją mapę"}</button>`;
+  $("roback").onclick = () => { if (!store.authed) { try { sessionStorage.setItem("skibeen.openlogin", "1"); } catch(e){} } history.replaceState(null, "", location.pathname); location.reload(); };
   const f = $("rofr"); if (f) f.onclick = () => { const k = RO.username.toLowerCase(); setFriends(fr ? store.friends.filter(x => x !== k) : [...(store.friends || []), k]); };
 }
 let FRD = {};
@@ -515,6 +515,7 @@ async function initSb(){
   store = {mode:"local", sb, uid:null, email:"", name:"", rev:""};
   setSaveState("zapis: ta przeglądarka");
   updateAcct(); $("acct").onclick = openAccount; renderStats(); loadExtra();
+  try { if (!RO && sessionStorage.getItem("skibeen.openlogin") === "1") { sessionStorage.removeItem("skibeen.openlogin"); setTimeout(() => { if (!store.authed) openAccount(); }, 700); } } catch(e){}
   if (RO) loadRO();
   try { const hp = new URLSearchParams((location.hash||"").replace(/^#/,"") + "&" + (location.search||"").replace(/^\?/,"")); const er = hp.get("error_description") || hp.get("error"); if (er) { setSaveState("logowanie nie wyszło: " + decodeURIComponent(er.replace(/\+/g," ")).slice(0,90)); history.replaceState(null,"",location.pathname); } } catch(e){}
   sb.auth.onAuthStateChange((ev, ses) => {
@@ -784,7 +785,7 @@ function drawMapPanel(c, pts, PX, PY, PW, PH, rad){
     c.fillStyle = "#38e0a0"; c.strokeStyle = "#fff"; c.lineWidth = 3; c.beginPath(); c.arc(X, Y, rad, 0, 7); c.fill(); c.stroke(); });
   c.restore();
 }
-function shareCanvas(kind, per){
+function shareCanvasBase(kind, per){
   const W = MODE === "w", S = stats(), cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1350;
   const c = cv.getContext("2d"), F = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif";
   const g = c.createLinearGradient(0, 0, 0, 1350);
@@ -837,16 +838,32 @@ function shareCanvas(kind, per){
   c.fillStyle = "#6f86ad"; c.font = `500 22px ${F}`; c.textAlign = "right"; c.fillText(W ? "Skied there" : "Hiked there", 1020, 1315); c.textAlign = "left";
   return cv;
 }
+function shareCanvas(kind, per, tall){
+  const base = shareCanvasBase(kind, per); if (!tall) return base;
+  const W = MODE === "w", cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1920;
+  const c = cv.getContext("2d"), F = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif";
+  const g = c.createLinearGradient(0, 0, 0, 1920);
+  const c0 = W ? "#14305a" : "#21402f", c1 = W ? "#070d19" : "#08140f";
+  g.addColorStop(0, c0); g.addColorStop(285 / 1920, c0); g.addColorStop(1635 / 1920, c1); g.addColorStop(1, c1);
+  c.fillStyle = g; c.fillRect(0, 0, 1080, 1920);
+  c.drawImage(base, 0, 285);
+  const url = (location.protocol.indexOf("http") === 0 ? location.host + location.pathname.replace(/\/$/, "") : "bartoszkrop.github.io/Skied-Hiked-there"), un = store && store.prof && store.prof.username;
+  c.textAlign = "center"; c.fillStyle = "#fff"; c.font = `800 44px ${F}`; c.fillText(tr("Zrób swoją mapę"), 540, 1700);
+  c.fillStyle = W ? "#5ad1ff" : "#ffd35a"; c.font = `700 38px ${F}`; c.fillText(url, 540, 1760);
+  if (un) { c.fillStyle = "#9db3d8"; c.font = `600 30px ${F}`; c.fillText("@" + un, 540, 1810); }
+  c.textAlign = "left"; return cv;
+}
 async function openShare(kind, per){
   let ov = $("shareov"); if (!ov) { ov = document.createElement("div"); ov.id = "shareov"; document.body.append(ov); }
   if ((kind === "map" || kind === "period") && !GEO) { ov.innerHTML = `<div class="small" style="color:#cdd8ee;text-align:center;padding:30px">Ładuję kontury map…</div>`; ov.style.display = "flex"; await loadGeo(); }
-  const cv = shareCanvas(kind, per); ov.innerHTML = ""; ov.append(cv);
+  const cv = shareCanvas(kind, per, true); ov.innerHTML = ""; ov.append(cv);
   const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px";
-  const sv = Object.assign(document.createElement("button"), {className:"btn pri", textContent:"Pobierz obraz"}), cl = Object.assign(document.createElement("button"), {className:"btn", textContent:"Zamknij"});
+  const sv = Object.assign(document.createElement("button"), {className:"btn pri", textContent:"Pobierz 9:16 (TikTok)"}), sq = Object.assign(document.createElement("button"), {className:"btn", textContent:"Pobierz 4:5"}), cl = Object.assign(document.createElement("button"), {className:"btn", textContent:"Zamknij"});
   const msg = document.createElement("div"); msg.className = "small";
-  sv.onclick = () => cv.toBlob(b => saveBlob("ski-been-" + kind + ".png", b, msg), "image/png");
+  sv.onclick = () => cv.toBlob(b => saveBlob("ski-been-" + kind + "-9x16.png", b, msg), "image/png");
+  sq.onclick = () => shareCanvas(kind, per, false).toBlob(b => saveBlob("ski-been-" + kind + "-4x5.png", b, msg), "image/png");
   cl.onclick = () => { ov.style.display = "none"; };
-  row.append(sv, cl); ov.append(row, msg); ov.style.display = "flex";
+  row.append(sv, sq, cl); ov.append(row, msg); ov.style.display = "flex";
 }
 function accountCard(){
   if (!SBC || !window.supabase) return "";
@@ -1374,5 +1391,5 @@ $("gear").onclick = openSettings; $("frbtn").onclick = openFriends; initListCont
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 initStore(); startI18n();
 </script>
-</body>
+<script>if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script></body>
 </html>
