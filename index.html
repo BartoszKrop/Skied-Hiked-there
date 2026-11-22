@@ -923,14 +923,15 @@ function openSettings(){
 }
 /* opinie społeczności (Supabase: get_place_opinions + opinion_likes) */
 const OPN = {}, OPS = {sort: "likes"};
-let RATE = {w: {}, s: {}}, rateT = 0;
+let RATE = {w: {}, s: {}}, RATEH = {}, rateT = 0;
 const opKey = id => MODE + "|" + id;
 const fmtAvg = a => (Math.round(a * 10) / 10).toFixed(1).replace(".", ",");
 async function loadRatings(force){
   if (!(SBC && store && store.sb)) return; if (!force && Date.now() - rateT < 300000) return; rateT = Date.now();
   try { const out = {w: {}, s: {}};
     await Promise.all(["w", "s"].map(async md => { const r = await store.sb.rpc("get_place_ratings", {md}); if (r.error || !r.data) return; r.data.forEach(x => { out[md][x.place_id] = {a: +x.avg_rating, n: +x.n}; }); }));
-    RATE = out; renderList(); if (curId) renderSheet();
+    const rh = await store.sb.rpc("get_hike_ratings"); const oh = {}; if (!rh.error && rh.data) rh.data.forEach(x => { (oh[x.place_id] = oh[x.place_id] || {})[x.hike] = {a: +x.avg_rating, n: +x.n}; });
+    RATE = out; RATEH = oh; renderList(); if (curId) renderSheet();
   } catch(e){}
 }
 const rateOf = id => (RATE[MODE] || {})[id];
@@ -939,18 +940,25 @@ function opinionsHtml(id){
   const o = OPN[opKey(id)]; if (!o) return "";
   const fr = (store.friends || []).map(x => String(x).toLowerCase());
   const base = o.list.filter(x => x.author !== store.uid && !fr.includes(String(x.username).toLowerCase()));
-  const head = `<div class="sh"><b>Opinie${base.length ? " (" + base.length + ")" : ""}</b><span>${ratingLine(id)}</span></div>`;
-  if (!base.length) return `<div class="sect">${head}<div class="small">${rateOf(id) ? "Brak opinii z tekstem." : "Jeszcze nikt nie dodał opinii."} Po wizycie dodaj gwiazdki i notatkę, a pojawią się tutaj.</div></div>`;
+  const hasFr = !!friendsHtml(id), head = `<div class="small" style="font-weight:700;margin:10px 0 4px">${hasFr ? "Pozostali" : "Wszyscy"}${base.length ? " (" + base.length + ")" : ""}</div>`;
+  if (!base.length) return `<div>${head}<div class="small">${rateOf(id) ? "Brak opinii z tekstem." : "Jeszcze nikt nie dodał opinii."} Po wizycie dodaj gwiazdki i notatkę, a pojawią się tutaj.</div></div>`;
   const L = base.slice().sort(OPS.sort === "new" ? (a, b) => String(b.last_visit || "").localeCompare(String(a.last_visit || "")) || b.likes - a.likes : (a, b) => b.likes - a.likes || String(b.last_visit || "").localeCompare(String(a.last_visit || "")));
   const n = o.shown || 3, V = L.slice(0, n);
-  return `<div class="sect">${head}<div class="seg" id="opsort" style="margin:0 0 6px"><button data-s="likes" class="${OPS.sort === "likes" ? "on" : ""}">Najpopularniejsze</button><button data-s="new" class="${OPS.sort === "new" ? "on" : ""}">Najnowsze</button></div>${V.map(x => { const lv = String(x.last_visit || ""), ym = /^(\d{4})-(\d{2})$/.exec(lv); return `<div class="frow" style="align-items:flex-start;gap:8px"><div style="min-width:0;flex:1"><b>@${esc(x.username)}</b>${x.rating ? ` <span style="color:var(--warn)">${"★".repeat(x.rating)}</span>` : ""}${ym ? ` <span class="small">${esc(fmtYM(ym[1], ym[2] === "00" ? "" : ym[2]))}</span>` : (lv.length === 4 ? ` <span class="small">${esc(lv)}</span>` : "")}${x.note ? `<div class="small" style="white-space:pre-wrap;margin-top:2px">${esc(x.note)}</div>` : ""}</div><button class="btn sm opl ${x.liked ? "pri" : ""}" data-a="${esc(x.author)}">♥ ${x.likes}</button></div>`; }).join("")}${L.length > n ? `<button class="btn sm opmore" style="margin-top:6px">Pokaż kolejne (${L.length - n})</button>` : ""}</div>`;
+  return `<div>${head}<div class="seg" id="opsort" style="margin:0 0 6px"><button data-s="likes" class="${OPS.sort === "likes" ? "on" : ""}">Najpopularniejsze</button><button data-s="new" class="${OPS.sort === "new" ? "on" : ""}">Najnowsze</button></div>${V.map(x => { const lv = String(x.last_visit || ""), ym = /^(\d{4})-(\d{2})$/.exec(lv); return `<div class="frow" style="align-items:flex-start;gap:8px"><div style="min-width:0;flex:1"><b>@${esc(x.username)}</b>${x.rating ? ` <span style="color:var(--warn)">${"★".repeat(x.rating)}</span>` : ""}${ym ? ` <span class="small">${esc(fmtYM(ym[1], ym[2] === "00" ? "" : ym[2]))}</span>` : (lv.length === 4 ? ` <span class="small">${esc(lv)}</span>` : "")}${x.note ? `<div class="small" style="white-space:pre-wrap;margin-top:2px">${esc(x.note)}</div>` : ""}</div><button class="btn sm opl ${x.liked ? "pri" : ""}" data-a="${esc(x.author)}">♥ ${x.likes}</button></div>`; }).join("")}${L.length > n ? `<button class="btn sm opmore" style="margin-top:6px">Pokaż kolejne (${L.length - n})</button>` : ""}</div>`;
+}
+function friendsHtml(id){
+  const r = byId[id], W = MODE === "w", v = visits[id]; if (!r || RO || (v && v.s === "v")) return "";
+  const fa = friendsAt(id); if (!fa.length) return "";
+  return `<div class="small" style="font-weight:700;margin:2px 0 4px">Obserwowani</div>${fa.map(x => { const lk = ((OPN[opKey(id)] || {}).list || []).find(z => String(z.username).toLowerCase() === String(x.u).toLowerCase()), ys = [...new Set((x.e.stays || []).map(k => k.y).filter(Boolean))].sort().join(", "), hd = x.e.done ? Object.keys(x.e.done).length : 0, nt = (x.e.n || "").trim();
+    return `<div class="frow" style="align-items:flex-start"><div style="min-width:0"><b>@${esc(x.u)}</b> <span class="small">${esc(ys)}${!W && hd ? (ys ? " · " : "") + hd + " " + plur(hd, "szlak", "szlaki", "szlaków") : ""}</span>${x.e.r ? ` <span style="color:var(--warn)">${"★".repeat(x.e.r)}</span>` : ""}${nt ? `<div class="small" data-nt style="white-space:pre-wrap;margin-top:2px">📝 ${esc(nt.length > 160 ? nt.slice(0, 159) + "…" : nt)}</div>` : ""}${W ? "" : Object.keys(x.e.done || {}).map(i => { const h = r.hikes[i]; if (!h) return ""; const st = (x.e.hr && x.e.hr[i]) || 0, hn = ((x.e.hn && x.e.hn[i]) || "").trim(); return `<div class="small" style="margin-top:4px"><b>${esc(h.n)}</b> ${st ? `<span style="color:var(--warn)">${"★".repeat(st)}</span>` : ""}${hn ? `<div data-nt style="white-space:pre-wrap">📝 ${esc(hn.length > 160 ? hn.slice(0, 159) + "…" : hn)}</div>` : ""}</div>`; }).join("")}</div><span style="display:flex;flex-direction:column;gap:6px;flex:none"><button class="btn sm pri fgo3" data-u="${esc(x.u)}">Profil</button>${lk ? `<button class="btn sm opl ${lk.liked ? "pri" : ""}" data-a="${esc(lk.author)}">♥ ${lk.likes}</button>` : ""}</span></div>`; }).join("")}`;
 }
 function bindOpinions(id){
-  document.querySelectorAll("#opsec .opl").forEach(b => b.onclick = () => likeOpinion(id, b.dataset.a));
+  document.querySelectorAll("#opfr .opl, #opsec .opl").forEach(b => b.onclick = () => likeOpinion(id, b.dataset.a));
+  document.querySelectorAll("#opfr .fgo3").forEach(b => b.onclick = () => openProfile(b.dataset.u));
   const m = document.querySelector("#opsec .opmore"); if (m) m.onclick = () => { const o = OPN[opKey(id)]; o.shown = (o.shown || 3) + 5; paintOpinions(id); };
   const so = $("opsort"); if (so) so.onclick = e => { const b = e.target.closest("button"); if (!b) return; OPS.sort = b.dataset.s; const o = OPN[opKey(id)]; if (o) o.shown = 3; paintOpinions(id); };
 }
-function paintOpinions(id){ if (curId !== id) return; const b = $("opsec"); if (!b) return; b.innerHTML = opinionsHtml(id); bindOpinions(id); }
+function paintOpinions(id){ if (curId !== id) return; const b = $("opsec"); if (!b) return; const f = $("opfr"); if (f) f.innerHTML = friendsHtml(id); b.innerHTML = opinionsHtml(id); bindOpinions(id); }
 async function loadOpinions(id){
   const k = opKey(id), o = OPN[k]; if (o && Date.now() - o.t < 60000) { bindOpinions(id); return; }
   try { const r = await store.sb.rpc("get_place_opinions", {pid: id, md: MODE}); if (r.error) throw r.error;
@@ -1187,9 +1195,9 @@ function renderSheet(){
   const tags = W ? r.g.map(g => `<span>${esc(g)}</span>`).join("") : "";
   const href = (W && r.w) ? esc(r.w) : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze");
   const link = `<a class="lnk" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Strona ośrodka: cennik i status tras ↗" : "Szukaj cen karnetów ↗") : "Szukaj szlaków i informacji ↗"}</a>`;
-  const fa = (RO || (v && v.s === "v")) ? [] : friendsAt(r.id);
-  const fsec = !fa.length ? "" : `<div class="sect"><div class="sh"><b>Byli tu obserwowani</b></div>${fa.map(x => { const ys = [...new Set((x.e.stays || []).map(k => k.y).filter(Boolean))].sort().join(", "), hd = x.e.done ? Object.keys(x.e.done).length : 0, nt = (x.e.n || "").trim();
-    return `<div class="frow" style="align-items:flex-start"><div style="min-width:0"><b>@${esc(x.u)}</b> <span class="small">${esc(ys)}${!W && hd ? (ys ? " · " : "") + hd + " " + plur(hd, "szlak", "szlaki", "szlaków") : ""}</span>${x.e.r ? ` <span style="color:var(--warn)">${"★".repeat(x.e.r)}</span>` : ""}${nt ? `<div class="small" data-nt style="white-space:pre-wrap;margin-top:2px">📝 ${esc(nt.length > 160 ? nt.slice(0, 159) + "…" : nt)}</div>` : ""}${W ? "" : Object.keys(x.e.done || {}).map(i => { const h = r.hikes[i]; if (!h) return ""; const st = (x.e.hr && x.e.hr[i]) || 0, hn = ((x.e.hn && x.e.hn[i]) || "").trim(); return `<div class="small" style="margin-top:4px"><b>${esc(h.n)}</b> ${st ? `<span style="color:var(--warn)">${"★".repeat(st)}</span>` : ""}${hn ? `<div data-nt style="white-space:pre-wrap">📝 ${esc(hn.length > 160 ? hn.slice(0, 159) + "…" : hn)}</div>` : ""}</div>`; }).join("")}</div><button class="btn sm pri fgo3" data-u="${esc(x.u)}" style="flex:none">Profil</button></div>`; }).join("")}</div>`;
+  const showOp = !RO && SBC && store.sb && !(v && v.s === "v");
+  const fa = [];
+  const opblock = !showOp ? "" : `<div class="sect"><div class="sh" style="justify-content:flex-start;gap:10px"><b>Opinie</b>${ratingLine(r.id)}</div><div id="opfr">${friendsHtml(r.id)}</div><div id="opsec">${opinionsHtml(r.id)}</div></div>`;
   const secOn = r.id === "h-camino";
   let lastSec = null;
   const hikeCards = W ? "" : r.hikes.map((h, i) => {
@@ -1200,7 +1208,7 @@ function renderSheet(){
     const noteUi = RO ? (note ? `<div class="hnro" data-nt>📝 ${esc(note)}</div>` : "") : (d ? `<textarea class="hnote" data-h="${i}" rows="2" placeholder="Notatka do tego szlaku…">${esc(note)}</textarea>` : "");
     return sh + `<div class="hike ${d?"done":""} ${pl?"planned":""}">
       ${RO ? `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>` : `<div class="tk2">${onlyPlan ? "" : `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Byłem">✓</button>`}<button class="tick plan ${pl?"pon":""}" data-p="${i}" aria-label="Planuję">◷</button></div>`}
-      <div class="hb"><b>${esc(h.n)}</b><div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>
+      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>
       ${(v && v.s === "p") ? "" : `<div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>`}${noteUi}
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
   const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b></div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
@@ -1232,9 +1240,9 @@ function renderSheet(){
   const t1 = W ? `<div class="tile"><b>${Math.round(r.k*10)/10}</b><span>km tras zjazdowych</span></div>` : `<div class="tile"><b>${r.hikes.length}</b><span>szlaków poniżej</span></div>`;
   const t2 = W ? `<div class="tile"><b>${r.g.length ? esc(r.g[r.g.length-1]) : "—"}</b><span>${r.g.length ? "grupa" : "bez grupy"}</span></div>` : `<div class="tile"><b>${v ? Object.keys(v.done).length : 0}/${r.hikes.length}</b><span>zrobionych</span></div>`;
   $("sheet").innerHTML = `<div class="grab"></div>
-    <div class="hero"><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}</div></div></div>
+    <div class="hero"><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}${(SBC && ratingLine(r.id)) ? " · " + ratingLine(r.id) : ""}</div></div></div>
     <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : `<div class="tile"><b>${r.c.split(",").length > 1 ? r.c.replace(/,/g," / ") : esc(r.c)}</b><span>kraj</span></div>`}</div>
-    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${(W && r.auto && !RO && SBC) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy. <button class="btn sm" id="sgfix" style="margin-left:4px">Zaproponuj poprawę</button></div>` : (W && r.auto) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy.</div>` : ""}${top}${fsec}${(!RO && SBC && store.sb && !(v && v.s === "v")) ? `<div id="opsec">${opinionsHtml(r.id)}</div>` : ""}${hikes}${szsec}${body}
+    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${(W && r.auto && !RO && SBC) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy. <button class="btn sm" id="sgfix" style="margin-left:4px">Zaproponuj poprawę</button></div>` : (W && r.auto) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy.</div>` : ""}${top}${opblock}${hikes}${szsec}${body}
     <div style="margin-top:12px"><button class="btn" id="sclose" style="width:100%">Zamknij</button></div>`;
   $("sclose").onclick = closeSheet;
   document.querySelectorAll("#sheet .fgo3").forEach(b => b.onclick = () => openProfile(b.dataset.u));
