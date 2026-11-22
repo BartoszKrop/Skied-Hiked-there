@@ -47,6 +47,9 @@ header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(1
 .acct{border:1px solid var(--line);background:var(--glass);color:var(--text);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acct.on{border-color:rgba(56,224,160,.5);color:var(--ok);background:rgba(56,224,160,.08)}
 #acctov{position:fixed;inset:0;z-index:150;background:rgba(3,8,16,.75);display:none;align-items:flex-start;justify-content:center;padding:calc(70px + var(--safe-t)) 14px 14px}
+#acctov .lg{text-align:center}.lgi{width:54px;height:54px;margin:0 auto;border-radius:18px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:26px}
+.lin{width:100%;box-sizing:border-box;background:var(--glass2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:13px 14px;font:inherit;font-size:16px;outline:none;color-scheme:dark}.lin:focus{border-color:var(--accent)}
+.lbtn{width:100%;margin-top:10px;padding:14px}.lcl{width:100%;margin-top:12px;background:none}
 #acctov .card{max-width:420px;width:100%;margin:0;background:#0d1b30}
 .hstats{display:flex;gap:18px;margin-top:10px;align-items:flex-end}
 .hstats div{display:flex;flex-direction:column;line-height:1.1}
@@ -632,13 +635,15 @@ function openShare(kind, per){
 function accountCard(){
   if (!SBC || !window.supabase) return "";
   const on = store.mode === "sb";
-  return `<div class="card"><h3>Konto</h3>` + (on
-    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane synchronizują się z kontem, więc masz to samo na telefonie i komputerze.</div><button class="btn bad" id="lout">Wyloguj</button> <button class="btn" id="lclose">Zamknij</button>`
-    : `<div class="sub">Zaloguj się mailem, żeby mieć te same dane na telefonie i komputerze. Wyślemy Ci link do logowania, bez hasła. Otwórz go na tym samym urządzeniu. Dane z tej przeglądarki zostaną dołączone do konta.</div>
-       <button class="btn" id="lgoogle" style="width:100%;margin-bottom:10px">Zaloguj przez Google</button>
-       <div class="small" style="margin:0 0 8px">albo mailem:</div>
-       <div class="fld"><label>E-MAIL</label><input id="lemail" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com"></div>
-       <button class="btn pri" id="lsend">Wyślij link logowania</button> <button class="btn" id="lclose">Zamknij</button> <div class="small" id="lmsg" style="margin-top:8px"></div>`) + `</div>`;
+  return `<div class="card">` + (on ? `<h3>Konto</h3>` : "") + (on
+    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane synchronizują się z kontem, więc masz to samo na telefonie i komputerze.</div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
+    : `<div class="lg"><div class="lgi">👤</div><h3 style="margin:6px 0 4px">Zaloguj się</h3>
+       <div class="sub" style="margin-bottom:14px">Wpisz e-mail, a wyślemy Ci link do logowania. Bez hasła. Dzięki temu masz te same dane na telefonie i komputerze.</div></div>
+       <input id="lemail" class="lin" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com">
+       <button class="btn pri lbtn" id="lsend">Wyślij link logowania</button>
+       <div class="small" id="lmsg" style="margin-top:10px;text-align:center;min-height:16px"></div>
+       <div class="small" style="margin-top:6px;text-align:center">Otwórz link na tym samym urządzeniu. Dane z tej przeglądarki dołączą do konta.</div>
+       <button class="btn lcl" id="lclose">Zamknij</button>`) + `</div>`;
 }
 function updateAcct(){
   const b = $("acct"); if (!b) return;
@@ -654,10 +659,6 @@ function closeAccount(){ const ov = $("acctov"); if (ov) ov.style.display = "non
 function bindAccount(){
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
   const o = $("lout"); if (o) o.onclick = async () => { await store.sb.auth.signOut(); closeAccount(); };
-  const g = $("lgoogle"); if (g) g.onclick = async () => {
-    const r = await store.sb.auth.signInWithOAuth({provider: "google", options: {redirectTo: location.origin + location.pathname}});
-    if (r.error) $("lmsg").textContent = "Google: " + r.error.message;
-  };
   const b = $("lsend"); if (b) b.onclick = async () => {
     const em = ($("lemail").value || "").trim(); if (!/^\S+@\S+\.\S+$/.test(em)) { $("lmsg").textContent = "Podaj poprawny adres e-mail."; return; }
     b.disabled = true; $("lmsg").textContent = "Wysyłam…";
