@@ -211,7 +211,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
   <div class="brand">
     <div class="swt tg" id="swt" data-m="w" role="button" aria-label="Przełącz zima/lato"><div class="logo"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
     <h1 id="appname">Skied there</h1><span class="swp" id="swp">⇄</span></div>
-    <div class="rt"><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="rfsh" class="acct" style="display:none;flex:none;padding:6px 10px;font-size:14px" aria-label="Odśwież dane z konta" title="Odśwież dane z konta">↻</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
+    <div class="rt"><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
     <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div></div><i class="brk"></i>
   </div>
   <div class="hstats" id="hstats"></div>
@@ -493,7 +493,7 @@ async function initSb(){
   const sb = window.supabase.createClient(SBC.url, SBC.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
   store = {mode:"local", sb, uid:null, email:"", name:"", rev:""};
   setSaveState("zapis: ta przeglądarka");
-  updateAcct(); $("acct").onclick = openAccount; $("rfsh").onclick = refreshSb; renderStats();
+  updateAcct(); $("acct").onclick = openAccount; renderStats();
   if (RO) loadRO();
   try { const hp = new URLSearchParams((location.hash||"").replace(/^#/,"") + "&" + (location.search||"").replace(/^\?/,"")); const er = hp.get("error_description") || hp.get("error"); if (er) { setSaveState("logowanie nie wyszło: " + decodeURIComponent(er.replace(/\+/g," ")).slice(0,90)); history.replaceState(null,"",location.pathname); } } catch(e){}
   sb.auth.onAuthStateChange((ev, ses) => {
@@ -830,7 +830,7 @@ function accountCard(){
   if (!SBC || !window.supabase) return "";
   const on = store.mode === "sb" || !!store.authed;
   return `<div class="card">` + (on ? `<h3>Konto</h3>` : "") + (on
-    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div>${(() => { const p = store.prof || {}; const link = p.username ? location.origin + location.pathname + "#u/" + p.username : ""; return `<div class="fld" style="margin-top:12px"><label>NAZWA UŻYTKOWNIKA (żeby inni Cię znaleźli)</label><div style="display:flex;gap:8px"><input id="uname" class="lin" value="${esc(p.username || "")}" placeholder="np. bartek_ski" autocapitalize="none" style="flex:1"><button class="btn pri" id="usave">Zapisz</button></div></div><label class="chk"><input type="checkbox" id="upub" ${p.is_public !== false ? "checked" : ""}> Profil publiczny: każdy może zobaczyć moją mapę</label><label class="chk"><input type="checkbox" id="unotes" ${p.show_notes !== false ? "checked" : ""}> Pokazuj moje notatki w profilu</label><div class="small" id="umsg" style="min-height:16px"></div>${link ? `<div class="small" style="word-break:break-all">Twój link: ${esc(link)} <button class="btn sm" id="ucopy">Kopiuj</button></div>` : ""}`; })()}<div style="display:flex;gap:8px;margin-top:10px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
+    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div>${(() => { const p = store.prof || {}; const link = p.username ? location.origin + location.pathname + "#u/" + p.username : ""; return `<div class="fld" style="margin-top:12px"><label>NAZWA UŻYTKOWNIKA (żeby inni Cię znaleźli)</label><div style="display:flex;gap:8px"><input id="uname" class="lin" value="${esc(p.username || "")}" placeholder="np. bartek_ski" autocapitalize="none" style="flex:1"><button class="btn pri" id="usave">Zapisz</button></div></div><label class="chk"><input type="checkbox" id="upub" ${p.is_public !== false ? "checked" : ""}> Profil publiczny: każdy może zobaczyć moją mapę</label><label class="chk"><input type="checkbox" id="unotes" ${p.show_notes !== false ? "checked" : ""}> Pokazuj moje notatki w profilu</label><div class="small" id="umsg" style="min-height:16px"></div>${link ? `<div class="small" style="word-break:break-all">Twój link: ${esc(link)} <button class="btn sm" id="ucopy">Kopiuj</button></div>` : ""}`; })()}<button class="btn" id="lrfsh" style="width:100%;margin-top:10px">↻ Odśwież dane z konta</button><div style="display:flex;gap:8px;margin-top:10px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
     : `<div class="lg"><div class="lgi">👤</div><h3 style="margin:6px 0 4px">Zaloguj się</h3>
        <div class="sub" style="margin-bottom:14px">Podaj e-mail i hasło. Dzięki temu masz te same dane na telefonie i komputerze.</div></div>
        <input id="lemail" class="lin" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com">
@@ -896,6 +896,7 @@ function bindAccount(){
   const un = $("unotes"); if (un) un.onchange = () => saveProf({show_notes: un.checked}, $("umsg"));
   const uc = $("ucopy"); if (uc) uc.onclick = async () => { try { await navigator.clipboard.writeText(location.origin + location.pathname + "#u/" + store.prof.username); $("umsg").textContent = "Skopiowano ✓"; } catch(e){} };
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
+  const rf = $("lrfsh"); if (rf) rf.onclick = async () => { rf.disabled = true; rf.textContent = "Odświeżam…"; await refreshSb(); closeAccount(); };
   const o = $("lout"); if (o) o.onclick = async () => { await store.sb.auth.signOut(); closeAccount(); };
   const pw = async up => {
     const em = ($("lemail").value || "").trim(), pa = $("lpass").value || "";
