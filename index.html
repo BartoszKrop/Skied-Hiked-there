@@ -40,7 +40,7 @@ header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(1
 .logo svg{width:18px;height:18px;stroke:#071426;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .tg{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}.swp{font-size:15px;color:#8ea3c6;opacity:.85;margin-left:-3px}
 .brand h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-.2px}
-.brk{display:none}
+.brk{display:none}.swt{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 4px;border-radius:999px;border:1px solid var(--line);background:var(--glass);transition:transform .1s,border-color .2s}.swt:active{transform:scale(.97)}.swt[data-m=s]{border-color:rgba(255,198,92,.5)}.swt[data-m=s] .logo{background:linear-gradient(135deg,#ffc65c,#ff9f5c);box-shadow:0 4px 14px rgba(255,170,80,.35)}#mode{display:none!important}
 .rt{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
 .mode{margin-left:0;display:flex;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
 .mode button{background:none;border:0;color:var(--mute);padding:6px 11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
@@ -48,7 +48,7 @@ header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(1
 .savel{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:10.5px;color:var(--faint);margin-top:6px;min-height:14px}
 .savel #saveState{text-align:right}
 .acct{border:1px solid var(--line);background:var(--glass);color:var(--text);border-radius:999px;padding:6px 9px;font-size:11px;font-weight:600;cursor:pointer;min-width:0;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
-@media(max-width:430px){.brand .logo{display:none}.brand h1{font-size:16px;white-space:nowrap}.mode button{padding:6px 7px;font-size:11.5px}.rt{gap:6px}}
+@media(max-width:430px){.brand h1{font-size:16px;white-space:nowrap}.mode button{padding:6px 7px;font-size:11.5px}.rt{gap:6px}}
 .acct.on{border-color:rgba(56,224,160,.5);color:var(--ok);background:rgba(56,224,160,.08)}
 #acctov{overflow:auto;gap:12px;position:fixed;inset:0;z-index:150;background:rgba(3,8,16,.75);display:none;align-items:flex-start;justify-content:center;padding:calc(70px + var(--safe-t)) 14px 14px}
 #acctov .lg{text-align:center}.lgi{width:54px;height:54px;margin:0 auto;border-radius:18px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:26px}
@@ -202,14 +202,15 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
 .hnote{margin:6px 0 4px;min-height:48px;font-size:13px}.hnro{margin:6px 0 4px;font-size:13px;color:var(--text);opacity:.9;white-space:pre-wrap}
 .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0;color:var(--text)}.chk input{width:18px;height:18px}
 .frow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14px}.frow:last-child{border-bottom:0}
-@media(max-width:560px){.brand{flex-wrap:wrap;row-gap:8px}.rt{display:contents}#mode{order:1;margin-left:auto}.brk{display:block;order:2;flex-basis:100%;height:0}#frbtn,#gear,#rfsh,#acct{order:3}#frbtn{margin-left:auto}.rt .acct{padding:5px 11px!important}}
+@media(max-width:560px){.brand{flex-wrap:wrap;row-gap:8px;gap:6px}.rt{display:contents}#frbtn{margin-left:auto}.rt .acct{padding:5px 8px!important}#acct{max-width:58px}}
+@media(max-width:380px){.brand h1{font-size:15px}.swt{gap:6px;padding:3px 8px 3px 3px}.logo{width:24px;height:24px}.rt .acct{padding:5px 6px!important}.brand{gap:4px}}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
-    <div class="logo tg" role="button" aria-label="Przełącz zima/lato"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
-    <h1 id="appname" class="tg" role="button" aria-label="Przełącz zima/lato">Skied there</h1><span class="tg swp" id="swp" role="button" aria-label="Przełącz zima/lato">⇄</span>
+    <div class="swt tg" id="swt" data-m="w" role="button" aria-label="Przełącz zima/lato"><div class="logo"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
+    <h1 id="appname">Skied there</h1><span class="swp" id="swp">⇄</span></div>
     <div class="rt"><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="rfsh" class="acct" style="display:none;flex:none;padding:6px 10px;font-size:14px" aria-label="Odśwież dane z konta" title="Odśwież dane z konta">↻</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
     <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div></div><i class="brk"></i>
   </div>
@@ -1252,7 +1253,7 @@ function setMode(m){
   if (m === MODE) return;
   closeSheet(); MODE = m; syncVisits();
   const T = m === "w" ? WINTER : SUMMER; R = T.R; G = T.G; byId = m === "w" ? byIdW : byIdS;
-  document.body.classList.toggle("summer", m === "s");
+  document.body.classList.toggle("summer", m === "s"); $("swt").dataset.m = m;
   document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
   document.querySelector('#nav button[data-t="grupy"]').style.display = m === "w" ? "" : "none";
   document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
