@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skied &amp; Hiked There – gdzie byłem na nartach i w górach</title>
+<meta name="description" content="Zaznacz ośrodki narciarskie i górskie szlaki, w których byłeś. Mapa, tier lista, plany i podsumowanie sezonu.">
+<meta property="og:title" content="Skied &amp; Hiked There">
+<meta property="og:description" content="Gdzie byłeś na nartach i w górach? Zaznacz na mapie, ułóż tier listę i pochwal się podsumowaniem sezonu.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#08111f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Skied Hiked">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08111f; --bg2:#0d1b30; --glass:rgba(255,255,255,.045); --glass2:rgba(255,255,255,.08);
+  --line:rgba(255,255,255,.09); --text:#eaf1ff; --mute:#8ea2c4; --faint:#5d7096;
+  --accent:#5ad1ff; --accent2:#8b7bff; --ok:#38e0a0; --warn:#ffc65c; --bad:#ff6f7d;
+  --grad:linear-gradient(135deg,#5ad1ff,#8b7bff); --halo:#14305a; --maphalo:#102949; --mapend:#091526; --accentbg:rgba(90,209,255,.09);
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 600px at 50% -10%,var(--halo) 0%,var(--bg) 60%)}
+body.summer{--accent:#ffd35a;--accent2:#ff8f5a;--grad:linear-gradient(135deg,#ffd35a,#ff8f5a);--halo:#21402f;--maphalo:#1b3a2d;--mapend:#07140e;--bg:#08140f;--accentbg:rgba(255,211,90,.1)}
+button{font-family:inherit}
+svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 2px}
+
+/* header */
+header{padding:calc(12px + var(--safe-t)) 16px 12px;background:linear-gradient(180deg,rgba(13,27,48,.92),rgba(8,17,31,.6));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:3}
+.brand{display:flex;align-items:center;gap:9px}
+.logo{width:28px;height:28px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(90,209,255,.35)}
+.logo svg{width:18px;height:18px;stroke:#071426;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.brand h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-.2px}
+.mode{margin-left:auto;display:flex;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.mode button{background:none;border:0;color:var(--mute);padding:6px 11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
+.mode button.on{background:var(--grad);color:#071426}
+.savel{text-align:right;font-size:10.5px;color:var(--faint);margin-top:5px;min-height:14px}
+.hstats{display:flex;gap:18px;margin-top:10px;align-items:flex-end}
+.hstats div{display:flex;flex-direction:column;line-height:1.1}
+.hstats b{font-size:22px;font-weight:800;letter-spacing:-.5px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hstats small{font-size:11px;color:var(--mute);margin-top:3px}
+.prog{height:5px;background:var(--glass2);border-radius:5px;margin-top:11px;overflow:hidden}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--ok));width:0;border-radius:5px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
+
+main{flex:1;position:relative;overflow:hidden}
+.view{position:absolute;inset:0;display:none;overflow:auto;-webkit-overflow-scrolling:touch}
+.view.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+nav{display:flex;background:rgba(10,20,36,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 6px calc(6px + var(--safe-b))}
+nav button{flex:1;background:none;border:0;color:var(--faint);padding:7px 0 5px;font-size:10.5px;font-weight:600;cursor:pointer;border-radius:12px;transition:color .2s,background .2s}
+nav button.on{color:var(--accent);background:var(--accentbg)}
+
+/* mapa */
+#mapwrap{position:absolute;inset:0;touch-action:none;background:radial-gradient(ellipse at 50% 35%,var(--maphalo) 0%,var(--mapend) 70%)}
+#map{width:100%;height:100%;display:block;touch-action:none;user-select:none}
+.zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:8px}
+.zoom button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:rgba(13,27,48,.78);backdrop-filter:blur(8px);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.zoom button:active{background:var(--glass2)}
+.legend{position:absolute;left:12px;bottom:12px;background:rgba(13,27,48,.78);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:12px;color:var(--mute);display:flex;gap:14px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.note{position:absolute;left:12px;bottom:58px;font-size:11px;color:var(--faint);max-width:70%}
+.mapchips{position:absolute;left:12px;top:12px;display:flex;gap:8px;flex-wrap:wrap;max-width:calc(100% - 72px)}
+.mapempty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;padding:20px}
+.mapempty .card{pointer-events:auto;background:rgba(13,27,48,.88);backdrop-filter:blur(8px);margin:0}
+
+/* lista */
+.toolbar{position:sticky;top:0;z-index:2;background:linear-gradient(180deg,var(--bg) 70%,rgba(8,17,31,0));padding:12px 14px 10px}
+.toolbar input[type=search],.toolbar select{width:100%;background:var(--glass);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:11px 13px;font:inherit;font-size:14px;outline:none}
+.toolbar input:focus,.toolbar select:focus{border-color:rgba(90,209,255,.5)}
+.row2{display:flex;gap:8px;margin-top:8px}
+.seg{display:flex;flex:1;background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.seg button{flex:1;background:none;border:0;color:var(--mute);padding:8px 2px;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;transition:all .15s}
+.seg button.on{background:var(--glass2);color:var(--text)}
+.list{padding:2px 12px 24px}
+.item{display:flex;align-items:center;gap:12px;padding:11px 12px;margin-bottom:8px;border-radius:16px;background:var(--glass);border:1px solid var(--line);cursor:pointer;transition:transform .1s,background .15s}
+.item:active{transform:scale(.99);background:var(--glass2)}
+.item.v{border-color:rgba(56,224,160,.28);background:linear-gradient(90deg,rgba(56,224,160,.08),var(--glass) 60%)}
+.item.p{border-color:rgba(255,198,92,.28)}
+.flg{width:38px;height:38px;border-radius:12px;background:var(--glass2);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.item .t{flex:1;min-width:0}
+.item .t b{display:block;font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .t small{display:block;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.kmb{font-size:12px;color:var(--mute);text-align:right;white-space:nowrap;line-height:1.2}
+.kmb b{display:block;color:var(--text);font-size:14px;font-weight:700}
+.tick{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--faint);flex:none;background:none;cursor:pointer;transition:all .15s}
+.tick.on{background:var(--ok);border-color:var(--ok);color:#052b1d;box-shadow:0 0 14px rgba(56,224,160,.45)}
+.tick.plan{border-color:var(--warn);color:var(--warn);font-size:14px}
+.empty{padding:36px 18px;text-align:center;color:var(--mute)}
+
+/* karty */
+.pad{padding:14px}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 3px;font-size:16px;font-weight:700}
+.card .sub{color:var(--mute);font-size:12.5px;margin-bottom:10px}
+.bar{height:8px;background:var(--glass2);border-radius:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--grad);border-radius:8px}
+.bar i.full{background:linear-gradient(90deg,var(--ok),#9af27e)}
+.members{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.m{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);color:var(--mute);cursor:pointer;background:none;font-weight:500}
+.m.on{border-color:rgba(56,224,160,.5);color:var(--ok);background:rgba(56,224,160,.08)}
+.big{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.big .card{margin:0;text-align:left;padding:14px 14px 12px;position:relative;overflow:hidden}
+.big .n{font-size:30px;font-weight:800;letter-spacing:-1px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.1}
+.big .l{font-size:12px;color:var(--mute);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:8px 4px;border-bottom:1px solid var(--line);text-align:left}
+tr:last-child td{border-bottom:0}
+th{color:var(--faint);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+td.r,th.r{text-align:right}
+.btn{background:var(--glass2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:11px 15px;font-size:14px;font-weight:600;cursor:pointer}
+.btn:active{opacity:.8}
+.btn.pri{background:var(--grad);color:#071426;border:0}
+.btn.ok{background:linear-gradient(135deg,#38e0a0,#7ef0b8);color:#052b1d;border:0}
+.btn.warn{background:linear-gradient(135deg,#ffc65c,#ffdc8c);color:#2b1d03;border:0}
+.btn.bad{background:none;border-color:rgba(255,111,125,.45);color:var(--bad)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px}
+textarea{width:100%;background:var(--glass);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;min-height:76px;outline:none;resize:vertical}
+textarea:focus,input[type=date]:focus{border-color:rgba(90,209,255,.5)}
+
+/* ranking */
+.tiers .tier{display:flex;gap:8px;margin-bottom:9px}
+.tiers .lab{width:46px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:#0b1626;text-shadow:0 1px 0 rgba(255,255,255,.3)}
+.chip{touch-action:pan-y;user-select:none;-webkit-user-select:none}.chip.drag{opacity:.35}.ghost{position:fixed;z-index:99;pointer-events:none;transform:translate(-50%,-120%);box-shadow:0 8px 24px rgba(0,0,0,.5)}.tiers .box.over{outline:2px solid var(--accent);background:var(--accentbg)}.pool{min-height:60px}
+.tiers .box{flex:1;min-height:48px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:7px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+.small{font-size:12px;color:var(--mute)}
+.hint{padding:2px 4px 12px;color:var(--mute);font-size:13px}
+
+/* arkusz */
+#sheetbg{position:fixed;inset:0;background:rgba(3,8,16,.62);backdrop-filter:blur(2px);display:none;z-index:10}
+#sheet{position:fixed;left:0;right:0;bottom:0;max-height:90%;overflow:auto;background:linear-gradient(180deg,#14233d,#0e1b31);border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;padding:8px 16px calc(18px + var(--safe-b));z-index:11;display:none;box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+#sheet.open{animation:up .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.grab{width:42px;height:4px;border-radius:4px;background:var(--glass2);margin:2px auto 12px}
+.hero{display:flex;gap:12px;align-items:center}
+.hero .flg{width:48px;height:48px;font-size:26px;border-radius:15px}
+.hero h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.3px;line-height:1.2}
+.hero .meta{color:var(--mute);font-size:13px;margin-top:2px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 6px}
+.tile{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:9px 10px}
+.tile b{display:block;font-size:17px;font-weight:800;letter-spacing:-.3px}
+.tile span{font-size:11px;color:var(--mute)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tags span{font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(139,123,255,.14);color:#c0b8ff}
+.lnk{display:flex;align-items:center;gap:8px;margin:10px 0;padding:11px 13px;border-radius:13px;background:rgba(90,209,255,.08);border:1px solid rgba(90,209,255,.22);color:var(--accent);text-decoration:none;font-size:14px;font-weight:600}
+.sect{margin-top:16px}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sh b{font-size:13px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.stay{display:flex;gap:8px;align-items:flex-end;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
+.stay .dt{flex:1;min-width:0}
+.stay label,.fld label{display:block;color:var(--faint);font-size:11px;margin-bottom:4px;font-weight:600}
+input[type=date]{width:100%;background:var(--glass2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 8px;font:inherit;font-size:14px;color-scheme:dark;outline:none;min-height:40px}
+.stay .x{background:none;border:0;color:var(--faint);font-size:12px;padding:10px 6px;cursor:pointer;white-space:nowrap}
+.stay .x.arm{color:var(--bad);font-weight:700}
+.fld{margin:14px 0}
+.stars{display:flex;gap:4px}
+.stars button{background:none;border:0;font-size:34px;color:#3d5278;cursor:pointer;padding:0 2px;line-height:1}
+.stars button.on{color:var(--warn);text-shadow:0 0 12px rgba(255,198,92,.5)}
+.tbtns{display:flex;gap:7px}
+.tbtns button{flex:1;border:1px solid var(--line);background:var(--glass);color:var(--text);border-radius:12px;padding:11px 0;font-weight:800;font-size:15px;cursor:pointer}
+.tbtns button.on{color:#0b1626;border-color:transparent}
+.two{display:flex;gap:10px;margin-top:12px}.two .btn{flex:1;padding:15px}
+select.sel{width:100%;background:var(--glass2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 8px;font:inherit;font-size:14px;min-height:40px;color-scheme:dark;outline:none}
+.prio{display:flex;gap:7px}.prio button{flex:1;border:1px solid var(--line);background:var(--glass);color:var(--mute);border-radius:12px;padding:11px 0;font-weight:800;font-size:15px;cursor:pointer}.prio button.on{background:linear-gradient(135deg,#ffc65c,#ff9f5c);color:#2b1d03;border-color:transparent}
+.hike{display:flex;gap:10px;align-items:flex-start;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:11px;margin-bottom:8px}
+.hike.done{border-color:rgba(56,224,160,.35);background:linear-gradient(90deg,rgba(56,224,160,.08),var(--glass) 60%)}
+.hike .hb{flex:1;min-width:0}.hike .hb>b{display:block;font-size:14.5px;font-weight:600}
+.hike .bd{display:flex;gap:6px;margin:4px 0}.hike .bd span{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--glass2);color:var(--mute);font-weight:600}
+.hike .bd .d0{background:rgba(56,224,160,.15);color:#6ff0bb}.hike .bd .d1{background:rgba(255,198,92,.15);color:#ffd27f}.hike .bd .d2{background:rgba(255,111,125,.16);color:#ff97a2}
+.hike p{margin:2px 0 5px;color:var(--mute);font-size:12.5px}.hike a{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600}
+.hike .tick{margin-top:2px}
+#shareov{position:fixed;inset:0;z-index:200;background:rgba(3,8,16,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:14px}
+#shareov canvas{max-width:100%;max-height:calc(100% - 120px);border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
+    <h1>Ski Been</h1>
+    <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div>
+  </div>
+  <div class="hstats" id="hstats"></div>
+  <div class="prog"><i id="progBar"></i></div>
+  <div class="savel"><span id="saveState"></span></div>
+</header>
+<main>
+  <section class="view on" id="v-mapa">
+    <div id="mapwrap">
+      <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="zfit" aria-label="Cała Europa" style="font-size:16px">⌂</button></div>
+      <div class="mapchips"><button class="btn sm pri" id="madd">+ Dodaj</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
+      <div class="mapempty" id="mapempty"><div class="card" style="text-align:center;max-width:290px"><h3>Twoja mapa jest pusta</h3><div class="sub">Dodaj miejsca z listy: dotknij kółka ✓ przy miejscu, w którym byłeś, albo wyszukaj i oznacz plan. Pojawią się tu na mapie.</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
+      <div class="legend"><span><i style="background:var(--ok)"></i>byłem</span><span><i style="background:var(--warn)"></i>planuję</span><span><i style="background:#7aa8ff"></i>jeszcze nie</span></div>
+      <div class="note" id="mapnote"></div>
+    </div>
+  </section>
+  <section class="view" id="v-lista">
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off">
+      <div class="row2"><div class="seg" id="fstat"><button data-v="all" class="on">Wszystkie</button><button data-v="yes">Byłem</button><button data-v="plan">Planuję</button><button data-v="no">Nie byłem</button></div></div>
+      <div class="row2"><select id="fcountry"></select><select id="fsort"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="p">Priorytet planów</option></select></div>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+  <section class="view" id="v-ranking"><div class="pad tiers" id="tiers"></div></section>
+  <section class="view" id="v-grupy"><div class="pad" id="groups"></div></section>
+  <section class="view" id="v-statystyki"><div class="pad" id="stats"></div></section>
+</main>
+<nav id="nav">
+  <button data-t="mapa" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4z"/><path d="M9 4v13M15 7v13"/></svg>Mapa</button>
+  <button data-t="lista"><svg class="i" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>Lista</button>
+  <button data-t="ranking"><svg class="i" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a2 2 0 0 0 0 4h3M16 6h3a2 2 0 0 1 0 4h-3M12 13v4M9 20h6M10 17h4"/></svg>Ranking</button>
+  <button data-t="grupy"><svg class="i" viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg>Grupy</button>
+  <button data-t="statystyki"><svg class="i" viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>Staty</button>
+</nav>
+<div id="sheetbg"></div>
+<div id="sheet"></div>
+
+<script>
+const DATA = {"resorts":[{"id":"180faeea32aba7b22fbe1438b0a3a82f6a2a4ad8","n":"Skicircus Saalbach-Hinterglemm Leogang Fieberbrunn","full":"Skicircus Saalbach-Hinterglemm Leogang Fieberbrunn","c":"AT","r":"Tyrol","l":"Fieberbrunn","k":267.1,"g":[],"x":12.7114,"y":47.4137,"w":"https://www.saalbach.com/"},{"id":"37ee9c6ba5b44864ba844f804938a8b815f8b717","n":"SkiWelt Wilder Kaiser - Brixental","full":"SkiWelt Wilder Kaiser - Brixental","c":"AT","r":"Tyrol","l":"Ellmau","k":237.8,"g":[],"x":12.2468,"y":47.4581,"w":"https://www.skiwelt.at/"},{"id":"a6e33a705cdc20bfc2dfa1e690f066bd8e1caa5b","n":"Tignes - Val d'Isère","full":"Tignes - Val d'Isère","c":"FR","r":"Savoie","l":"Bonneval-sur-Arc","k":211.5,"g":[],"x":6.9649,"y":45.4593,"w":"https://www.espacekilly.com/"},{"id":"fc76f378a2f19efc5228c60d97c895dde82ac2c5","n":"Zermatt - Breuil-Cervinia","full":"Zermatt - Breuil-Cervinia, Breuil-Cervinia Ski Paradise","c":"CH,IT","r":"Valais","l":"Zermatt","k":205.9,"g":[],"x":7.7235,"y":45.9606,"w":"https://www.matterhornparadise.ch"},{"id":"0345d73f7a4bf0f49815ccb16306a3ec6371544b","n":"Espace Diamant","full":"Espace Diamant","c":"FR","r":"Savoie","l":"Cohennoz","k":199.3,"g":["Evasion Mont Blanc"],"x":6.5529,"y":45.789,"w":"https://www.espacediamant.com"},{"id":"f47f7e05cc676b25b6a00f77f0b86a897f03018c","n":"La Plagne","full":"La Plagne","c":"FR","r":"Savoie","l":"Aime","k":188.1,"g":["Paradiski"],"x":6.7021,"y":45.5079,"w":"https://paradiski.com/"},{"id":"1eeb56a80185ff1dff644357f9f747842d0f620c","n":"KitzSki","full":"KitzSki","c":"AT","r":"Tyrol","l":"Jochberg","k":186.5,"g":[],"x":12.3229,"y":47.3445,"w":"https://www.kitzski.at/"},{"id":"fa9477e20c9caa871737f7a1348b911870394799","n":"4 Vallées – Verbier/La Tzoumaz/Nendaz/Veysonnaz/Thyon","full":"4 Vallées – Verbier/La Tzoumaz/Nendaz/Veysonnaz/Thyon","c":"CH","r":"Valais","l":"Bruson","k":174.5,"g":[],"x":7.2881,"y":46.1199,"w":"http://www.4vallees.ch/"},{"id":"efaa82d7ae8e42868f19ed2abb8001f518a404d0","n":"Le Grand Massif","full":"Le Grand Massif","c":"FR","r":"Haute-Savoie","l":"Arâches-la-Frasse","k":174.3,"g":[],"x":6.7175,"y":46.0298,"w":"https://www.grand-massif.com/"},{"id":"e587928ea763f20b3232a5069c5d2438d09b6908","n":"Serfaus Fiss Ladis","full":"Serfaus Fiss Ladis","c":"AT","r":"Tyrol","l":"Serfaus","k":170.6,"g":[],"x":10.5607,"y":47.0496,"w":"https://www.serfaus-fiss-ladis.at/de/winter"},{"id":"dec537b602584db89d89ab114a619f1ae356398e","n":"Les Arcs","full":"Les Arcs","c":"FR","r":"Savoie","l":"Bellentre","k":167.8,"g":["Paradiski"],"x":6.8064,"y":45.5757,"w":"https://paradiski.com/"},{"id":"4ae9b0cba5454d6f0921bf413c33a267f1d63cca","n":"Arosa Lenzerheide","full":"Arosa Lenzerheide","c":"CH","r":"Graubunden","l":"Almens","k":163.8,"g":[],"x":9.5983,"y":46.7496,"w":"http://arosalenzerheide.ch"},{"id":"7c2f2690d339d9df6f820e7c6e596a9b0ba3dce5","n":"Silvretta Arena Ischgl/Samnaun","full":"Silvretta Arena Ischgl/Samnaun","c":"AT,CH","r":"Tyrol","l":"Ischgl","k":163.8,"g":[],"x":10.3215,"y":46.9676,"w":"https://www.ischgl.com/"},{"id":"1164f5d49e7b6c2d5f7ae7db3943116e7e15438e","n":"Alpe d'Huez Grand Domaine","full":"Alpe d'Huez Grand Domaine","c":"FR","r":"Isère","l":"Auris","k":162.9,"g":[],"x":6.0827,"y":45.108,"w":"https://www.alpedhuez.com/"},{"id":"94cb050e1e20e04e822c14216840885aea2eafcc","n":"Serre-Chevalier","full":"Serre-Chevalier","c":"FR","r":"Hautes-Alpes","l":"Briançon","k":157.4,"g":[],"x":6.5593,"y":44.9311,"w":"https://www.serre-chevalier.com/"},{"id":"125d02338620dc079d5d635595a099370161bf83","n":"Estació d'Esquí Baqueira-Beret","full":"Estació d'Esquí Baqueira-Beret","c":"ES","r":"Lleida","l":"","k":153.0,"g":[],"x":0.9684,"y":42.6972,"w":"http://www.baqueira.cat"},{"id":"775634f8f5f5b0724ecd27d82909b2008d58f7d5","n":"Les Sybelles","full":"Les Sybelles","c":"FR","r":"Savoie","l":"Fontcouverte-la-Toussuire","k":152.9,"g":[],"x":6.2389,"y":45.2464,"w":"https://www.sybelles.ski/"},{"id":"d5ff708ce6a4ab382afaeb81310e7317494b6fbb","n":"Laax","full":"Laax","c":"CH","r":"Glarus","l":"Elm","k":152.2,"g":[],"x":9.2213,"y":46.8358,"w":"https://www.laax.com/"},{"id":"23365b5cea5dad5b58d9ffc5506ff573f96cb70b","n":"Courchevel","full":"Courchevel","c":"FR","r":"Savoie","l":"Bozel","k":151.4,"g":["Les Trois Vallées"],"x":6.6213,"y":45.402},{"id":"e13d9d82f727b3101571e54b9aeeb900a8286337","n":"Méribel","full":"Méribel","c":"FR","r":"Savoie","l":"Brides-les-Bains","k":142.0,"g":["Les Trois Vallées"],"x":6.5845,"y":45.3814,"w":"https://www.les3vallees.com/"},{"id":"3ab7375c4734163405f0f77a7c5a6afdfd600b73","n":"Val Thorens - Orelle","full":"Val Thorens - Orelle","c":"FR","r":"Savoie","l":"Les Allues","k":141.0,"g":["Les Trois Vallées"],"x":6.5755,"y":45.2638},{"id":"97a14cedc5b0e781e9bd9857df1426b9376c7462","n":"Megève","full":"Megève","c":"FR","r":"Haute-Savoie","l":"Combloux","k":140.9,"g":["Evasion Mont Blanc"],"x":6.6575,"y":45.8544,"w":"https://www.megeve.com/"},{"id":"de4f884c40976fe9d18c23d0bab174c1d6b79218","n":"GrandValira","full":"GrandValira","c":"AD,FR","r":"","l":"El Pas de la Casa","k":136.0,"g":[],"x":1.6609,"y":42.5485,"w":"https://www.grandvalira.com/"},{"id":"0c1ee22aff92dce160be7b206226d0e3b73328b2","n":"Galibier-Thabor","full":"Galibier-Thabor","c":"FR","r":"Savoie","l":"Orelle","k":131.3,"g":[],"x":6.4751,"y":45.159,"w":"https://www.skipass-valmeinier.com/en/domaine-galibier-thabor"},{"id":"9d0b2c5e0fcac9deba9c727a834cac4b43a5d2c9","n":"Forêt Blanche : Vars/Risoul","full":"Forêt Blanche : Vars/Risoul","c":"FR","r":"Hautes-Alpes","l":"Crévoux","k":131.0,"g":[],"x":6.653,"y":44.5911,"w":"https://www.vars.com/hiver/"},{"id":"04d84a3789b94eba19ce3c951fece8117d931c03","n":"Alta Badia","full":"Alta Badia","c":"IT","r":"Bolzano/Bozen","l":"Abtei-Badia","k":127.4,"g":["Dolomiti Superski"],"x":11.8919,"y":46.5653,"w":"https://www.altabadia.org/"},{"id":"f5fcc0e543cfb0e4d50280c286081c27d975697f","n":"Le Grand Domaine","full":"Le Grand Domaine","c":"FR","r":"Savoie","l":"La Léchère","k":125.1,"g":[],"x":6.4022,"y":45.4512,"w":"https://www.legranddomaine.fr/"},{"id":"bbbfaa27816f58cfdfecc5b692b0ee59dde891f5","n":"Zillertal Arena","full":"Zillertal Arena","c":"AT","r":"Salzburg","l":"","k":123.3,"g":[],"x":12.0226,"y":47.226,"w":"https://www.zillertalarena.com/"},{"id":"075db540453d13b0e660135085f40523940b95ba","n":"Les Ménuires","full":"Les Ménuires","c":"FR","r":"Savoie","l":"Les Allues","k":120.3,"g":["Les Trois Vallées"],"x":6.5358,"y":45.3259},{"id":"c5107fc2eb3f59b23211a3251a229b06d36f765c","n":"Lech/Zürs","full":"Lech/Zürs","c":"AT","r":"Vorarlberg","l":"Lech","k":119.6,"g":["Ski Arlberg"],"x":10.1127,"y":47.1997,"w":"https://www.skiarlberg.at/"},{"id":"fca6e2a27977f0cdca3016e8e9c4a9a643d53f2b","n":"Val Gardena","full":"Val Gardena, Gröden, Gherdëina","c":"IT","r":"Bolzano/Bozen","l":"Santa Cristina","k":117.8,"g":["Dolomiti Superski"],"x":11.7394,"y":46.5534,"w":"https://www.valgardena.it/"},{"id":"0e7ba1fd10a2afbc6e188d1f9936f843cc665583","n":"Mayrhofen Hippach","full":"Mayrhofen Hippach","c":"AT","r":"Tyrol","l":"Finkenberg","k":113.2,"g":[],"x":11.7842,"y":47.1638,"w":"https://www.zillertal.at/en/winter/holidays/ski-areas/ski-und-gletscherwelt-3000.html"},{"id":"02196b1e0dd473176e265318bc9c06e22df53ace","n":"Cortina d'Ampezzo","full":"Cortina d'Ampezzo","c":"IT","r":"Belluno","l":"Auronzo di Cadore","k":112.8,"g":["Dolomiti Superski"],"x":12.1952,"y":46.5274,"w":"http://www.cortinadolomiti.eu/"},{"id":"0476a1aa89a08fae0039137271c0f9dd37b5d96f","n":"Les Deux Alpes","full":"Les Deux Alpes","c":"FR","r":"Hautes-Alpes","l":"La Grave","k":108.3,"g":[],"x":6.1713,"y":45.0091,"w":"https://www.les2alpes.com"},{"id":"5ee4bbf3ab3be8e91b05b56e05180dd4ee735335","n":"Estación de Esquí y Montaña de Sierra Nevada","full":"Estación de Esquí y Montaña de Sierra Nevada","c":"ES","r":"Granada","l":"","k":106.4,"g":[],"x":-3.3886,"y":37.0755,"w":"https://sierranevada.es"},{"id":"78e5f98d8527df7216b08962f372659abcd4f711","n":"Sölden","full":"Sölden","c":"AT","r":"Tyrol","l":"Solden","k":106.0,"g":[],"x":10.9726,"y":46.9477,"w":"https://www.soelden.com/"},{"id":"0f46917975b8dab5e541edf6469105c3c091ec22","n":"Formigal","full":"Formigal","c":"ES","r":"Huesca","l":"","k":104.3,"g":[],"x":-0.4021,"y":42.7751,"w":"https://www.formigal-panticosa.com/"},{"id":"45c1ed53a5c947daeb9df201306473ac8b059788","n":"Espace Liberté","full":"Espace Liberté","c":"FR,CH","r":"Haute-Savoie","l":"Abondance","k":102.4,"g":["Les Portes du Soleil"],"x":6.8183,"y":46.2595,"w":"https://en.chatel.com/chatel-and-portes-du-soleil-ski-areas.html"},{"id":"e61adbd637839187e907618f82887995b324f482","n":"Silvretta Montafon","full":"Silvretta Montafon","c":"AT","r":"Vorarlberg","l":"Gaschurn","k":101.9,"g":[],"x":9.9989,"y":47.0287,"w":"https://www.silvretta-montafon.at"},{"id":"3768b8c925737d2bdad4ea978f036485c508a6b3","n":"Drei Zinnen - Tre Cime","full":"Drei Zinnen - Tre Cime, Drei Zinnen, Tre Cime","c":"IT","r":"Bolzano/Bozen","l":"Sexten","k":101.2,"g":["Dolomiti Superski"],"x":12.319,"y":46.6669,"w":"https://www.dreizinnen.com/de"},{"id":"66e672470add74c3e6a2bd8d4c1bb07cc4721728","n":"St. Anton/St. Christoph/Stuben","full":"St. Anton/St. Christoph/Stuben","c":"AT","r":"Vorarlberg","l":"Grechanaya Balka","k":99.0,"g":["Ski Arlberg"],"x":10.2689,"y":47.1267},{"id":"9cb83fdd2a49011eec76e3d1bbc2af8f582888a9","n":"La Clusaz","full":"La Clusaz","c":"FR","r":"Haute-Savoie","l":"La Clusaz","k":96.3,"g":[],"x":6.441,"y":45.884,"w":"https://www.laclusaz.com/"},{"id":"05ec7627488328fb30e0d502b021045a348af622","n":"Val d'Allos - La Foux","full":"Val d'Allos - La Foux","c":"FR","r":"Alpes-de-Haute-Provence","l":"Allos","k":96.1,"g":["Espace Lumière"],"x":6.57,"y":44.3252,"w":"https://www.valdallos.com/"},{"id":"b2d026c49e73f7b49e043de835baa5622adc2e47","n":"Les Gets-Morzine","full":"Les Gets-Morzine","c":"FR","r":"Haute-Savoie","l":"La Côte-d'Arbroz","k":95.1,"g":["Les Portes du Soleil"],"x":6.6791,"y":46.1566,"w":"https://pass.lesgets.com/"},{"id":"60bf2e0677cb20240633a22d4f82730130629872","n":"Stubai","full":"Stubai","c":"AT","r":"Tyrol","l":"Mieders","k":94.9,"g":[],"x":11.2581,"y":47.0686,"w":"https://www.stubai.at/"},{"id":"df4c0541e78ace196a344e169cb23e9464c26224","n":"Obersaxen","full":"Obersaxen","c":"CH","r":"Graubunden","l":"Flond","k":91.7,"g":[],"x":9.1345,"y":46.7256,"w":"https://www.obersaxen-mundaun.ch"},{"id":"17756f8437ab9269dabffdd3f26a4fd045a4ae74","n":"Aletsch Arena","full":"Aletsch Arena","c":"CH","r":"Valais","l":"Betten","k":89.6,"g":[],"x":8.0747,"y":46.3921,"w":"https://www.aletscharena.ch/"},{"id":"4236aff4e09a8a34af56ec12b7c0085e579204db","n":"Pra-Loup 1600","full":"Pra-Loup 1600","c":"FR","r":"Alpes-de-Haute-Provence","l":"Les Thuiles","k":89.3,"g":["Espace Lumière"],"x":6.586,"y":44.3503,"w":"https://www.praloup.com/"},{"id":"de350ad7968df87ff7ca6ef38f27963ca0c2ec2a","n":"Val Cenis","full":"Val Cenis","c":"FR","r":"Savoie","l":"Lanslevillard","k":89.3,"g":["Espace Haute Maurienne Vanoise"],"x":6.88,"y":45.2745,"w":"https://www.valcenis.com"},{"id":"1d111e0379650f6a9186eaa3d21dadf973340c88","n":"Grindelwald - Wengen (Kleine Scheidegg - Männlichen)","full":"Grindelwald - Wengen (Kleine Scheidegg - Männlichen)","c":"CH","r":"Bern","l":"Burglauenen","k":87.9,"g":[],"x":7.9756,"y":46.5991,"w":"https://www.jungfrau.ch/de-ch/jungfrau-ski-region/grindelwald-wengen/"},{"id":"b28af962323890eb2dc4f2705ed7b6893d894add","n":"Obertauern","full":"Obertauern","c":"AT","r":"Salzburg","l":"","k":87.2,"g":["Ski amadé"],"x":13.535,"y":47.2549,"w":"https://www.obertauern.com/"},{"id":"aa87548d9445d366123e7ef7aee40af9d4a78dff","n":"Les Portes du Mont-Blanc","full":"Les Portes du Mont-Blanc","c":"FR","r":"Haute-Savoie","l":"Combloux","k":85.8,"g":["Evasion Mont Blanc"],"x":6.5689,"y":45.8875,"w":"https://www.lesportesdumontblanc.fr/"},{"id":"42e7619de4170fbbc68d4be51114f7cf54fb0d30","n":"Adelboden - Lenk","full":"Adelboden - Lenk","c":"CH","r":"Bern","l":"Adelboden","k":83.3,"g":[],"x":7.5091,"y":46.4646,"w":"https://www.adelboden-lenk.ch/de/Erlebnis/Skiregion/Adelboden-Lenk"},{"id":"4c87ad2b81e6af13513c56907fa5850c59fa5e32","n":"Livigno","full":"Livigno","c":"IT","r":"Sondrio","l":"Livigno","k":82.6,"g":[],"x":10.121,"y":46.5044,"w":"https://www.skipasslivigno.com/"},{"id":"31ba9e7c28dd9574c86fa6e4c0ead48553e45ba7","n":"Hochkönig","full":"Hochkönig","c":"AT","r":"Salzburg","l":"Krallerwinkl","k":82.4,"g":["Ski amadé"],"x":13.017,"y":47.3903,"w":"https://www.hochkoenig.at"},{"id":"0295b1657f53d93d0eb1fd692993c0d2909d6d73","n":"Kronplatz - Plan de Corones","full":"Kronplatz - Plan de Corones, Kronplatz, Plan de Corones","c":"IT","r":"Bolzano/Bozen","l":"San Martino in Badia","k":82.3,"g":["Dolomiti Superski"],"x":11.9517,"y":46.7405,"w":"https://www.kronplatz.com/"},{"id":"18fc59dac7fcada9451a1b4487a95f2285ac4930","n":"Avoriaz","full":"Avoriaz","c":"CH,FR","r":"Valais","l":"Champéry","k":81.8,"g":["Les Portes du Soleil"],"x":6.7599,"y":46.1913,"w":"https://www.avoriaz.com/en/discover/discover/ski-area-and-maps/"},{"id":"99cef648d8c6f7231b60448092fb29de26069d0f","n":"Hochzillertal-Hochfügen","full":"Hochzillertal-Hochfügen","c":"AT","r":"Tyrol","l":"Aschau","k":81.5,"g":[],"x":11.8209,"y":47.2668,"w":"https://www.hochzillertal.com/"},{"id":"403c8d67ddd348bfa3f7d02c6c21163479964926","n":"Parsenn","full":"Parsenn","c":"CH","r":"Graubunden","l":"Clavadel","k":81.0,"g":[],"x":9.8676,"y":46.817},{"id":"f83cb97ace9308e949a7638a1922ba589f5cc40d","n":"Skigebiet Damüls-Mellau","full":"Skigebiet Damüls-Mellau","c":"AT","r":"Vorarlberg","l":"Damüls","k":80.7,"g":["Skigebiet Damüls-Mellau-Faschina"],"x":9.8732,"y":47.308,"w":"https://www.damuels-mellau.at/"},{"id":"064c258440982ec02bbffeb24ad3acffc7fa5ef0","n":"La Thuile ski","full":"La Thuile ski","c":"IT,FR","r":"Valle D'Aosta","l":"La Thuile","k":78.6,"g":[],"x":6.9157,"y":45.687,"w":"https://www.espacesanbernardo.ski/"},{"id":"e615b3d384f0063fb20af785b477a97fdce907bc","n":"Val di Fassa","full":"Val di Fassa","c":"IT","r":"Trento","l":"Canazei","k":78.1,"g":["Dolomiti Superski"],"x":11.737,"y":46.4613,"w":"https://www.fassa.com/"},{"id":"7764d597cda909bb1bc7fd66a07bbfa6bb8ab695","n":"Crans-Montana","full":"Crans-Montana","c":"CH","r":"Valais","l":"Aminona","k":73.9,"g":[],"x":7.4995,"y":46.3346,"w":"https://www.crans-montana.ch/"},{"id":"8ebbe708c3f7b24aac9cd9d3293dc3b53d405f92","n":"Ski Gastein - Schlossalm/Angertal/Stubnerkogel","full":"Ski Gastein - Schlossalm/Angertal/Stubnerkogel","c":"AT","r":"Salzburg","l":"Bad Gastein","k":73.6,"g":["Ski amadé"],"x":13.0879,"y":47.138},{"id":"1a132aee8f40c3ea1e676d4c270d212e1f991dc4","n":"Saint-Lary","full":"Saint-Lary","c":"FR","r":"Hautes-Pyrénées","l":"Aragnouet","k":72.1,"g":[],"x":0.2627,"y":42.8311},{"id":"5ffd86e2374dc98261a846de36bfc510ab758dfc","n":"Monterosa Ski","full":"Monterosa Ski","c":"IT","r":"Valle D'Aosta","l":"","k":71.6,"g":[],"x":7.8362,"y":45.8605,"w":"https://monterosaski.eu/en"},{"id":"7fda1758b582daf60bb505e31bc3b7d5e4ce009b","n":"Zinal / Grimentz","full":"Zinal / Grimentz","c":"CH","r":"Valais","l":"Ayer","k":71.2,"g":[],"x":7.5745,"y":46.1622,"w":"https://www.valdanniviers.ch/fr/grimentz-zinal-134.html"},{"id":"8e5dbdde0808be45e5e47253e905635c9f867c3b","n":"Dévoluy","full":"Dévoluy","c":"FR","r":"Hautes-Alpes","l":"La Cluse","k":70.2,"g":[],"x":5.9072,"y":44.6642,"w":"https://www.ledevoluy.com/"},{"id":"5dc251b4f21c4dba246f745b3d00859d183d5d06","n":"Nassfeld","full":"Nassfeld, Mokrine","c":"IT,AT","r":"Udine","l":"Pontebba","k":70.0,"g":[],"x":13.2706,"y":46.5843,"w":"https://www.nassfeld.at/"},{"id":"4ae8be1df66f9e30fd3ba0b03cd191cda44665bc","n":"Ski Juwel Alpbachtal-Wildschönau","full":"Ski Juwel Alpbachtal-Wildschönau","c":"AT","r":"Tyrol","l":"Alpbach","k":69.4,"g":[],"x":11.9789,"y":47.3868,"w":"https://skijuwel.com"},{"id":"df2bd5abc7c60af896261373af4d7b9d6085e5bf","n":"Wildkogel","full":"Wildkogel","c":"AT","r":"Salzburg","l":"Neukirchen","k":68.6,"g":[],"x":12.3074,"y":47.2709,"w":"https://www.wildkogel-arena.at/de/bergbahnen-wildkogel/oeffnungszeiten-tarife-sommer.html"},{"id":"b0a93ffd62df6dae4750a71875f77e24250d4169","n":"Bad Kleinkirchheim","full":"Bad Kleinkirchheim","c":"AT","r":"Carinthia","l":"","k":68.2,"g":[],"x":13.7888,"y":46.8163,"w":"https://www.badkleinkirchheim.com/bergbahnen-skigebiet/skigebiet/"},{"id":"f8176e48416adcfc9118014d5c390cd2099a6a18","n":"La Rosière","full":"La Rosière","c":"FR,IT","r":"Savoie","l":"Montvalezan","k":67.8,"g":[],"x":6.8507,"y":45.6497,"w":"https://www.espacesanbernardo.ski/"},{"id":"f9beaf4e37ef88b422b9ee4aa2ae9224f10afd02","n":"Corviglia","full":"Corviglia","c":"CH","r":"Graubunden","l":"Celerina/Schlarigna","k":67.6,"g":[],"x":9.8217,"y":46.5111,"w":"https://www.mountains.ch/"},{"id":"12680fc9a50678784c430e16dd665faa22a6c47c","n":"Roccaraso - Rivisondoli","full":"Roccaraso - Rivisondoli","c":"IT","r":"L'Aquila","l":"","k":66.5,"g":[],"x":14.0215,"y":41.8318,"w":"https://roccaraso.net/"},{"id":"f94a892361e284e65c670fa761f010ba207ff189","n":"Obergurgl-Hochgurgl","full":"Obergurgl-Hochgurgl","c":"AT","r":"Tyrol","l":"","k":65.8,"g":[],"x":11.0501,"y":46.8802,"w":"https://www.obergurgl.com/"},{"id":"a52b30a524e35adb64e78425a0a8e62dad0f0006","n":"Planai & Hochwurzen","full":"Planai & Hochwurzen","c":"AT","r":"Styria","l":"Schladming","k":65.4,"g":["Ski amadé","Schladming Dachstein"],"x":13.6794,"y":47.3764,"w":"https://www.planai.at"},{"id":"1b306639a276ae1103bb8f7f682db30d717d65be","n":"Aramón Cerler","full":"Aramón Cerler","c":"ES","r":"Huesca","l":"Venasque","k":64.8,"g":[],"x":0.5663,"y":42.5729,"w":"https://www.cerler.com/"},{"id":"b1a655113e872a26a397061747cc833b8a6932b2","n":"Montgenèvre","full":"Montgenèvre","c":"FR,IT","r":"Hautes-Alpes","l":"Cervières","k":62.0,"g":[],"x":6.7297,"y":44.9285,"w":"https://www.montgenevre.com"},{"id":"46e449b1b9a7bcdaf078066b4aee6b3fabd1fb32","n":"Auron","full":"Auron","c":"FR","r":"Alpes-Maritimes","l":"Saint-Étienne-de-Tinée","k":61.6,"g":[],"x":6.9117,"y":44.2298,"w":"http://www.auron.com/"},{"id":"b63d5d59b7283cde4430ef60dc439bd31b07214d","n":"Villars/Gryon/Les Diablerets","full":"Villars/Gryon/Les Diablerets","c":"CH","r":"Vaud","l":"Chesiêres","k":61.3,"g":[],"x":7.1102,"y":46.3191,"w":"https://www.tvgd.ch/"},{"id":"d68b7ce7be8a7b5b3a0e020eeb9dce4770f0da6b","n":"Klausberg Skiarena","full":"Klausberg Skiarena","c":"IT","r":"Bolzano/Bozen","l":"","k":60.4,"g":["Dolomiti Superski"],"x":11.9637,"y":46.9545,"w":"https://www.kronplatz.com/de/klausberg"},{"id":"dcb15d6d8592e307e3cf6da3bc1dd4e759d75d90","n":"Seiser Alm - Mont de Sëuc - Alpe di Siusi","full":"Seiser Alm - Mont de Sëuc - Alpe di Siusi, Seiser Alm, Alpe di Siusi, Mont de Sëuc","c":"IT","r":"Bolzano/Bozen","l":"Seis am Schlern","k":60.3,"g":["Dolomiti Superski"],"x":11.6261,"y":46.5417,"w":"https://www.seiseralm.it/"},{"id":"f9d49079770850663f3c200a1956a203489c57ac","n":"Flumserberg","full":"Flumserberg","c":"CH","r":"Saint Gallen","l":"Flumserberg Tannenheim","k":59.3,"g":[],"x":9.2686,"y":47.086,"w":"https://www.flumserberg.ch/"},{"id":"6ecf3eac97891cee8e38aa2e836e878db6ebe5a3","n":"Schmittenhöhe Zell am See","full":"Schmittenhöhe Zell am See","c":"AT","r":"Salzburg","l":"Zell am See","k":59.0,"g":[],"x":12.7573,"y":47.3323,"w":"https://www.schmitten.at"},{"id":"8af93a64c41b59fca4705d30c106ef29fb24e042","n":"Le Grand-Bornand","full":"Le Grand-Bornand","c":"FR","r":"Haute-Savoie","l":"Le Grand-Bornand","k":58.9,"g":[],"x":6.4811,"y":45.9599,"w":"https://www.legrandbornand.com/"},{"id":"7512fc8f0f012bbc88e7e68cb48fdf60b8053429","n":"Schönried - Saanenmöser - Zweisimmen - St. Stephan","full":"Schönried - Saanenmöser - Zweisimmen - St. Stephan","c":"CH","r":"Bern","l":"Blankenburg","k":58.8,"g":[],"x":7.366,"y":46.5081,"w":"https://www.gstaad.ch/"},{"id":"870daba91bf45e41f76102b45565876b61861a50","n":"Super Besse","full":"Super Besse","c":"FR","r":"Puy-de-Dôme","l":"Besse-Et-Saint-Anastaise","k":58.1,"g":[],"x":2.8378,"y":45.5278,"w":"https://lemontdore.fr"},{"id":"10f2ef5a778b65fdea26f0662b08e83c8b979356","n":"Les Contamines","full":"Les Contamines","c":"FR","r":"Savoie","l":"Hauteluce","k":57.8,"g":["Evasion Mont Blanc"],"x":6.6862,"y":45.795,"w":"https://www.lescontamines.net/"},{"id":"35a6ed0e1f5424feddcbc15b62e84b1b97f07624","n":"Sestriere","full":"Sestriere","c":"IT","r":"Turin","l":"Sestriere","k":57.5,"g":[],"x":6.8923,"y":44.9662,"w":"https://www.vialattea.it"},{"id":"a82f34f376325886d7e9645f44a5f0e20084e78f","n":"Sauze D'Oulx","full":"Sauze D'Oulx","c":"IT","r":"Turin","l":"Sauze d'Oulx","k":57.3,"g":[],"x":6.8744,"y":45.0011,"w":"https://www.vialattea.it"},{"id":"fd830ae87b04dcc7ab252d9b7f21cb21029dd61f","n":"Campiglio Dolomiti di Brenta","full":"Campiglio Dolomiti di Brenta","c":"IT","r":"Trento","l":"","k":56.7,"g":[],"x":10.8493,"y":46.2373,"w":"https://www.funiviecampiglio.it/"},{"id":"bffad13dcc96a8c292c819dc670726b0be3a7f5d","n":"Ponte di Legno - Passo Tonale","full":"Ponte di Legno - Passo Tonale","c":"IT","r":"Brescia","l":"Passo del Tonale","k":56.3,"g":[],"x":10.5317,"y":46.2558,"w":"https://www.pontedilegnotonale.com/"},{"id":"92676053fdc889afa65b91206f5158532b3fafcc","n":"Villard de Lans - Corrençon","full":"Villard de Lans - Corrençon","c":"FR","r":"Isère","l":"Corrençon-en-Vercors","k":55.9,"g":[],"x":5.5497,"y":45.0257,"w":"https://www.villarddelans-correnconenvercors.com/"},{"id":"80f1b9fb69d6d58d8c0211a019de956673e86a18","n":"Pila ski","full":"Pila ski","c":"IT","r":"Valle D'Aosta","l":"Aosta","k":55.6,"g":[],"x":7.3073,"y":45.6928,"w":"https://www.pila.it/"},{"id":"170c8c0d276b50ceeb50658829c7dcd487fcd18c","n":"Saint-Luc - Chandolin","full":"Saint-Luc - Chandolin","c":"CH","r":"Valais","l":"Chandolin","k":55.6,"g":[],"x":7.6254,"y":46.2364,"w":"https://www.anniviers.ch/"},{"id":"c349bb235a74def4c527ddf3fdb200ce99c18fe2","n":"Les 7 Laux","full":"Les 7 Laux","c":"FR","r":"Isère","l":"La Ferrière","k":55.4,"g":[],"x":6.0244,"y":45.2605,"w":"http://www.les7laux.com/"},{"id":"6a9f3afdd5d590a14770fdb7a8e90c6285b18035","n":"Isola 2000","full":"Isola 2000","c":"FR","r":"Alpes-Maritimes","l":"Isola","k":54.9,"g":[],"x":7.1478,"y":44.1872,"w":"https://www.isola2000.com/"},{"id":"ac19567d24dc4579c52d9eeef24309e3665dfa89","n":"Hochoetz-Kühtai","full":"Hochoetz-Kühtai","c":"AT","r":"Tyrol","l":"Oetz","k":54.2,"g":[],"x":10.9715,"y":47.2151,"w":"https://www.kuehtai.info/en/winter/ski-area.html"},{"id":"4d9c0191491227da58bc418ee8633c62485f29c8","n":"Grand Tourmalet","full":"Grand Tourmalet","c":"FR","r":"Hautes-Pyrénées","l":"Bagnères-de-Bigorre","k":54.2,"g":[],"x":0.1302,"y":42.9105,"w":"https://www.n-py.com/fr/grand-tourmalet"},{"id":"fc29dc943652ee283066ab19aa9eb0a74e5ef8e9","n":"Domaine skiable Valberg","full":"Domaine skiable Valberg","c":"FR","r":"Alpes-Maritimes","l":"Beuil","k":54.1,"g":[],"x":6.953,"y":44.0731,"w":"https://www.valberg.com"},{"id":"d42aa81cb4e1cba7f24c0f4f19a158df01fe6086","n":"Les Orres","full":"Les Orres","c":"FR","r":"Hautes-Alpes","l":"Les Orres","k":53.6,"g":[],"x":6.5691,"y":44.4827,"w":"https://www.lesorres.com"},{"id":"0e32d9bd72195acaa33ba6c2d18ba4ad1562a055","n":"Le Sauze 1400 / Le Super-Sauze 1700","full":"Le Sauze 1400 / Le Super-Sauze 1700","c":"FR","r":"Alpes-de-Haute-Provence","l":"Enchastrayes","k":53.4,"g":[],"x":6.7054,"y":44.3535,"w":"https://www.sauze.com"},{"id":"00e3880c19b3ca1bb412d2274d3c15bf4a2598f9","n":"Ski Civetta","full":"Ski Civetta","c":"IT","r":"Belluno","l":"Zoldo Alto","k":53.1,"g":["Dolomiti Superski"],"x":12.069,"y":46.4056,"w":"https://www.skicivetta.com/"},{"id":"26affab63c6efa3eb88812bf68e50db4ff988dbe","n":"Ski Area San Pellegrino - Falcade","full":"Ski Area San Pellegrino - Falcade","c":"IT","r":"Belluno","l":"","k":52.6,"g":["Dolomiti Superski"],"x":11.8203,"y":46.368,"w":"https://www.skiareasanpellegrino.it/"},{"id":"723611e5c6bd7d52526c22a4eb1040eb82a0b759","n":"Katschberg-Aineck","full":"Katschberg-Aineck","c":"AT","r":"Carinthia","l":"Katschberghöhe","k":52.3,"g":["Ski amadé"],"x":13.6427,"y":47.0683,"w":"https://www.katschi.at/"},{"id":"fc89413ef26e4479473070112eb1e72e15b3d23f","n":"Großarltal-Dorfgastein","full":"Großarltal-Dorfgastein","c":"AT","r":"Salzburg","l":"Grossarl","k":51.7,"g":["Ski amadé"],"x":13.1537,"y":47.2377,"w":"https://www.grossarltal.info/"},{"id":"03fcc0299c9030bf81bf077f9a94ee0b327040d9","n":"Masella","full":"Masella","c":"ES","r":"Barcelona","l":"","k":51.6,"g":[],"x":1.9044,"y":42.3352},{"id":"13e89a4b35899c5870e686d3481b0c3f25892320","n":"Chamrousse","full":"Chamrousse","c":"FR","r":"Isère","l":"Chamrousse","k":51.4,"g":[],"x":5.8901,"y":45.1127,"w":"https://www.chamrousse.com/"},{"id":"73a929fdb6f99344480b7fc4e7f2e457e444b217","n":"Meiringen - Hasliberg","full":"Meiringen - Hasliberg","c":"CH","r":"Bern","l":"Hasliberg Goldern","k":51.0,"g":[],"x":8.2186,"y":46.7475,"w":"https://www.meiringen-hasliberg.ch/"},{"id":"cb17ba3f010488194237ab23a00c94f211bf46da","n":"Ax 3 Domaines","full":"Ax 3 Domaines","c":"FR","r":"Ariège","l":"Ax-les-Thermes","k":50.8,"g":[],"x":1.811,"y":42.687},{"id":"3669872cd370e40a419797142ee6045858777407","n":"Kals-Matrei","full":"Kals-Matrei","c":"AT","r":"Tyrol","l":"Kals","k":49.9,"g":[],"x":12.5917,"y":47.0023,"w":"https://www.gg-resort.at/"},{"id":"293ceddf2ced898a483558519740f4f0dee9225f","n":"Orcières Merlette","full":"Orcières Merlette","c":"FR","r":"Hautes-Alpes","l":"Champoléon","k":49.5,"g":[],"x":6.3272,"y":44.7154,"w":"https://orcieres.com/"},{"id":"fd2502303c53c45c2a6c5dd332f5105bb3c95179","n":"Hintertuxer Gletscher","full":"Hintertuxer Gletscher","c":"AT","r":"Tyrol","l":"","k":49.3,"g":[],"x":11.6638,"y":47.0822,"w":"https://www.hintertuxergletscher.at"},{"id":"8ebb23da67e4e5ad4059d78ad442e7694eccfb2f","n":"Nauders Bergkastel","full":"Nauders Bergkastel","c":"AT,IT","r":"Tyrol","l":"Nauders","k":49.2,"g":[],"x":10.5263,"y":46.8471,"w":"https://www.nauders.com/"},{"id":"29248afecbb89253d31145bb08025956c1bfb71a","n":"Warth-Schröcken","full":"Warth-Schröcken","c":"AT","r":"Vorarlberg","l":"","k":48.9,"g":["Ski Arlberg"],"x":10.1341,"y":47.2471},{"id":"6eebeff16c8b480fc1335c8bed596286706cb776","n":"La Molina","full":"La Molina","c":"ES","r":"Barcelona","l":"","k":48.6,"g":[],"x":1.928,"y":42.3234,"w":"https://www.masella.com/en/paginas/alp-2500-trail"},{"id":"fc37a3084eeca48d1ce164dc7a5862723aaf2013","n":"Saas Fee","full":"Saas Fee","c":"CH","r":"Valais","l":"Saas-Almagell","k":48.5,"g":[],"x":7.9234,"y":46.0834,"w":"https://www.saas-fee.ch/"},{"id":"17a2aed27cfa6b593c5df9770900555623db6adf","n":"Praz de Lys Sommand","full":"Praz de Lys Sommand","c":"FR","r":"Haute-Savoie","l":"Mieussy","k":47.5,"g":["Les Portes du Soleil"],"x":6.572,"y":46.1511,"w":"https://www.prazdelys-sommand.com/"},{"id":"cd6cd576ac1a8785d423d174200b9a4a920df1e1","n":"Jasna Low Tatras","full":"Jasna Low Tatras","c":"SK","r":"Banska Bystrica","l":"","k":47.0,"g":[],"x":19.5883,"y":48.9507,"w":"https://www.jasna.sk/"},{"id":"712f8e147bed9e60894d62fb3dad2619ac81966a","n":"Folgaria","full":"Folgaria, Area sciistica Folgaria","c":"IT","r":"Trento","l":"Folgaria","k":46.5,"g":[],"x":11.2106,"y":45.896,"w":"https://www.alpecimbra.it/de/skigebiet-alpe-cimbra/lavarone-folgaria-skigebiet/46-0.html"},{"id":"bc0361849d0e6e33ef5d9cd035522200a3125df1","n":"Kaprun - Kitzsteinhorn/Maiskogel","full":"Kaprun - Kitzsteinhorn/Maiskogel","c":"AT","r":"Salzburg","l":"Kaprun","k":46.0,"g":[],"x":12.7288,"y":47.2408,"w":"https://www.kitzsteinhorn.at/"},{"id":"ab7961704073ef3c88692eee6638c6622112defc","n":"Arabba","full":"Arabba","c":"IT","r":"Belluno","l":"","k":45.3,"g":["Dolomiti Superski"],"x":11.8559,"y":46.4885,"w":"http://www.arabba.it"},{"id":"38b6ee8843fc22a5b81e90354754e0a7f8312db9","n":"Le Lioran","full":"Le Lioran","c":"FR","r":"Cantal","l":"Albepierre-Bredons","k":45.1,"g":[],"x":2.7724,"y":45.0695,"w":"https://skipass.lelioran.com"},{"id":"a3f181286a5893208aa7d7b7d1704bb923673003","n":"Les Karellis","full":"Les Karellis","c":"FR","r":"Savoie","l":"Albiez-Montrond","k":45.1,"g":[],"x":6.401,"y":45.2142,"w":"https://www.karellis.com/"},{"id":"8209eb8445fb31f73b7de8b2a3c022ea8d2cdf3b","n":"Brandnertal – Brand/​Bürserberg","full":"Brandnertal – Brand/​Bürserberg","c":"AT","r":"Vorarlberg","l":"","k":44.8,"g":[],"x":9.7344,"y":47.1205,"w":"https://www.vorarlberg-alpenregion.at/brandnertal/en/our-diversity/active/skiing"},{"id":"41a3d206c05cc02a76b6de6325ca161b1762cb2d","n":"Skiarena Andermatt-Sedrun","full":"Skiarena Andermatt-Sedrun","c":"CH","r":"Uri","l":"Andermatt","k":44.7,"g":[],"x":8.6697,"y":46.654,"w":"https://andermatt-sedrun-disentis.ch"},{"id":"2cbe407409b5340a8a35266314043918b4f7526f","n":"Savognin","full":"Savognin","c":"CH","r":"Graubunden","l":"Mulegns","k":44.1,"g":[],"x":9.5701,"y":46.5658},{"id":"583dbc4651db7ebcc7875a11180b634ec108ba8a","n":"Skiresort Černá Hora-Pec","full":"Skiresort Černá Hora-Pec","c":"PL,CZ","r":"dolnoslaskie","l":"Karpacz","k":44.0,"g":[],"x":15.7635,"y":50.6926,"w":"https://skiresort.cz/"},{"id":"71c073dc36516a01f114c98708db04e208feafd1","n":"Flachau","full":"Flachau","c":"AT","r":"Salzburg","l":"","k":43.7,"g":["Ski amadé","Snow Space Salzburg"],"x":13.3488,"y":47.3371,"w":"https://www.snow-space.com/"},{"id":"851128bb56a54648e73d41ecdaca409350648f33","n":"Peyragudes","full":"Peyragudes","c":"FR","r":"Haute-Garonne","l":"Gouaux-de-Larboust","k":43.6,"g":[],"x":0.4476,"y":42.7797,"w":"https://www.n-py.com/fr/peyragudes"},{"id":"c9f7bd1feef91e49dbdae4831ed347243b5dfa33","n":"Scuol Motta Naluns","full":"Scuol Motta Naluns","c":"CH","r":"Graubunden","l":"Ftan","k":43.4,"g":[],"x":10.2894,"y":46.8196,"w":"https://www.scuol.ch/"},{"id":"f93e740601821a663803ec50529854339b744b27","n":"Courmayeur","full":"Courmayeur","c":"IT","r":"Valle D'Aosta","l":"Courmayeur","k":42.6,"g":[],"x":6.9408,"y":45.8082,"w":"https://www.courmayeur-montblanc.com/"},{"id":"11b4273361f22eb084db41a3270d66fe1db2e7c1","n":"San Martino di Castrozza - Passo Rolle","full":"San Martino di Castrozza - Passo Rolle","c":"IT","r":"Trento","l":"","k":42.6,"g":["Dolomiti Superski"],"x":11.7924,"y":46.2695,"w":"https://www.sanmartino.com/"},{"id":"c8df10ba59b2c80f2302566b5b0b9958292c8075","n":"Riserva Bianca","full":"Riserva Bianca","c":"IT","r":"Cuneo","l":"","k":42.4,"g":[],"x":7.5764,"y":44.1751,"w":"https://www.riservabianca.it/"},{"id":"97e9df8fc8d999cf9e62628866e49af00598fba0","n":"Engelberg Titlis","full":"Engelberg Titlis","c":"CH","r":"Nidwalden","l":"Engelberg","k":42.1,"g":[],"x":8.4004,"y":46.7935,"w":"https://www.engelberg.ch/"},{"id":"abd8fc58a269e575731226a78d77a13b2e38a673","n":"Puy-Saint-Vincent","full":"Puy-Saint-Vincent","c":"FR","r":"Hautes-Alpes","l":"Puy-Saint-Vincent","k":41.8,"g":[],"x":6.4769,"y":44.8203,"w":"https://www.puysaintvincent.com/"},{"id":"c2fba992cc1711880d5f8d8ffa661f71eab950cf","n":"Brévent/Flégère (Chamonix)","full":"Brévent/Flégère (Chamonix)","c":"FR","r":"Haute-Savoie","l":"Chamonix","k":41.1,"g":[],"x":6.8658,"y":45.9507,"w":"https://en.chamonix.com/activities/winter/skiing-in-chamonix-mont-blanc-valley/list-of-ski-areas/domaine-skiable-brevent-flegere"},{"id":"29b30f99e12f6399919a7bbd34ab3ad948bf6ede","n":"Folgarida-Marilleva","full":"Folgarida-Marilleva","c":"IT","r":"Trento","l":"Commezzadura","k":41.1,"g":[],"x":10.8376,"y":46.2878,"w":"https://www.visittrentino.info/en/trentino/ski-areas/alpine-skiing/folgarida-marilleva-skiarea-campiglio-dolomiti-di-brenta-val-di-sole-val-rendena_md_2211"},{"id":"5c965369d0727ccd79ab98ae91909542a33c7fe6","n":"Claviere","full":"Claviere","c":"FR,IT","r":"Hautes-Alpes","l":"Montgenèvre","k":40.8,"g":[],"x":6.7676,"y":44.9246,"w":"https://www.vialattea.it"},{"id":"3c30eddac708122c98a1ad904d7a67fc8499b342","n":"Pizol","full":"Pizol","c":"CH","r":"Saint Gallen","l":"Bad Ragaz","k":40.4,"g":[],"x":9.4416,"y":47.004,"w":"https://pizol.com/"},{"id":"748fee00e468b5d11016d8f9dab6e2e214ea78f5","n":"Latemar Dolomites","full":"Latemar Dolomites","c":"IT","r":"Bolzano/Bozen","l":"","k":40.4,"g":["Dolomiti Superski"],"x":11.5612,"y":46.3562,"w":"https://www.latemar.it/"},{"id":"c85b6de868247191eb8068ee3e485ab9df0dbfee","n":"Kreischberg","full":"Kreischberg","c":"AT","r":"Styria","l":"Sankt Georgen ob Murau","k":40.1,"g":[],"x":14.055,"y":47.0774,"w":"https://www.kreischberg.at/"},{"id":"e9c0a197353bef2c6ed47d85c268582cae8ad8ea","n":"Belalp","full":"Belalp","c":"CH","r":"Valais","l":"Belalp","k":39.9,"g":[],"x":7.9819,"y":46.383,"w":"https://www.belalp.ch/"},{"id":"13756027a3c85c2f3e1b8742865baa4f2469a277","n":"Corvatsch-Furtschellas","full":"Corvatsch-Furtschellas","c":"CH","r":"Graubunden","l":"Bever","k":39.6,"g":[],"x":9.9154,"y":46.5662,"w":"https://www.engadin.ch/de/langlauf"},{"id":"1871bd97633b45248e93e03d11f44d94caae83fc","n":"Grindelwald First","full":"Grindelwald First","c":"CH","r":"Bern","l":"Grindelwald","k":39.5,"g":[],"x":8.0655,"y":46.6493,"w":"https://www.jungfrau.ch/de-ch/grindelwaldfirst/"},{"id":"d9ac8983541d7960d801802ce64751267338b5e4","n":"Mürren/Schilthorn","full":"Mürren/Schilthorn","c":"CH","r":"Bern","l":"Gimmelwald","k":39.3,"g":[],"x":7.8711,"y":46.575,"w":"https://schilthorn.ch/"},{"id":"5ecb06388006e4740e7ce8234e26d036ce85edb7","n":"Pal-Arinsal","full":"Pal-Arinsal","c":"AD,ES","r":"Massana","l":"La Massana","k":39.2,"g":[],"x":1.4792,"y":42.5524,"w":"https://www.vallnord.com/"},{"id":"7563abecd5cc2164f89cd67a02eac49bf45e2365","n":"Cortina Tofane","full":"Cortina Tofane","c":"IT","r":"Belluno","l":"Cortina d'Ampezzo","k":39.2,"g":["Dolomiti Superski"],"x":12.0995,"y":46.5388,"w":"https://www.impianticortina.it/"},{"id":"6706227f52c321acb67f28aea019d52a65fdbeb0","n":"Gstaad - Saanen - Rougemont","full":"Gstaad - Saanen - Rougemont","c":"CH","r":"Bern","l":"Grund","k":39.0,"g":[],"x":7.2509,"y":46.4642,"w":"https://www.gstaad.ch/bergbahnen/"},{"id":"7346bb5d22b8259e978183dc0a4b375a3351ac90","n":"Wagrain","full":"Wagrain","c":"AT","r":"Salzburg","l":"","k":39.0,"g":["Ski amadé","Snow Space Salzburg"],"x":13.2482,"y":47.314,"w":"http://www.bergbahnen-wagrain.at/"},{"id":"715c1aff70ef02d1fa240ac06ba41da891cf93b4","n":"Area Sciistica Abetone","full":"Area Sciistica Abetone","c":"IT","r":"Modena","l":"","k":39.0,"g":[],"x":10.6541,"y":44.1356,"w":"https://multipassabetone.it/"},{"id":"54b7a2ec9a61d19cd3a9431ddc23cc9ad5fc306e","n":"Skiregion Dachstein West","full":"Skiregion Dachstein West","c":"AT","r":"Salzburg","l":"","k":38.9,"g":["Ski amadé"],"x":13.475,"y":47.5493,"w":"https://www.dachstein.at/"},{"id":"f7dc751e2a702b78afc47b42214106bc336a0f97","n":"Artesina","full":"Artesina","c":"IT","r":"Cuneo","l":"","k":38.8,"g":[],"x":7.7535,"y":44.2489,"w":"https://www.artesina.it/"},{"id":"fe93095197fc1a4226c781072a9ce1c877bc18b2","n":"Aprica","full":"Aprica","c":"IT","r":"Sondrio","l":"Aprica","k":38.3,"g":[],"x":10.1587,"y":46.1397,"w":"https://www.apricaonline.com/index.php"},{"id":"5715439988a962bab375e89d7fcaa86583215933","n":"Anzère","full":"Anzère","c":"CH","r":"Valais","l":"Anzère","k":38.3,"g":[],"x":7.4095,"y":46.3138,"w":"https://www.anzere.ch"},{"id":"6d73101c0c82f1695199dfb0d9f3a2aa16b8b133","n":"Arêches Beaufort","full":"Arêches Beaufort","c":"FR","r":"Savoie","l":"Beaufort","k":38.0,"g":[],"x":6.5479,"y":45.6622,"w":"https://www.areches-beaufort.com"},{"id":"4d065e674fc26a1c1142f9449bee9528e741468b","n":"Axamer Lizum - Muttereralm","full":"Axamer Lizum - Muttereralm","c":"AT","r":"Tyrol","l":"Axams","k":37.9,"g":[],"x":11.3181,"y":47.2053,"w":"https://www.muttereralm.at/"},{"id":"6fc2b7bd9404c7cf68e49ca9fd83600e3de149d4","n":"Sörenberg","full":"Sörenberg","c":"CH","r":"Obwalden","l":"Giswil","k":37.8,"g":[],"x":8.0343,"y":46.8086,"w":"https://www.soerenberg.ch"},{"id":"c1bb41346278aa404c3e62769608553e1d22d149","n":"Zauchensee-Flachauwinkl","full":"Zauchensee-Flachauwinkl","c":"AT","r":"Salzburg","l":"","k":37.8,"g":["Ski amadé"],"x":13.4418,"y":47.287,"w":"https://www.zauchensee.at/"},{"id":"fa473fa12ab6059b9e93af8498afa0efdea2cff6","n":"Skigebiet Garmisch-Classic","full":"Skigebiet Garmisch-Classic","c":"DE","r":"Bavaria","l":"Garmisch-Partenkirchen","k":37.8,"g":[],"x":11.0784,"y":47.4577,"w":"https://zugspitze.de/en/winter/skiarea/garmisch-classic"},{"id":"0ed67f04f2e5d0f8e1b8be3507c577fcfcb60215","n":"Unterbäch - Eischoll","full":"Unterbäch - Eischoll","c":"CH","r":"Valais","l":"Bürchen","k":37.5,"g":[],"x":7.7798,"y":46.2701,"w":"https://unterbaech.ch/unterbaech/ferienregion/augstbordregion/"},{"id":"337c8cd2d65a8c5457b0ed96d99891837d17af68","n":"Skigebiet Steinplatte Winklmoosalm","full":"Skigebiet Steinplatte Winklmoosalm","c":"AT,DE","r":"Bavaria","l":"Reit im Winkl","k":37.3,"g":[],"x":12.5652,"y":47.6749,"w":"https://www.steinplatte.tirol/"},{"id":"2c18b6812e9d8dc10b1d843bbf1b23f68ed30ff4","n":"Gerlitzen Alpe","full":"Gerlitzen Alpe","c":"AT","r":"Carinthia","l":"Bodensdorf","k":37.2,"g":[],"x":13.9152,"y":46.6948,"w":"https://www.gerlitzen.com/"},{"id":"8a5063e32476ab3ab529dd524a0debe563e08f28","n":"Skigebiet Fellhorn/Kanzelwand","full":"Skigebiet Fellhorn/Kanzelwand","c":"DE,AT","r":"Bavaria","l":"Oberstdorf","k":36.9,"g":["Kleinwalsertal-Oberstdorf"],"x":10.2221,"y":47.3452,"w":"https://www.das-hoechste.de/"},{"id":"43f7d8df941a946e395669e6f8873afa581c9851","n":"L'Alpe du Grand Serre","full":"L'Alpe du Grand Serre","c":"FR","r":"Isère","l":"La Morte","k":36.7,"g":[],"x":5.8455,"y":45.0077,"w":"https://www.alpedugrandserre.info/"},{"id":"fb20868f99b43dbfe8cf7195c47619680ac21f37","n":"See","full":"See","c":"AT","r":"Tyrol","l":"Messnerhaus","k":36.5,"g":[],"x":10.4843,"y":47.0709,"w":"https://www.bergbahn.com/"},{"id":"3150d08706183824af7f70226eaa2222400b8a64","n":"Valfréjus","full":"Valfréjus","c":"FR","r":"Savoie","l":"Modane","k":36.4,"g":["Espace Haute Maurienne Vanoise"],"x":6.6548,"y":45.1562,"w":"https://www.valfrejus.ski/"},{"id":"ea9dfe26da36c33e8cf007b22b628c153ac69ab4","n":"Les Houches - Saint-Gervais","full":"Les Houches - Saint-Gervais","c":"FR","r":"Haute-Savoie","l":"Les Houches","k":36.0,"g":[],"x":6.7499,"y":45.884,"w":"https://www.leshouches.com/"},{"id":"9159a8a28bc8accd268e8eeb330ae53c379b1391","n":"Skigebiet Diedamskopf","full":"Skigebiet Diedamskopf","c":"AT","r":"Vorarlberg","l":"Au","k":36.0,"g":[],"x":10.0267,"y":47.3292,"w":"https://www.diedamskopf.at/"},{"id":"4a30e21219abb7c297eea39860578ad22572d0eb","n":"Font-Romeu Pyrénées 2000","full":"Font-Romeu Pyrénées 2000, Font-Romeu","c":"FR","r":"Pyrénées-Orientales","l":"Bolquère","k":35.9,"g":[],"x":2.0257,"y":42.5247,"w":"https://font-romeu.fr/"},{"id":"3fe9a6b2c3b2fddc054259af7b561d7d91f7b9f0","n":"Skiarea Valchiavenna Madesimo/Campodolcino","full":"Skiarea Valchiavenna Madesimo/Campodolcino","c":"IT","r":"Sondrio","l":"","k":35.4,"g":[],"x":9.3827,"y":46.4261,"w":"https://www.skiareavalchiavenna.it/"},{"id":"c2ef03c6a32c3c95862890abf492cd0f8c4ebfd2","n":"Bardonecchia","full":"Bardonecchia","c":"IT","r":"Turin","l":"","k":35.4,"g":[],"x":6.6975,"y":45.0523,"w":"https://www.bardonecchiaski.com"},{"id":"b0bddc47ef4ca3986252ef0f2a22daa242427f15","n":"Skigebiet Hinterstoder","full":"Skigebiet Hinterstoder","c":"AT","r":"Upper Austria","l":"","k":35.2,"g":[],"x":14.1394,"y":47.6752,"w":"https://skisport.com/hinterstoder/"},{"id":"cb461faaed3fbddd289cb3d86c6d8a7bbb4649bd","n":"Smučišča Mariborsko Pohorje","full":"Smučišča Mariborsko Pohorje","c":"SI","r":"Drava","l":"Maribor","k":35.0,"g":[],"x":15.5474,"y":46.5144,"w":"https://www.mariborskopohorje.si/"},{"id":"a2fed1f3149f7c9e4f9ccaac4b8e29f0bfccd632","n":"Les Angles","full":"Les Angles, Els Angles","c":"FR","r":"Pyrénées-Orientales","l":"Les Angles","k":35.0,"g":[],"x":2.0517,"y":42.5706},{"id":"98392622932b17cf8ecfbcdb9ccfef413473fc77","n":"Tauplitz / Bad Mitterndorf","full":"Tauplitz / Bad Mitterndorf","c":"AT","r":"Styria","l":"Tauplitz","k":34.9,"g":[],"x":13.9888,"y":47.578,"w":"https://www.dietauplitz.com/"},{"id":"52c9c35a9f63939f43b957b39196aa77ec0013c7","n":"Boí Taüll","full":"Boí Taüll","c":"ES","r":"Lleida","l":"","k":34.9,"g":[],"x":0.8765,"y":42.473,"w":"https://pirineu365.cat/boitaull/inici/"},{"id":"7e2b2e2ae39a8764945229ed9d6314ee6d0aae47","n":"Astun","full":"Astun","c":"ES","r":"Huesca","l":"","k":34.7,"g":[],"x":-0.4984,"y":42.8043,"w":"https://www.astun.com/"},{"id":"f3b4e79c767462bfb7b253fd94d2840cc52d7e1a","n":"Hochzeiger","full":"Hochzeiger","c":"AT","r":"Tyrol","l":"","k":34.7,"g":[],"x":10.7767,"y":47.1589,"w":"https://www.hochzeiger.com"},{"id":"7bbe4370de755694437795af4d89234c73ed73d4","n":"St Johann in Tirol","full":"St Johann in Tirol","c":"AT","r":"Tyrol","l":"Oberndorf in Tirol","k":34.4,"g":[],"x":12.4228,"y":47.5011,"w":"https://www.bergbahnen-stjohann.at/"},{"id":"64aee63c9ac051c8e37df33f4bc3e5549876880d","n":"Paganella","full":"Paganella, Area sciistica Andalo Fai della Paganella","c":"IT","r":"Trento","l":"","k":34.4,"g":[],"x":11.0247,"y":46.1562,"w":"https://www.paganella.net/"},{"id":"bd7b3458f542e69b67d1aadb4d474ffe5f5aa157","n":"Sansicario","full":"Sansicario","c":"IT","r":"Turin","l":"","k":34.2,"g":[],"x":6.8303,"y":44.9625,"w":"https://www.vialattea.it"},{"id":"7382bc3c80658564db8fc3dc0e2f8d8f7c709fe0","n":"Lagazuoi - 5 Torri","full":"Lagazuoi - 5 Torri","c":"IT","r":"Belluno","l":"","k":34.0,"g":["Dolomiti Superski"],"x":12.0197,"y":46.5238,"w":"https://cortinadelicious.it/"},{"id":"f04f5c36668c9ba4e5256ccbd611698f3df75688","n":"Melchsee-Frutt","full":"Melchsee-Frutt","c":"CH","r":"Bern","l":"Hasliberg Reuti","k":33.8,"g":[],"x":8.2931,"y":46.7776,"w":"https://www.melchsee-frutt.ch/"},{"id":"75013e890fb113df12278e9402b86cb3d0d8dd84","n":"Turracher Höhe","full":"Turracher Höhe","c":"AT","r":"Carinthia","l":"","k":33.5,"g":[],"x":13.8726,"y":46.9281,"w":"https://www.turracherhoehe.at/"},{"id":"45625a91e8f6714ebecb456492ca9e39b1bc677b","n":"Sulden","full":"Sulden","c":"IT","r":"Bolzano/Bozen","l":"","k":33.2,"g":[],"x":10.5988,"y":46.5076,"w":"https://www.ortlerskiarena.com/"},{"id":"696bb1ffa7c5cbea2123abdb0821791dfaaad100","n":"Chäserrugg-Alt St. Johann","full":"Chäserrugg-Alt St. Johann","c":"CH","r":"Saint Gallen","l":"Alt St. Johann","k":33.2,"g":[],"x":9.2885,"y":47.1749,"w":"https://www.chaeserrugg.ch/"},{"id":"304d72fa57c50cd759b4ebeff3e48dbee4789b17","n":"Candanchu","full":"Candanchu","c":"ES,FR","r":"Huesca","l":"","k":32.9,"g":[],"x":-0.5443,"y":42.7791,"w":"https://www.candanchu.com/"},{"id":"a69a57ca1f64eda684455dfe6c096108b9b5dee7","n":"Schnalstal","full":"Schnalstal","c":"IT,AT","r":"Bolzano/Bozen","l":"","k":32.6,"g":[],"x":10.7865,"y":46.7724,"w":"https://www.schnalstal.com/"},{"id":"e803e6b7f511dd24e94cbe8882324020e9cc013f","n":"Piau-Engaly","full":"Piau-Engaly","c":"FR","r":"Hautes-Pyrénées","l":"Aragnouet","k":32.1,"g":[],"x":0.1629,"y":42.7766,"w":"https://www.n-py.com/fr/piau"},{"id":"c4b221a54713b4e084b5bae02668c68dfaf6c1e3","n":"Les Rousses","full":"Les Rousses","c":"CH,FR","r":"Vaud","l":"Arzier-Le Muids","k":31.9,"g":[],"x":6.1024,"y":46.4923,"w":"https://www.lesrousses.com/"},{"id":"f1ae030e9b17ac258bb0eb30a0f769106518dfcd","n":"Pitztaler Gletscher","full":"Pitztaler Gletscher","c":"AT","r":"Tyrol","l":"","k":31.7,"g":[],"x":10.8823,"y":46.9327,"w":"https://www.pitztaler-gletscher.at/"},{"id":"d45b83e0e69c153a4880dd640f9e6c00a53401a7","n":"Bormio Ski","full":"Bormio Ski","c":"IT","r":"Sondrio","l":"Bormio","k":31.6,"g":[],"x":10.392,"y":46.4421,"w":"https://www.bormioski.eu/"},{"id":"94a0f07cbc6591aa34fe575a16264667d2821934","n":"Freesports Arena Dachstein Krippenstein","full":"Freesports Arena Dachstein Krippenstein","c":"AT","r":"Upper Austria","l":"","k":31.1,"g":["Ski amadé","Schladming Dachstein"],"x":13.6612,"y":47.5085,"w":"https://dachstein-salzkammergut.com/"},{"id":"2826e74d5f33a0bd943b7353dcda7e1419c36ace","n":"Brigels-Waltensburg-Andiast","full":"Brigels-Waltensburg-Andiast, Brigels-Waltenburg-Andiast, Breil-Vuorz-Andiast","c":"CH","r":"Graubunden","l":"Andiast","k":30.9,"g":[],"x":9.0807,"y":46.7881,"w":"https://www.brigels-bergbahnen.ch"},{"id":"1bba0722fca7212bd8f83bb2be93a17087299287","n":"Kaunertaler Gletscher","full":"Kaunertaler Gletscher","c":"IT,AT","r":"Bolzano/Bozen","l":"","k":30.7,"g":[],"x":10.7076,"y":46.8681,"w":"https://www.kaunertaler-gletscher.at"},{"id":"a044deedf9fb7f84d9cd7c15b0d503403da71c2e","n":"Wildhaus","full":"Wildhaus","c":"CH","r":"Saint Gallen","l":"Grabs","k":30.7,"g":[],"x":9.3814,"y":47.1801,"w":"https://www.wildhaus.ch/"},{"id":"3f17bde187966cb8ca14255520bda39eb25e5baa","n":"Balme - Vallorcine","full":"Balme - Vallorcine","c":"FR,CH","r":"Haute-Savoie","l":"Chamonix","k":30.6,"g":[],"x":6.952,"y":46.0238,"w":"https://en.chamonix.com/activities/winter/skiing-in-chamonix-mont-blanc-valley/list-of-ski-areas/ski-area-balme-vallorcine"},{"id":"3ab1f00071a8139f49182b9e7e68ecd37c35ecfc","n":"Sonnenkopf","full":"Sonnenkopf","c":"AT","r":"Vorarlberg","l":"","k":30.6,"g":[],"x":10.0665,"y":47.117,"w":"https://www.sonnenkopf.com/"},{"id":"f5f2c00bd39ea5b35e0c6a65ce696b312c94e0c6","n":"Bergbahnen Disentis","full":"Bergbahnen Disentis","c":"CH","r":"Graubunden","l":"Disentis/Mustér","k":30.4,"g":[],"x":8.8056,"y":46.7033,"w":"https://andermatt-sedrun-disentis.ch"},{"id":"21def33c68a75c001d3342fc3e711e0f1e997637","n":"Skigebiet Heuberg Arena/Walmendingerhorn","full":"Skigebiet Heuberg Arena/Walmendingerhorn","c":"AT","r":"Vorarlberg","l":"Hirschegg","k":30.4,"g":["Kleinwalsertal-Oberstdorf"],"x":10.1456,"y":47.3365},{"id":"59daf3cc15cc3c231203bce41e59f1258093568a","n":"Superbagnères","full":"Superbagnères","c":"FR","r":"Haute-Garonne","l":"Bagnères-de-Luchon","k":30.0,"g":[],"x":0.566,"y":42.773,"w":"http://www.luchon-superbagneres.com/"},{"id":"756e0502aecee6a9d48efb3419be7efaac92341d","n":"Aussois","full":"Aussois","c":"FR","r":"Savoie","l":"Aussois","k":30.0,"g":["Espace Haute Maurienne Vanoise"],"x":6.7401,"y":45.2504,"w":"https://www.aussois.com"},{"id":"542b6410fa9c7dabb463c928c8a8f6b1b2087c9b","n":"Szczyrk","full":"Szczyrk","c":"PL","r":"Silesian Voivodeship","l":"Szczyrk","k":29.1,"g":[],"x":18.9994,"y":49.684,"w":"https://www.szczyrkowski.pl/"},{"id":"fd0ec06eda21e684cc4b06fe2d8d2b4f685ca07f","n":"Zieleniec","full":"Zieleniec","c":"PL,CZ","r":"dolnoslaskie","l":"Duszniki-Zdrój","k":20.1,"g":[],"x":16.3895,"y":50.3335,"w":"https://zieleniec.pl/"},{"id":"0bd87c732c1cffdf2ef8743e9b73c520a67e6bf4","n":"Skiareál Špindlerův Mlýn - Medvědín","full":"Skiareál Špindlerův Mlýn - Medvědín","c":"CZ,PL","r":"dolnoslaskie","l":"Lubawka Obszar Wiejski","k":19.6,"g":[],"x":15.611,"y":50.7119,"w":"https://www.skiareal.cz/en/"},{"id":"0f8835a2f4fdcb5d19a63c665a77e9e99f8aa42a","n":"Ośrodek Narciarski Kotelnica Białczańska","full":"Ośrodek Narciarski Kotelnica Białczańska, Kotelnica Białczańska Ski Resort","c":"PL","r":"Lesser Poland Voivodeship","l":"","k":17.5,"g":[],"x":20.092,"y":49.3772,"w":"https://bialkatatrzanska.pl"},{"id":"e440360d8662ceeb6c358b6d5ad9f9614014a8a7","n":"Veľká Rača","full":"Veľká Rača","c":"SK,PL,CZ","r":"Zilina","l":"Skalité","k":12.4,"g":[],"x":18.9427,"y":49.4963,"w":"http://www.velkaraca.sk/snowparadise/sk/"},{"id":"c2efaa85c65b61e420ad763f405b3e66c8256cb8","n":"Kompleks Pilsko-Jontek","full":"Kompleks Pilsko-Jontek","c":"PL","r":"Silesian Voivodeship","l":"","k":10.0,"g":[],"x":19.3314,"y":49.547,"w":"https://pilsko.org/"},{"id":"a12b471bc19ea23fb51bbf32dcc1c37acda7231d","n":"Kasprowy Wierch","full":"Kasprowy Wierch","c":"PL","r":"Lesser Poland Voivodeship","l":"Zakopane","k":9.9,"g":[],"x":19.9795,"y":49.25,"w":"https://www.pkl.pl/kasprowy-wierch/kasprowy.html"},{"id":"40c749774f4d6927ff84663843fbd19da9a5b4b7","n":"Czarna Góra","full":"Czarna Góra","c":"PL","r":"dolnoslaskie","l":"Bystrzyca Kłodzka Obszar Wiejski","k":9.7,"g":[],"x":16.8174,"y":50.2523,"w":"https://czarnagora.pl/"},{"id":"ff5fc21811a019eb62ce83b0b8b8220dd63faec7","n":"Dwie Doliny Muszyna-Wierchomla","full":"Dwie Doliny Muszyna-Wierchomla","c":"PL","r":"Lesser Poland Voivodeship","l":"Muszyna Wieś","k":9.5,"g":[],"x":20.8414,"y":49.4121,"w":"https://www.wierchomla.com.pl/stacja-narciarska-zima"},{"id":"cfa186f0b18634684fa4889ca1a1e0a4545a25d8","n":"Szrenica Ski Arena","full":"Szrenica Ski Arena","c":"PL","r":"dolnoslaskie","l":"Szklarska Poręba","k":8.9,"g":[],"x":15.5108,"y":50.8047},{"id":"0db577978d2d6cad099d38cdd8e7f4a9da2c8dd3","n":"Jaworzyna Krynicka","full":"Jaworzyna Krynicka","c":"PL","r":"Lesser Poland Voivodeship","l":"Krynica-Zdrój","k":8.5,"g":[],"x":20.908,"y":49.4181,"w":"https://www.jaworzynakrynicka.pl/"},{"id":"5bf24db989106f3eac5533e9e82b082a2edc473e","n":"Słotwiny Arena","full":"Słotwiny Arena","c":"PL","r":"Lesser Poland Voivodeship","l":"Krynica-Zdrój","k":7.5,"g":[],"x":20.9313,"y":49.4309,"w":"https://slotwinyarena.pl/"},{"id":"eec2998c17e39ed31d916fb6aee12d2585b46ef8","n":"Master-Ski","full":"Master-Ski","c":"PL","r":"Lesser Poland Voivodeship","l":"Krynica-Zdrój Wieś","k":7.4,"g":[],"x":21.0237,"y":49.39,"w":"https://master-ski.pl/"},{"id":"696c90a567b6b3dbd36e7e1d92c0aad4d8a8f858","n":"Karpacz Ski Arena","full":"Karpacz Ski Arena","c":"PL","r":"dolnoslaskie","l":"Karpacz","k":7.0,"g":[],"x":15.7214,"y":50.7576,"w":"https://karpaczskiarena.pl"},{"id":"6cd36457c09b291433ae3aed935c90e77836ac6e","n":"Deštné v Orlických horách","full":"Deštné v Orlických horách","c":"CZ,PL","r":"dolnoslaskie","l":"Duszniki-Zdrój","k":5.8,"g":[],"x":16.4432,"y":50.2729,"w":"https://www.skicentrumdestne.cz/"},{"id":"e5fb16a7f569ff8d6a0201e790b3b4ff32d30450","n":"Cieńków","full":"Cieńków","c":"PL","r":"Silesian Voivodeship","l":"Wisła","k":5.3,"g":[],"x":18.933,"y":49.6289,"w":"http://www.cienkownarty.pl/"}],"groups":[{"n":"Dolomiti Superski","k":1106.1,"c":"IT,AT","m":["04d84a3789b94eba19ce3c951fece8117d931c03","fca6e2a27977f0cdca3016e8e9c4a9a643d53f2b","02196b1e0dd473176e265318bc9c06e22df53ace","3768b8c925737d2bdad4ea978f036485c508a6b3","0295b1657f53d93d0eb1fd692993c0d2909d6d73","e615b3d384f0063fb20af785b477a97fdce907bc","d68b7ce7be8a7b5b3a0e020eeb9dce4770f0da6b","dcb15d6d8592e307e3cf6da3bc1dd4e759d75d90","00e3880c19b3ca1bb412d2274d3c15bf4a2598f9","26affab63c6efa3eb88812bf68e50db4ff988dbe","ab7961704073ef3c88692eee6638c6622112defc","11b4273361f22eb084db41a3270d66fe1db2e7c1","748fee00e468b5d11016d8f9dab6e2e214ea78f5","7563abecd5cc2164f89cd67a02eac49bf45e2365","7382bc3c80658564db8fc3dc0e2f8d8f7c709fe0"]},{"n":"Ski amadé","k":604.8,"c":"AT","m":["b28af962323890eb2dc4f2705ed7b6893d894add","31ba9e7c28dd9574c86fa6e4c0ead48553e45ba7","8ebbe708c3f7b24aac9cd9d3293dc3b53d405f92","a52b30a524e35adb64e78425a0a8e62dad0f0006","723611e5c6bd7d52526c22a4eb1040eb82a0b759","fc89413ef26e4479473070112eb1e72e15b3d23f","71c073dc36516a01f114c98708db04e208feafd1","7346bb5d22b8259e978183dc0a4b375a3351ac90","54b7a2ec9a61d19cd3a9431ddc23cc9ad5fc306e","c1bb41346278aa404c3e62769608553e1d22d149","94a0f07cbc6591aa34fe575a16264667d2821934"]},{"n":"Les Trois Vallées","k":542.3,"c":"FR","m":["23365b5cea5dad5b58d9ffc5506ff573f96cb70b","e13d9d82f727b3101571e54b9aeeb900a8286337","3ab7375c4734163405f0f77a7c5a6afdfd600b73","075db540453d13b0e660135085f40523940b95ba"]},{"n":"Les Portes du Soleil","k":406.3,"c":"FR,CH","m":["45c1ed53a5c947daeb9df201306473ac8b059788","b2d026c49e73f7b49e043de835baa5622adc2e47","18fc59dac7fcada9451a1b4487a95f2285ac4930","17a2aed27cfa6b593c5df9770900555623db6adf"]},{"n":"Paradiski","k":397.6,"c":"FR","m":["f47f7e05cc676b25b6a00f77f0b86a897f03018c","dec537b602584db89d89ab114a619f1ae356398e"]},{"n":"Evasion Mont Blanc","k":293.0,"c":"FR","m":["0345d73f7a4bf0f49815ccb16306a3ec6371544b","97a14cedc5b0e781e9bd9857df1426b9376c7462","aa87548d9445d366123e7ef7aee40af9d4a78dff","10f2ef5a778b65fdea26f0662b08e83c8b979356"]},{"n":"Ski Arlberg","k":275.3,"c":"AT","m":["c5107fc2eb3f59b23211a3251a229b06d36f765c","66e672470add74c3e6a2bd8d4c1bb07cc4721728","29248afecbb89253d31145bb08025956c1bfb71a"]},{"n":"Espace Haute Maurienne Vanoise","k":207.8,"c":"FR","m":["de350ad7968df87ff7ca6ef38f27963ca0c2ec2a","3150d08706183824af7f70226eaa2222400b8a64","756e0502aecee6a9d48efb3419be7efaac92341d"]},{"n":"Espace Lumière","k":185.1,"c":"FR","m":["05ec7627488328fb30e0d502b021045a348af622","4236aff4e09a8a34af56ec12b7c0085e579204db"]},{"n":"Schladming Dachstein","k":179.3,"c":"AT","m":["a52b30a524e35adb64e78425a0a8e62dad0f0006","94a0f07cbc6591aa34fe575a16264667d2821934"]},{"n":"Kleinwalsertal-Oberstdorf","k":108.3,"c":"AT,DE","m":["8a5063e32476ab3ab529dd524a0debe563e08f28","21def33c68a75c001d3342fc3e711e0f1e997637"]},{"n":"Skigebiet Damüls-Mellau-Faschina","k":94.0,"c":"AT","m":["f83cb97ace9308e949a7638a1922ba589f5cc40d"]},{"n":"Snow Space Salzburg","k":85.2,"c":"AT","m":["71c073dc36516a01f114c98708db04e208feafd1","7346bb5d22b8259e978183dc0a4b375a3351ac90"]}],"hubs":[{"id":"h-zermatt","n":"Zermatt","c":"CH","r":"Valais","y":46.0207,"x":7.7491,"hikes":[{"n":"Five Lakes Walk (5-Seenweg)","d":"średnia","t":"3–4 h","o":"Pięć jezior z odbiciem Matterhornu, trasa z okolic Blauherd w stronę Zermatt.","s":"Klasyki"},{"n":"Riffelsee i Gornergrat","d":"łatwa","t":"2–3 h","o":"Kolejką na Gornergrat, potem spacer w dół do Riffelsee (klasyczne zdjęcie Matterhornu).","s":"Klasyki"},{"n":"Matterhorn Glacier Trail","d":"średnia","t":"3–4 h","o":"Szlak pod północną ścianą Matterhornu w okolicy Trockener Steg i Schwarzsee.","s":"Klasyki"},{"n":"Hörnlihütte (baza pod Matterhornem)","d":"trudna","t":"4–5 h","o":"Od Schwarzsee do schroniska pod granią Hörnli, z dużym przewyższeniem.","s":"Klasyki"},{"n":"Edelweissweg","d":"łatwa","t":"3–4 h","o":"Spacer z Riffelalp do Zermatt z widokiem na Matterhorn.","s":"Zermatt"},{"n":"Gornergrat – Riffelalp","d":"średnia","t":"3–4 h","o":"Z Gornergratu w dół do Riffelalp przez Riffelberg.","s":"Zermatt"},{"n":"Charles Kuonen Suspension Bridge","d":"średnia","t":"3–4 h","o":"Najdłuższy most wiszący (494 m) z trasą od Europaweg.","s":"Zermatt"},{"n":"Europahütte","d":"trudna","t":"2 dni","o":"Dwudniowa wędrówka Europaweg, najbardziej widokowy w Valais.","s":"Zermatt"},{"n":"Sunnegga – Blauherd – Findeln","d":"łatwa","t":"2–3 h","o":"Panoramiczne spacery przy Matterhornie.","s":"Zermatt"}]},{"id":"h-grindelwald","n":"Grindelwald","c":"CH","r":"Berno","y":46.6243,"x":8.0413,"hikes":[{"n":"First – Bachalpsee","d":"łatwa","t":"2–3 h","o":"Jezioro z widokiem na Schreckhorn i Wetterhorn, spacer z górnej stacji First.","s":"Klasyki"},{"n":"Eiger Trail","d":"średnia","t":"2–3 h","o":"Zejście pod północną ścianą Eigera z Eigergletscher do Alpiglen.","s":"Klasyki"},{"n":"Faulhorn","d":"średnia","t":"4–6 h","o":"Grzbietowa wędrówka z First na szczyt Faulhorn z widokiem na Alpy Berneńskie.","s":"Klasyki"},{"n":"Männlichen – Kleine Scheidegg","d":"łatwa","t":"1–1,5 h","o":"Panoramiczny spacer z widokiem na Eiger, Mönch i Jungfrau.","s":"Klasyki"},{"n":"Pfingstegg – Marmorbruch","d":"łatwa","t":"1,5–2 h","o":"Spacer do dawnego kamieniołomu marmuru koło lodowca Dolnego Grindelwaldu.","s":"Grindelwald"},{"n":"Bussalp – Faulhorn","d":"średnia","t":"4–5 h","o":"Trasa z Bussalp do szczytu Faulhorn.","s":"Grindelwald"},{"n":"Glecksteinhütte","d":"trudna","t":"5–6 h","o":"Schronisko pod ścianą Wetterhornu.","s":"Grindelwald"},{"n":"Schynige Platte – Faulhorn","d":"średnia","t":"5–6 h","o":"Klasyk z Interlaken, grzbietem do First.","s":"Grindelwald"}]},{"id":"h-lauterbrunnen","n":"Lauterbrunnen","c":"CH","r":"Berno","y":46.5936,"x":7.9075,"hikes":[{"n":"Dolina wodospadów (Lauterbrunnen – Stechelberg)","d":"łatwa","t":"2–3 h","o":"Spacer doliną z licznymi wodospadami, m.in. Staubbach i Trümmelbach."},{"n":"Mürren – Gimmelwald – Lauterbrunnen","d":"średnia","t":"3–4 h","o":"Wioski bez samochodów i widoki na Eiger, Mönch i Jungfrau, na końcu zejście do doliny."},{"n":"Grütschalp – Mürren","d":"łatwa","t":"1–1,5 h","o":"Płaski, widokowy szlak z widokiem na Jungfrau."}]},{"id":"h-kandersteg","n":"Kandersteg","c":"CH","r":"Berno","y":46.495,"x":7.673,"hikes":[{"n":"Oeschinensee","d":"łatwa","t":"2–3 h","o":"Alpejskie jezioro pod ścianami Blüemlisalp, dojście ze stacji kolejki gondolowej.","s":"Klasyki"},{"n":"Blüemlisalphütte","d":"trudna","t":"4–6 h","o":"Wysokogórskie schronisko nad Oeschinensee, długie i strome podejście.","s":"Klasyki"},{"n":"Oeschinensee – górna ścieżka","d":"średnia","t":"4–5 h","o":"Panoramiczna pętla nad jeziorem z szeroką ekspozycją.","s":"Kandersteg"},{"n":"Gasterntal","d":"łatwa","t":"2–3 h","o":"Dzika dolina z potokiem Kander.","s":"Kandersteg"},{"n":"Blausee","d":"łatwa","t":"1 h","o":"Turkusowe jezioro w lesie.","s":"Kandersteg"},{"n":"Bunderchrinde","d":"średnia","t":"5–6 h","o":"Przełęcz między Adelboden a Kandersteg.","s":"Kandersteg"}]},{"id":"h-pontresina","n":"Pontresina i St. Moritz","c":"CH","r":"Gryzonia (Engadyna)","y":46.492,"x":9.9,"hikes":[{"n":"Lodowiec Morteratsch","d":"łatwa","t":"2–3 h","o":"Szlak doliną do czoła lodowca Morteratsch."},{"n":"Muottas Muragl – Alp Languard","d":"średnia","t":"3–4 h","o":"Widokowa wędrówka wysoko nad dolinami Engadyny."},{"n":"Piz Languard (3262 m)","d":"trudna","t":"6–7 h","o":"Szczyt ponad Pontresiną, długa i wymagająca wędrówka."}]},{"id":"h-hallstatt","n":"Hallstatt","c":"AT","r":"Górna Austria","y":47.5622,"x":13.6493,"hikes":[{"n":"Soleweg do Rudolfsturm","d":"łatwa","t":"1–1,5 h","o":"Widokowy szlak nad Hallstatt, wzdłuż dawnego rurociągu solnego."},{"n":"Dolina Echern i wodospad Waldbachstrub","d":"łatwa","t":"1,5–2 h","o":"Spacer lasem do wodospadu niedaleko Hallstatt."}]},{"id":"h-mayrhofen","n":"Mayrhofen (Zillertal)","c":"AT","r":"Tyrol","y":47.165,"x":11.865,"hikes":[{"n":"Berliner Höhenweg","d":"trudna","t":"kilka dni","o":"Klasyczny wysokogórski trekking po Alpach Zillertalskich ze schroniskami."}]},{"id":"h-heiligenblut","n":"Heiligenblut (Großglockner)","c":"AT","r":"Karyntia","y":47.0404,"x":12.8449,"hikes":[{"n":"Gamsgrubenweg (Pasterze)","d":"średnia","t":"2–3 h","o":"Widokowa ścieżka nad lodowcem Pasterze pod Großglocknerem."},{"n":"Großglockner (3798 m)","d":"trudna","t":"2 dni","o":"Najwyższy szczyt Austrii, wymaga doświadczenia wysokogórskiego (lodowiec, asekuracja)."}]},{"id":"h-garmisch","n":"Garmisch-Partenkirchen","c":"DE","r":"Bawaria","y":47.4921,"x":11.0958,"hikes":[{"n":"Partnachklamm","d":"łatwa","t":"1–1,5 h","o":"Spacer przez wąski wąwóz Partnach."},{"n":"Eibsee dookoła","d":"łatwa","t":"2 h","o":"Pętla wokół jeziora Eibsee pod Zugspitze."},{"n":"Zugspitze przez Reintal","d":"trudna","t":"1–2 dni","o":"Najwyższy szczyt Niemiec, długa trasa przez dolinę Reintal."}]},{"id":"h-berchtesgaden","n":"Berchtesgaden","c":"DE","r":"Bawaria","y":47.63,"x":13.0,"hikes":[{"n":"Königssee i Röthbachfall","d":"łatwa","t":"2–3 h","o":"Rejs po jeziorze i spacer do jednego z najwyższych wodospadów w Niemczech."},{"n":"Watzmannhaus","d":"trudna","t":"4–6 h","o":"Schronisko pod masywem Watzmann, długie podejście."}]},{"id":"h-chamonix","n":"Chamonix","c":"FR","r":"Owernia-Rodan-Alpy","y":45.9237,"x":6.8694,"hikes":[{"n":"Lac Blanc","d":"średnia","t":"3–4 h","o":"Jezioro z widokiem na Mont Blanc, jedna z najpopularniejszych wędrówek w dolinie."},{"n":"Grand Balcon Sud (Planpraz – Flégère)","d":"średnia","t":"2–3 h","o":"Widokowy szlak po południowej stronie doliny, naprzeciw masywu Mont Blanc."},{"n":"Montenvers – Mer de Glace","d":"łatwa","t":"1–2 h","o":"Z kolejką na Montenvers, potem szlakiem nad lodowiec Mer de Glace."},{"n":"Tour du Mont Blanc","d":"trudna","t":"10–11 dni","o":"Klasyczny trekking dookoła Mont Blanc przez Francję, Włochy i Szwajcarię."}]},{"id":"h-gavarnie","n":"Gavarnie","c":"FR","r":"Oksytania (Pireneje)","y":42.735,"x":-0.01,"hikes":[{"n":"Cyrk Gavarnie","d":"łatwa","t":"ok. 3 h","o":"Spacer z wioski do ogromnego lodowcowego cyrku ze słynnym wodospadem."},{"n":"Brèche de Roland","d":"trudna","t":"6–8 h","o":"Znane przejście w skalnej ścianie na granicy francusko-hiszpańskiej."}]},{"id":"h-cauterets","n":"Cauterets","c":"FR","r":"Oksytania (Pireneje)","y":42.889,"x":-0.113,"hikes":[{"n":"Pont d'Espagne – Lac de Gaube","d":"łatwa","t":"2–3 h","o":"Szlak doliną wodospadów do jeziora pod masywem Vignemale."}]},{"id":"h-cortina","n":"Cortina d'Ampezzo","c":"IT","r":"Wenecja Euganejska (Dolomity)","y":46.5405,"x":12.1357,"hikes":[{"n":"Lago di Sorapis","d":"średnia","t":"4–5 h","o":"Turkusowe jezioro w Dolomitach, szlak z krótkimi odcinkami zabezpieczonymi linami."},{"n":"Cinque Torri","d":"łatwa","t":"2–3 h","o":"Skalne wieże z okopami z I wojny światowej."},{"n":"Lagazuoi i tunele wojenne","d":"średnia","t":"3–4 h","o":"Szlak śladami frontu I wojny światowej w Dolomitach."}]},{"id":"h-tre-cime","n":"Tre Cime di Lavaredo","c":"IT","r":"Dolomity (Auronzo, Misurina)","y":46.6139,"x":12.3036,"hikes":[{"n":"Tre Cime dookoła","d":"średnia","t":"3–4 h","o":"Pętla ok. 10 km wokół trzech słynnych turni, start przy Rifugio Auronzo."}]},{"id":"h-braies","n":"Lago di Braies","c":"IT","r":"Południowy Tyrol (Dolomity)","y":46.6945,"x":12.0855,"hikes":[{"n":"Lago di Braies dookoła","d":"łatwa","t":"1–1,5 h","o":"Pętla wokół jednego z najsłynniejszych jezior Dolomitów."},{"n":"Alta Via 1","d":"trudna","t":"10–12 dni","o":"Klasyczny trekking po Dolomitach, zaczyna się nad Lago di Braies."}]},{"id":"h-alpe-di-siusi","n":"Alpe di Siusi","c":"IT","r":"Południowy Tyrol (Dolomity)","y":46.54,"x":11.62,"hikes":[{"n":"Alpe di Siusi – Rifugio Zallinger","d":"łatwa","t":"2–3 h","o":"Rozległe łąki z widokiem na Sassolungo i Sciliar."},{"n":"Dookoła Sassolungo","d":"średnia","t":"5–6 h","o":"Wędrówka wokół masywu Sassolungo (Langkofel) w Dolomitach."}]},{"id":"h-seceda","n":"Ortisei i Seceda","c":"IT","r":"Południowy Tyrol (Dolomity)","y":46.605,"x":11.726,"hikes":[{"n":"Seceda: granią","d":"łatwa","t":"2–3 h","o":"Widokowa grań w masywie Odle, znana z wielu zdjęć."}]},{"id":"h-val-di-funes","n":"Val di Funes","c":"IT","r":"Południowy Tyrol (Dolomity)","y":46.634,"x":11.723,"hikes":[{"n":"Adolf-Munkel-Weg","d":"średnia","t":"3–4 h","o":"Szlak u stóp ścian Odle z widokami na grupę Geisler."}]},{"id":"h-courmayeur","n":"Courmayeur","c":"IT","r":"Dolina Aosty","y":45.797,"x":6.9686,"hikes":[{"n":"Rifugio Bonatti (Val Ferret)","d":"średnia","t":"4–6 h","o":"Szlak w stronę Mont Blanc przez Val Ferret, częsty fragment Tour du Mont Blanc."}]},{"id":"h-cinque-terre","n":"Cinque Terre","c":"IT","r":"Liguria","y":44.127,"x":9.709,"hikes":[{"n":"Monterosso – Vernazza (Sentiero Azzurro)","d":"średnia","t":"1,5–2 h","o":"Najpopularniejszy odcinek Błękitnej Ścieżki z widokami na morze."}]},{"id":"h-bled","n":"Bled","c":"SI","r":"Gorenjska","y":46.3683,"x":14.1146,"hikes":[{"n":"Wąwóz Vintgar","d":"łatwa","t":"1,5–2 h","o":"Pomosty nad rzeką Radovną w wąwozie niedaleko jeziora Bled."},{"n":"Ojstrica i Mala Osojnica","d":"łatwa","t":"1–1,5 h","o":"Krótkie podejścia na punkty widokowe nad jeziorem Bled."}]},{"id":"h-bohinj","n":"Bohinj","c":"SI","r":"Gorenjska (Triglav)","y":46.286,"x":13.887,"hikes":[{"n":"Wodospad Savica","d":"łatwa","t":"1–1,5 h","o":"Krótki szlak do wodospadu nad jeziorem Bohinj."},{"n":"Triglav (2864 m)","d":"trudna","t":"2 dni","o":"Najwyższy szczyt Słowenii, wymaga doświadczenia i sprzętu do zabezpieczeń."}]},{"id":"h-zakopane","n":"Zakopane (Tatry)","c":"PL","r":"Małopolska","y":49.2992,"x":19.9496,"hikes":[{"n":"Morskie Oko","d":"łatwa","t":"4–5 h","o":"Najpopularniejszy szlak w Tatrach, ok. 9 km w jedną stronę asfaltową drogą do jeziora.","s":"Klasyki"},{"n":"Dolina Kościeliska","d":"łatwa","t":"3–4 h","o":"Spacer doliną z jaskiniami i Schroniskiem na Hali Ornak.","s":"Klasyki"},{"n":"Giewont","d":"średnia","t":"5–6 h","o":"Symbol Zakopanego, końcówka podejścia z łańcuchami.","s":"Klasyki"},{"n":"Rysy","d":"trudna","t":"8–10 h","o":"Najwyższy szczyt Polski (2499 m), długa trasa z Morskiego Oka.","s":"Klasyki"},{"n":"Kasprowy Wierch (1987 m)","d":"średnia","t":"4–5 h","o":"Z Kuźnic przez Myślenickie Turnie albo Boczań i Halę Gąsienicową; można też wjechać kolejką.","s":"Tatry Zachodnie – szczyty"},{"n":"Kopa Kondracka (2005 m)","d":"średnia","t":"5–6 h","o":"Najbardziej wysunięty na wschód szczyt Czerwonych Wierchów, z Kasprowego lub z Doliny Kondratowej.","s":"Tatry Zachodnie – szczyty"},{"n":"Małołączniak (2096 m)","d":"średnia","t":"5–6 h","o":"Czerwone Wierchy, grzbietem od Kopy Kondrackiej.","s":"Tatry Zachodnie – szczyty"},{"n":"Krzesanica (2122 m)","d":"średnia","t":"5–6 h","o":"Najwyższy z Czerwonych Wierchów, szeroka grań.","s":"Tatry Zachodnie – szczyty"},{"n":"Ciemniak (2096 m)","d":"średnia","t":"5–6 h","o":"Zachodnia część Czerwonych Wierchów, łagodniejsze podejście.","s":"Tatry Zachodnie – szczyty"},{"n":"Czerwone Wierchy – pętla","d":"średnia","t":"7–8 h","o":"Cały grzbiet: Kopa Kondracka, Małołączniak, Krzesanica, Ciemniak, powrót doliną Kościeliską lub Małej Łąki.","s":"Tatry Zachodnie – szczyty"},{"n":"Wołowiec (2064 m)","d":"średnia","t":"6–7 h","o":"Najłatwiejszy dwutysięcznik, z Doliny Chochołowskiej przez Rakoń; widok na cały Zachód.","s":"Tatry Zachodnie – szczyty"},{"n":"Jarząbczy Wierch (2137 m)","d":"średnia","t":"6–7 h","o":"Dalej grzbietem od Wołowca, na granicy ze Słowacją.","s":"Tatry Zachodnie – szczyty"},{"n":"Rakoń (1879 m)","d":"średnia","t":"4–5 h","o":"Szczyt nad Doliną Chochołowską, często na trasie na Wołowiec.","s":"Tatry Zachodnie – szczyty"},{"n":"Grześ (1653 m)","d":"łatwa","t":"3–4 h","o":"Łagodna kopa nad Doliną Chochołowską, najłatwiejszy pewny widok na Tatry Zachodnie.","s":"Tatry Zachodnie – szczyty"},{"n":"Kominiarski Wierch (1829 m)","d":"średnia","t":"3–4 h","o":"Wyraźny szczyt nad Doliną Chochołowską, z Wąwozu Kraków lub z Kir.","s":"Tatry Zachodnie – szczyty"},{"n":"Ornak (1854 m)","d":"średnia","t":"4–5 h","o":"Szczyt nad Doliną Ornaczańską, trasy od Hali Ornak.","s":"Tatry Zachodnie – szczyty"},{"n":"Giewont – Wielki (1895 m)","d":"średnia","t":"5–6 h","o":"Z Kuźnic przez Kalatówki albo Doliną Strążyską; ostatni odcinek z łańcuchami.","s":"Tatry Zachodnie – szczyty"},{"n":"Kopieniec Wielki (1328 m)","d":"łatwa","t":"2–3 h","o":"Kameralna trasa z Jaszczurówki, widok na Giewont i Tatry Wysokie.","s":"Tatry Zachodnie – szczyty"},{"n":"Nosal (1206 m)","d":"łatwa","t":"1–1,5 h","o":"Krótko, stromo na grzbiet nad Zakopanem.","s":"Tatry Zachodnie – szczyty"},{"n":"Sarnia Skała (1377 m)","d":"łatwa","t":"2–3 h","o":"Skalny szczyt nad Doliną Kościeliską, widok na Giewont.","s":"Tatry Zachodnie – szczyty"},{"n":"Kozi Wierch (2291 m)","d":"trudna","t":"6–8 h","o":"Najwyższy szczyt całkowicie w Polsce, z Orlą Percią, z Doliny Pięciu Stawów.","s":"Tatry Wysokie – szczyty"},{"n":"Świnica (2301 m)","d":"trudna","t":"6–7 h","o":"Z Kasprowego przez Zawrat do Świnickiej Przełęczy, na końcu łańcuchy.","s":"Tatry Wysokie – szczyty"},{"n":"Rysy (2499 m)","d":"trudna","t":"8–10 h","o":"Najwyższy szczyt Polski (lub 2500 m wg nowych pomiarów); w sezonie zimowym wymaga sprzętu i doświadczenia.","s":"Tatry Wysokie – szczyty"},{"n":"Szpiglasowy Wierch (2172 m)","d":"średnia","t":"6–7 h","o":"Przez Szpiglasową Przełęcz, nad Morskim Okiem, widok na dolinę Pięciu Stawów.","s":"Tatry Wysokie – szczyty"},{"n":"Kościelec (2155 m)","d":"trudna","t":"5–6 h","o":"Czarny szlak, z Hali Gąsienicowej; kilka eksponowanych miejsc, wąska grań.","s":"Tatry Wysokie – szczyty"},{"n":"Granaty (Skrajny, 2225 m)","d":"trudna","t":"7–8 h","o":"Fragment Orlej Perci, łańcuchy i drabiny.","s":"Tatry Wysokie – szczyty"},{"n":"Mnich (2068 m)","d":"trudna","t":"6–7 h","o":"Turnia nad Morskim Okiem, bez znakowanego szlaku na szczyt (tylko dla wspinaczy); popularny jako widok ze szlaku do Czarnego Stawu.","s":"Tatry Wysokie – szczyty"},{"n":"Czerwone Wierchy z Doliny Kościeliskiej","d":"średnia","t":"7–9 h","o":"Klasyczna pętla z Kir przez Dolinę Mułową.","s":"Szlaki ikony"},{"n":"Orla Perć (Zawrat – Krzyżne)","d":"trudna","t":"10–12 h","o":"Najtrudniejszy szlak w polskich Tatrach, łańcuchy, drabiny i ekspozycja; nie dla ludzi z lękiem wysokości.","s":"Szlaki ikony"},{"n":"Zawrat (2159 m)","d":"trudna","t":"5–6 h","o":"Przełęcz między Doliną Gąsienicową a Doliną Pięciu Stawów, łańcuchy.","s":"Przełęcze"},{"n":"Krzyżne (2112 m)","d":"średnia","t":"7–8 h","o":"Przełęcz na szlaku Doliny Pięciu Stawów do Roztoki, najwyższa przełęcz szlaku turystycznego.","s":"Przełęcze"},{"n":"Świnicka Przełęcz (2051 m)","d":"średnia","t":"5–6 h","o":"Z Kasprowego lub Zawratu, wejście na Świnicę.","s":"Przełęcze"},{"n":"Szpiglasowa Przełęcz (2110 m)","d":"średnia","t":"6–7 h","o":"Z Morskiego Oka do Doliny Pięciu Stawów.","s":"Przełęcze"},{"n":"Przełęcz pod Chłopkiem (2307 m)","d":"trudna","t":"8 h","o":"Tylko dla doświadczonych, bardzo eksponowana przełęcz nad Morskim Okiem.","s":"Przełęcze"},{"n":"Hala Gąsienicowa i Murowaniec","d":"łatwa","t":"3–4 h","o":"Przez Boczań z Kuźnic do schroniska, baza dla wypraw na Kościelec i Orlą Perć.","s":"Doliny, stawy, polany i schroniska"},{"n":"Czarny Staw Gąsienicowy","d":"łatwa","t":"4–5 h","o":"Z Hali Gąsienicowej, jeden z najpiękniejszych stawów w Tatrach.","s":"Doliny, stawy, polany i schroniska"},{"n":"Zielony Staw Gąsienicowy","d":"łatwa","t":"3–4 h","o":"Szlak z Hali Gąsienicowej do jeziora pod Kościelcem.","s":"Doliny, stawy, polany i schroniska"},{"n":"Czarny Staw pod Rysami","d":"średnia","t":"6–7 h","o":"Powyżej Morskiego Oka, z widokiem na ścianę Mięguszowieckich.","s":"Doliny, stawy, polany i schroniska"},{"n":"Dolina Pięciu Stawów Polskich","d":"średnia","t":"5–6 h","o":"Pięć jezior w polodowcowej dolinie, popularna trasa z Morskiego Oka.","s":"Doliny, stawy, polany i schroniska"},{"n":"Wodogrzmoty Mickiewicza i Siklawa","d":"łatwa","t":"3–4 h","o":"Szlak z Palenicy Białczańskiej do wodospadów w Roztoce.","s":"Doliny, stawy, polany i schroniska"},{"n":"Hala Gąsienicowa – Dolina Jaworzynki","d":"średnia","t":"5–6 h","o":"Zejście od Murowańca do Kuźnic Doliną Jaworzynki.","s":"Doliny, stawy, polany i schroniska"},{"n":"Dolina Chochołowska","d":"łatwa","t":"3–4 h","o":"Szeroka dolina z Polaną Chochołowską i schroniskiem, w marcu krokusy.","s":"Doliny, stawy, polany i schroniska"},{"n":"Dolina Strążyska i Siklawica","d":"łatwa","t":"2–3 h","o":"Pętla przez wodospad Siklawica; często zaczyna się wejście na Giewont.","s":"Doliny, stawy, polany i schroniska"},{"n":"Dolina Małej Łąki i Przysłop Miętusi","d":"średnia","t":"4–5 h","o":"Klasyczna trasa do Doliny Kościeliskiej i Czerwonych Wierchów.","s":"Doliny, stawy, polany i schroniska"},{"n":"Hala Kondratowa i Giewont","d":"średnia","t":"4–5 h","o":"Szlak z Kuźnic i Kalatówek przez Dolinę Kondratową do schroniska.","s":"Doliny, stawy, polany i schroniska"},{"n":"Rusinowa Polana i Gęsia Szyja","d":"łatwa","t":"2–3 h","o":"Polana z widokiem na Tatry, kaplica Wiktorówki.","s":"Doliny, stawy, polany i schroniska"},{"n":"Zawrat – Dolina Gąsienicowa – Pięć Stawów","d":"trudna","t":"8–10 h","o":"Przejście przez Zawrat między dwoma dolinami, z łańcuchami.","s":"Szlaki ikony"}]},{"id":"h-szczyrk","n":"Szczyrk","c":"PL","r":"Śląsk (Beskidy)","y":49.716,"x":19.03,"hikes":[{"n":"Skrzyczne","d":"średnia","t":"3–4 h","o":"Najwyższy szczyt Beskidu Śląskiego z widokiem na Beskidy i, przy dobrej pogodzie, Tatry."}]},{"id":"h-zawoja","n":"Zawoja (Babia Góra)","c":"PL","r":"Małopolska","y":49.615,"x":19.533,"hikes":[{"n":"Babia Góra z Krowiarek","d":"średnia","t":"4–5 h","o":"Najwyższy szczyt Beskidu Żywieckiego (1725 m), zwany Diablakiem."}]},{"id":"h-karpacz","n":"Karpacz (Karkonosze)","c":"PL","r":"Dolny Śląsk","y":50.778,"x":15.75,"hikes":[{"n":"Śnieżka","d":"średnia","t":"4–5 h","o":"Najwyższy szczyt Karkonoszy (1603 m), podejście z Karpacza.","s":"Klasyki"},{"n":"Samotnia i Mały Staw","d":"łatwa","t":"3–4 h","o":"Szlak do schroniska Samotnia nad Małym Stawem, w głąb Karkonoszy.","s":"Szlaki"},{"n":"Wodospad Kamieńczyka (Szklarska Poręba)","d":"łatwa","t":"1–1,5 h","o":"Najwyższy wodospad w polskich Sudetach.","s":"Szlaki"},{"n":"Szrenica (1362 m)","d":"średnia","t":"4–5 h","o":"Z Szklarskiej Poręby na szczyt w zachodnich Karkonoszach.","s":"Szczyty"},{"n":"Śnieżne Kotły","d":"średnia","t":"5–6 h","o":"Kotły polodowcowe i widok z grani Karkonoszy.","s":"Szlaki"},{"n":"Wang i Świątynia Wang (Karpacz)","d":"łatwa","t":"1 h","o":"Drewniany kościół norweski i spacer w głąb miasta.","s":"Szlaki"}]},{"id":"h-pec","n":"Pec pod Sněžkou","c":"CZ","r":"Kralovéhradecký kraj","y":50.686,"x":15.738,"hikes":[{"n":"Sněžka z Pece pod Sněžkou","d":"średnia","t":"3–4 h","o":"Podejście na najwyższy szczyt Karkonoszy od czeskiej strony."}]},{"id":"h-bieszczady","n":"Bieszczady (Wetlina)","c":"PL","r":"Podkarpacie","y":49.15,"x":22.5,"hikes":[{"n":"Połonina Wetlińska","d":"średnia","t":"3–5 h","o":"Grzbietowa wędrówka po połoninie z widokiem na Bieszczady."},{"n":"Tarnica","d":"średnia","t":"3–4 h","o":"Najwyższy szczyt polskich Bieszczadów (1346 m), start w Wołosatem."}]},{"id":"h-strbske","n":"Štrbské Pleso (Tatry Wysokie)","c":"SK","r":"Preszów","y":49.119,"x":20.063,"hikes":[{"n":"Popradské pleso","d":"łatwa","t":"2–3 h","o":"Szlak do jeziora z widokiem na Tatry Wysokie.","s":"Klasyki"},{"n":"Rysy ze strony słowackiej","d":"trudna","t":"7–9 h","o":"Najwyższy szczyt Polski od słowackiej strony, dłuższe podejście.","s":"Klasyki"},{"n":"Krywań (2494 m)","d":"trudna","t":"7–9 h","o":"Symbol Słowacji, szlak z Szczyrbskiego Jeziora przez Jamskie Pleso i Jamska Przełęcz.","s":"Szczyty"},{"n":"Predné Solisko (2093 m)","d":"średnia","t":"3–4 h","o":"Najłatwiejszy dwutysięcznik w Wysokich Tatrach, widok na Krywań i Szczyrbskie Pleso.","s":"Szczyty"},{"n":"Hincowe plesá (Hińczowe Stawy)","d":"średnia","t":"4–6 h","o":"Wyżej od Popradskiego Plesa, nad Mięguszowieckim Szczytem.","s":"Doliny i stawy"},{"n":"Symboliczny cmentarz i Popradskie Pleso","d":"łatwa","t":"2 h","o":"Cmentarz ofiar gór nad Popradskim Plesem, krótko od Štrbskeho Plesa.","s":"Doliny i stawy"},{"n":"Szczyrbskie Jezioro – wokół","d":"łatwa","t":"1–2 h","o":"Spacer po miasteczku, koło stoku skoczni i jeziora.","s":"Doliny i stawy"}]},{"id":"h-ordesa","n":"Torla (Ordesa)","c":"ES","r":"Aragonia (Pireneje)","y":42.637,"x":-0.105,"hikes":[{"n":"Cola de Caballo","d":"średnia","t":"6–7 h","o":"Dolina Ordesa z wodospadami, klasyczna trasa do Cola de Caballo."}]},{"id":"h-cares","n":"Poncebos (Picos de Europa)","c":"ES","r":"Asturia","y":43.253,"x":-4.85,"hikes":[{"n":"Ruta del Cares","d":"średnia","t":"6–7 h","o":"Szlak wąwozem Cares wykutym w skale; ok. 3–4 h w jedną stronę."}]},{"id":"h-sierra-nevada","n":"Sierra Nevada","c":"ES","r":"Andaluzja","y":37.054,"x":-3.311,"hikes":[{"n":"Mulhacén (3479 m)","d":"trudna","t":"7–10 h","o":"Najwyższy szczyt Hiszpanii kontynentalnej."}]},{"id":"h-tlomnica","n":"Tatranská Lomnica (Słowackie Tatry)","c":"SK","r":"Preszów","y":49.165,"x":20.285,"hikes":[{"n":"Lomnický štít (2634 m)","d":"średnia","t":"wjazd kolejką","o":"Dwie kolejki z Tatrzańskiej Łomnicy, widok na Tatry z jednego z najwyższych szczytów.","s":"Szczyty"},{"n":"Skalnaté pleso i Lomnické sedlo","d":"średnia","t":"3–4 h","o":"Szlak z Tatrzańskiej Łomnicy do Skalnatego Plesa i Przełęczy pod Łomnicą.","s":"Doliny i schroniska"},{"n":"Téryho chata (2015 m)","d":"trudna","t":"6–7 h","o":"Najwyżej położone schronisko w Tatrach, szlak Doliną Pięciu Stawów Spiskich.","s":"Doliny i schroniska"},{"n":"Zamkovského chata – Malá Studená dolina","d":"średnia","t":"4–5 h","o":"Szlak z Hrebienka do Zamkovského chaty, wodospady Studenovodskie.","s":"Doliny i schroniska"},{"n":"Zelené pleso (Zielony Staw Kieżmarski)","d":"łatwa","t":"4–5 h","o":"Najpiękniejsze jezioro w Tatrach Bielskich, szlak z Tatrzańskiej Kotliny.","s":"Doliny i schroniska"},{"n":"Hrebienok – Studenovodské vodopády","d":"łatwa","t":"1,5–2 h","o":"Z Starego Smokowca kolejką do Hrebienka i wodospadów.","s":"Doliny i schroniska"},{"n":"Slavkovský štít (2452 m)","d":"trudna","t":"8–10 h","o":"Wysoki szczyt z Doliną Staroleśną, wymaga doświadczenia.","s":"Szczyty"}]},{"id":"h-zuberec","n":"Zuberec (Roháče)","c":"SK","r":"Żylina","y":49.264,"x":19.618,"hikes":[{"n":"Baníkov (2178 m)","d":"średnia","t":"5–6 h","o":"Szczyt nad Roháčskimi Plesami z widokiem na grań Roháčów.","s":"Szczyty"},{"n":"Roháčske plesá","d":"średnia","t":"5–6 h","o":"Jeziora w polodowcowej dolinie, cel dla pieszych z Zubercu.","s":"Doliny i stawy"},{"n":"Rohacz Ostry (2088 m)","d":"trudna","t":"6–7 h","o":"Granitowa grań w Tatrach Zachodnich, część Roháčów.","s":"Szczyty"},{"n":"Rohacz Płaczliwy (2125 m)","d":"trudna","t":"7 h","o":"Eksponowany szlak nad Plačlivym, wymaga doświadczenia.","s":"Szczyty"},{"n":"Wołowiec z Zubercu","d":"średnia","t":"6–8 h","o":"Wejście od słowackiej strony na polskie granice Tatr.","s":"Szczyty"}]},{"id":"h-szczawnica","n":"Szczawnica (Pieniny)","c":"PL","r":"Małopolska","y":49.418,"x":20.511,"hikes":[{"n":"Trzy Korony (982 m)","d":"średnia","t":"3–4 h","o":"Najpopularniejszy szczyt Pienin z platformą widokową.","s":"Szczyty"},{"n":"Sokolica (747 m)","d":"łatwa","t":"2–3 h","o":"Skała nad przełomem Dunajca ze słynną sosną.","s":"Szczyty"},{"n":"Wąwóz Homole","d":"łatwa","t":"2–3 h","o":"Skalny wąwóz w Małych Pieninach.","s":"Szlaki"},{"n":"Wysoka (1050 m)","d":"średnia","t":"3–4 h","o":"Najwyższy szczyt Pienin, trasa z Jaworek.","s":"Szczyty"},{"n":"Przełom Dunajca – spływ i szlak","d":"łatwa","t":"2–3 h","o":"Spływ tratwami połączony ze spacerem nad rzeką.","s":"Szlaki"}]},{"id":"h-klodzko","n":"Kotlina Kłodzka (Szczeliniec, Śnieżnik)","c":"PL","r":"Dolny Śląsk","y":50.485,"x":16.37,"hikes":[{"n":"Szczeliniec Wielki (919 m)","d":"łatwa","t":"2–3 h","o":"Skalne labirynty Gór Stołowych, ok. 600 stopni.","s":"Góry Stołowe"},{"n":"Błędne Skały","d":"łatwa","t":"1–1,5 h","o":"Skalne miasto z wąskimi szczelinami.","s":"Góry Stołowe"},{"n":"Śnieżnik (1425 m)","d":"średnia","t":"4–5 h","o":"Najwyższy szczyt Masywu Śnieżnika, z Międzygórza lub Kamienicy.","s":"Szczyty"},{"n":"Wodospad Wilczki (Międzygórze)","d":"łatwa","t":"1 h","o":"Najwyższy wodospad w Górach Bystrzyckich.","s":"Szlaki"},{"n":"Szczeliniec – Błędne Skały – Radkowskie Skały","d":"średnia","t":"5–6 h","o":"Dłuższa pętla po Górach Stołowych.","s":"Góry Stołowe"}]},{"id":"h-rabka","n":"Gorce, Beskid Wyspowy (Turbacz)","c":"PL","r":"Małopolska","y":49.56,"x":20.05,"hikes":[{"n":"Turbacz (1310 m)","d":"średnia","t":"4–5 h","o":"Najwyższy szczyt Gorców, z Nowego Targu lub Rabki-Zdrój.","s":"Szczyty"},{"n":"Mogielica (1171 m)","d":"średnia","t":"3–4 h","o":"Najwyższy szczyt Beskidu Wyspowego, wieża widokowa.","s":"Szczyty"},{"n":"Radziejowa (1262 m)","d":"średnia","t":"4–5 h","o":"Najwyższy szczyt Beskidu Sądeckiego, wieża widokowa.","s":"Szczyty"},{"n":"Lubań (1225 m)","d":"średnia","t":"3–4 h","o":"Widokowy szczyt Gorców nad Krościenkiem.","s":"Szczyty"}]},{"id":"h-pilsko","n":"Pilsko i Beskid Żywiecki","c":"PL","r":"Śląsk","y":49.53,"x":19.33,"hikes":[{"n":"Pilsko (1557 m)","d":"średnia","t":"4–5 h","o":"Drugi szczyt Beskidu Żywieckiego, pojawia się przy granicy ze Słowacją.","s":"Szczyty"},{"n":"Hala Miziowa","d":"łatwa","t":"2–3 h","o":"Schronisko pod Pilskiem, początek szlaków.","s":"Szlaki"},{"n":"Rysianka (1322 m)","d":"średnia","t":"4 h","o":"Hala Rysianka z widokiem na Tatry.","s":"Szczyty"}]},{"id":"h-slezanie","n":"Ślęża i Łysica (Korona Gór Polski)","c":"PL","r":"Dolny Śląsk / Świętokrzyskie","y":50.77,"x":16.7,"hikes":[{"n":"Ślęża (718 m)","d":"łatwa","t":"2–3 h","o":"Święta góra Dolnego Śląska, z Sobótki.","s":"Korona Gór Polski"},{"n":"Łysica (614 m)","d":"łatwa","t":"2–3 h","o":"Najwyższy szczyt Gór Świętokrzyskich, Święty Krzyż.","s":"Korona Gór Polski"},{"n":"Skopiec (724 m)","d":"łatwa","t":"2–3 h","o":"Najwyższy szczyt Gór Kaczawskich.","s":"Korona Gór Polski"},{"n":"Orlica (1084 m)","d":"średnia","t":"3–4 h","o":"Najwyższy szczyt Gór Orlickich.","s":"Korona Gór Polski"}]},{"id":"h-alpstein","n":"Appenzell / Alpstein","c":"CH","r":"Appenzell","y":47.282,"x":9.4,"hikes":[{"n":"Saxer Lücke","d":"łatwa","t":"2–3 h","o":"Skalna szczelina z widokiem na Alpstein; z kolejki Staubern ok. 1 h.","s":"Alpstein"},{"n":"Fälensee","d":"średnia","t":"4–5 h","o":"Jezioro u stóp Hundstein, z Staubern przez Saxer Lücke.","s":"Alpstein"},{"n":"Hoher Kasten – Saxer Lücke – Fälensee","d":"średnia","t":"5–6 h","o":"Dłuższa pętla z kolejką z Brülisau.","s":"Alpstein"},{"n":"Seealpsee i Ebenalp","d":"łatwa","t":"3–4 h","o":"Jezioro w głębi doliny i Wildkirchli.","s":"Alpstein"},{"n":"Säntis (2502 m)","d":"średnia","t":"wjazd lub 6–7 h","o":"Najwyższy szczyt Alpsteinu, kolejka lub szlak.","s":"Alpstein"},{"n":"Schäfler Ridge – Äscher Gasthaus","d":"średnia","t":"3–4 h","o":"Gasthaus przyklejony do skały i grań Schäfler.","s":"Alpstein"},{"n":"Hundstein – Meglisalp","d":"średnia","t":"5–6 h","o":"Szlak z Gasthaus Aescher do Meglisalp.","s":"Alpstein"}]},{"id":"h-melchsee","n":"Melchsee-Frutt","c":"CH","r":"Obwalden","y":46.782,"x":8.287,"hikes":[{"n":"Vier-Seen-Wanderung (cztery jeziora)","d":"średnia","t":"4–5 h","o":"Najpopularniejsza trasa, ok. 14,8 km, wokół Melchsee, Tannensee, Blausee i Engstlensee.","s":"Melchsee-Frutt"},{"n":"Hochstollen Loop","d":"trudna","t":"5–6 h","o":"Długa pętla ok. 18 km z większym przewyższeniem.","s":"Melchsee-Frutt"},{"n":"Fruttli Trail","d":"łatwa","t":"1 h","o":"Krótki spacer ok. 3,5 km nad jeziorem.","s":"Melchsee-Frutt"},{"n":"Bonistock Circular Tour","d":"średnia","t":"2,5 h","o":"Pętla ok. 9,6 km wokół Bonistock.","s":"Melchsee-Frutt"},{"n":"Erzegg Circular Tour","d":"średnia","t":"3 h","o":"Pętla ok. 11 km przez Erzegg.","s":"Melchsee-Frutt"},{"n":"Europaleiter – środek Szwajcarii","d":"średnia","t":"2 h","o":"Trasa do geograficznego środka Szwajcarii.","s":"Melchsee-Frutt"},{"n":"Melchsee – Trübsee (Engelberg)","d":"średnia","t":"4 h","o":"Przejście z Melchsee-Frutt do Trübsee, ok. 15 km.","s":"Melchsee-Frutt"}]},{"id":"h-meiringen","n":"Meiringen / Haslital","c":"CH","r":"Berno","y":46.726,"x":8.184,"hikes":[{"n":"Triftbrücke (most wiszący)","d":"średnia","t":"4–5 h","o":"Most wiszący o długości 170 m i wysokości 100 m nad Triftsee; można podjechać kolejką Gadmen–Nessental.","s":"Haslital"},{"n":"Aareschlucht","d":"łatwa","t":"1 h","o":"Wąwóz Aary ze ścieżkami po skałach.","s":"Haslital"},{"n":"Reichenbachfälle","d":"łatwa","t":"1 h","o":"Wodospady z Sherlockiem Holmesem.","s":"Haslital"},{"n":"Rosenlaui – Grosse Scheidegg","d":"średnia","t":"4–5 h","o":"Do Grindelwaldu, widokowa trasa.","s":"Haslital"},{"n":"Lauteraarhütte","d":"trudna","t":"5–6 h","o":"Doliną przy lodowcu Unteraar.","s":"Haslital"}]},{"id":"h-engelberg","n":"Engelberg / Titlis","c":"CH","r":"Obwalden","y":46.818,"x":8.406,"hikes":[{"n":"Titlis Cliff Walk","d":"łatwa","t":"wjazd","o":"Najwyższy most wiszący w Europie, 3041 m.","s":"Engelberg"},{"n":"Trübsee – Jochpass","d":"średnia","t":"3–4 h","o":"Widokowa trasa z Engelberg do Trübsee i Jochpass.","s":"Engelberg"},{"n":"Brunnistöckli – Hahnen","d":"średnia","t":"4–5 h","o":"Wędrówka nad doliną Engelberg.","s":"Engelberg"},{"n":"Fürenalp – Fürenwand","d":"łatwa","t":"2–3 h","o":"Wodospad Fürenwand i widoki na dolinę Engelberg.","s":"Engelberg"}]},{"id":"h-luzern","n":"Lucerna, Rigi, Pilatus, Stoos","c":"CH","r":"Środkowa Szwajcaria","y":47.05,"x":8.31,"hikes":[{"n":"Rigi Kulm","d":"łatwa","t":"wjazd lub 3–4 h","o":"Kolejka zębata lub szlak z Weggis.","s":"Rigi"},{"n":"Pilatus Kulm (2132 m)","d":"średnia","t":"wjazd lub 4–5 h","o":"Najsłynniejszy szczyt nad Lucerną.","s":"Pilatus"},{"n":"Stoos Ridge – Klingenstock – Fronalpstock","d":"średnia","t":"3–4 h","o":"Grzbiet nad jeziorem Czterech Kantonów z najstromszą kolejką linową świata.","s":"Stoos"},{"n":"Fronalpstock","d":"łatwa","t":"wjazd lub 2 h","o":"Szczyt nad Brunnen z widokiem na jezioro.","s":"Stoos"},{"n":"Hoch Ybrig Panorama","d":"średnia","t":"4–5 h","o":"Grzbietowa wędrówka z wieloma widokami.","s":"Stoos"}]},{"id":"h-interlaken","n":"Interlaken i Brienz","c":"CH","r":"Berno","y":46.6863,"x":7.8632,"hikes":[{"n":"Harder Kulm","d":"łatwa","t":"2–3 h","o":"Widok na Eiger, Mönch i Jungfrau nad Interlaken.","s":"Interlaken"},{"n":"Niederhorn","d":"łatwa","t":"1–2 h","o":"Balkon nad Jeziorem Thunerskim.","s":"Interlaken"},{"n":"Brienzer Rothorn","d":"średnia","t":"wjazd lub 5 h","o":"Z pociągiem parowym.","s":"Interlaken"},{"n":"Giessbachfälle","d":"łatwa","t":"1 h","o":"Spektakularne wodospady nad Jeziorem Brienz.","s":"Interlaken"},{"n":"Schynige Platte – Faulhorn","d":"średnia","t":"5–6 h","o":"Wędrówka grzbietem do First.","s":"Interlaken"}]},{"id":"h-aletsch","n":"Aletsch (Riederalp / Bettmeralp)","c":"CH","r":"Valais","y":46.4,"x":8.03,"hikes":[{"n":"Aletsch Panoramaweg","d":"średnia","t":"5–6 h","o":"Wzdłuż największego lodowca Alp, z Bettmeralp lub Fiescheralp.","s":"Aletsch"},{"n":"Fiescheralp – Bettmeralp","d":"łatwa","t":"3 h","o":"Najpopularniejsza, łatwa trasa lodowcowa.","s":"Aletsch"},{"n":"Aletschwald i Gletscherschlucht","d":"łatwa","t":"2–3 h","o":"Las sosnowy i wąwóz lodowcowy.","s":"Aletsch"},{"n":"Moosfluh","d":"średnia","t":"3–4 h","o":"Punkt widokowy nad lodowcem.","s":"Aletsch"},{"n":"Märjelensee","d":"średnia","t":"5–6 h","o":"Jezioro Märjelen przy czole lodowca.","s":"Aletsch"}]},{"id":"h-saasfee","n":"Saas-Fee / Grächen","c":"CH","r":"Valais","y":46.109,"x":7.927,"hikes":[{"n":"Grächen – Saas-Fee (Europaweg lite)","d":"średnia","t":"4–5 h","o":"Widoki na cztery tysięczniki.","s":"Saas"},{"n":"Hannigalp – Grächen","d":"łatwa","t":"1–2 h","o":"Krótka pętla w okolicy.","s":"Saas"},{"n":"Mittelallalin – Plattjen","d":"średnia","t":"3–4 h","o":"Panorama lodowca Fee.","s":"Saas"},{"n":"Almagelleralp","d":"średnia","t":"4–5 h","o":"Trasa do schroniska u stóp Weissmies.","s":"Saas"}]},{"id":"h-verbier","n":"Verbier / Champex-Lac","c":"CH","r":"Valais","y":46.096,"x":7.228,"hikes":[{"n":"Mont Fort (3328 m)","d":"trudna","t":"7–9 h","o":"Wymagający szczyt nad Verbier.","s":"Verbier"},{"n":"Lac des Vaux – Savoleyres","d":"łatwa","t":"2–3 h","o":"Jezioro Vaux nad Verbier.","s":"Verbier"},{"n":"Champex-Lac – Fenêtre d'Arpette","d":"trudna","t":"6–7 h","o":"Jeden z najpiękniejszych odcinków Tour du Mont Blanc.","s":"Verbier"},{"n":"Cabane de Mont Fort","d":"średnia","t":"4–5 h","o":"Schronisko pod Mont Fort.","s":"Verbier"}]},{"id":"h-creux","n":"Creux du Van","c":"CH","r":"Neuchâtel","y":46.94,"x":6.723,"hikes":[{"n":"Creux du Van – pętla","d":"średnia","t":"4–5 h","o":"Naturalny amfiteatr o średnicy 1 km, wejście z Noiraigue ok. 725 m w górę.","s":"Jura"},{"n":"Gorges de l'Areuse","d":"łatwa","t":"2–3 h","o":"Wąwóz rzeki Areuse.","s":"Jura"}]},{"id":"h-lotschental","n":"Lötschental (Kippel, Fafleralp)","c":"CH","r":"Valais","y":46.4,"x":7.79,"hikes":[{"n":"Fafleralp – Gletscherstafel","d":"łatwa","t":"2–3 h","o":"Dolina z widokiem na lodowiec Langgletscher.","s":"Lötschental"},{"n":"Lötschentaler Höhenweg","d":"średnia","t":"6–7 h","o":"Wysokogórska wędrówka z widokami na Bietschhorn.","s":"Lötschental"},{"n":"Lötschenpass","d":"trudna","t":"6–8 h","o":"Przełęcz do Kandersteg.","s":"Lötschental"}]},{"id":"h-ticino","n":"Ticino (Verzasca, Locarno)","c":"CH","r":"Ticino","y":46.226,"x":8.8,"hikes":[{"n":"Dolina Verzasca – Ponte dei Salti","d":"łatwa","t":"1–2 h","o":"Klasyczny most nad turkusowym potokiem.","s":"Ticino"},{"n":"Monte Generoso","d":"średnia","t":"wjazd lub 4–5 h","o":"Widok na Alpy i jeziora Lugano.","s":"Ticino"},{"n":"Cardada – Cimetta","d":"łatwa","t":"2–3 h","o":"Szlak widokowy nad Locarno.","s":"Ticino"},{"n":"Sentiero di Gole","d":"łatwa","t":"2 h","o":"Spacer wąwozem rzeki.","s":"Ticino"}]},{"id":"h-flims","n":"Flims / Laax","c":"CH","r":"Gryzonia","y":46.834,"x":9.289,"hikes":[{"n":"Caumasee","d":"łatwa","t":"1,5–2 h","o":"Turkusowe jezioro w lesie.","s":"Flims"},{"n":"Ruinaulta (Rhein Gorge)","d":"łatwa","t":"3–4 h","o":"Szwajcarski Grand Canyon nad Renem.","s":"Flims"},{"n":"Segnas – Naraus","d":"średnia","t":"4–5 h","o":"Widokowa trasa przez Tektonikarena Sardona.","s":"Flims"},{"n":"Crestasee","d":"łatwa","t":"1 h","o":"Jezioro Cresta.","s":"Flims"}]},{"id":"h-arosa","n":"Davos / Arosa","c":"CH","r":"Gryzonia","y":46.777,"x":9.679,"hikes":[{"n":"Weisshorn – Arosa","d":"średnia","t":"3–4 h","o":"Szczyt nad Arosą, przejście grzbietem.","s":"Davos/Arosa"},{"n":"Schwarzhorn – Fanezmeta","d":"średnia","t":"5–6 h","o":"Widokowa wędrówka w Rätikonie.","s":"Davos/Arosa"},{"n":"Strelapass","d":"średnia","t":"3–4 h","o":"Przełęcz między Davos a Arosą.","s":"Davos/Arosa"},{"n":"Bärentritt – Schatzalp","d":"łatwa","t":"1–2 h","o":"Spacer wokół Davos.","s":"Davos/Arosa"}]},{"id":"h-pizol","n":"Pizol / Churfirsten","c":"CH","r":"St. Gallen","y":47.0,"x":9.4,"hikes":[{"n":"5-Seen-Wanderung (Pizol)","d":"średnia","t":"5–6 h","o":"Pięć jezior pod Pizol, ok. 9 km.","s":"Pizol"},{"n":"Chäserrugg","d":"łatwa","t":"wjazd lub 3 h","o":"Szczyt Churfirsten z widokiem na Walensee.","s":"Churfirsten"},{"n":"Wildhaus – Gamserrugg","d":"średnia","t":"3–4 h","o":"Szczyt nad Toggenburgiem.","s":"Churfirsten"}]},{"id":"h-gstaad","n":"Gstaad / Lenk","c":"CH","r":"Berno","y":46.47,"x":7.28,"hikes":[{"n":"Lauenensee","d":"łatwa","t":"1–2 h","o":"Spokojne jezioro nad Gstaad.","s":"Gstaad"},{"n":"Wildstrubel – Iffigenalp","d":"trudna","t":"7–9 h","o":"Z lodowcowymi widokami na Lenk.","s":"Gstaad"},{"n":"Iffigfall","d":"łatwa","t":"1–1,5 h","o":"Wodospad nad Lenk.","s":"Gstaad"}]},{"id":"h-elm","n":"Elm / Glarus","c":"CH","r":"Glarus","y":46.92,"x":9.17,"hikes":[{"n":"Foopass – Martinsloch","d":"średnia","t":"5–6 h","o":"Otwór w skale oświetlany przez słońce dwa razy do roku.","s":"Glarus"},{"n":"Mürtschenstock","d":"średnia","t":"6–7 h","o":"Szczyt i ścieżka widokowa.","s":"Glarus"}]},{"id":"h-camino","n":"Camino de Santiago","c":"ES","r":"Galicja / cała Hiszpania","y":42.8806,"x":-8.5449,"hikes":[{"n":"Camino Francés (St-Jean-Pied-de-Port → Santiago)","d":"trudna","t":"30–35 dni","o":"Najpopularniejsza trasa, ok. 770–790 km, przez Pireneje, Nawarrę, Kastylię i Galicję.","s":"Trasy (całość)"},{"n":"Camino Portugués Central (Lizbona/Porto → Santiago)","d":"średnia","t":"12–29 dni","o":"Ok. 620 km z Lizbony i 240 km z Porto; druga najpopularniejsza trasa.","s":"Trasy (całość)"},{"n":"Camino Portugués de la Costa (Porto → Santiago)","d":"średnia","t":"12–14 dni","o":"Wzdłuż wybrzeża Atlantyku, ok. 260–280 km.","s":"Trasy (całość)"},{"n":"Camino del Norte (Irún → Santiago)","d":"trudna","t":"30–35 dni","o":"Najdłuższa z głównych, ok. 825 km, wzdłuż wybrzeża Biskajów.","s":"Trasy (całość)"},{"n":"Camino Primitivo (Oviedo → Santiago)","d":"trudna","t":"12–14 dni","o":"Ok. 310–320 km, najstarsza i górska trasa przez Asturię i Galicję.","s":"Trasy (całość)"},{"n":"Camino Inglés (Ferrol → Santiago)","d":"średnia","t":"5–6 dni","o":"Ok. 119 km, krótka, historyczna trasa dla pielgrzymów z morza.","s":"Trasy (całość)"},{"n":"Camino de Fisterra i Muxía (Santiago → Fisterra)","d":"średnia","t":"4–5 dni","o":"Ok. 90 km do Fisterry (121 km z Muxíą), do końca świata.","s":"Trasy (całość)"},{"n":"Vía de la Plata (Sewilla → Santiago)","d":"trudna","t":"35–40 dni","o":"Ok. 1000 km z Andaluzji przez Estremadurę.","s":"Trasy (całość)"},{"n":"Camino de Invierno (Ponferrada → Santiago)","d":"średnia","t":"12 dni","o":"Ok. 265 km, zimowa alternatywa przez Galicję.","s":"Trasy (całość)"},{"n":"Chemin du Puy (Le Puy-en-Velay → St-Jean)","d":"trudna","t":"30 dni","o":"Ok. 730–740 km, jedna z francuskich dróg.","s":"Trasy (całość)"},{"n":"Ostatnie 100 km: Sarria → Santiago","d":"łatwa","t":"5–7 dni","o":"Minimum, żeby dostać Compostelę, ok. 111 km.","s":"Trasy (całość)"},{"n":"Ostatnie 100 km: Tui → Santiago","d":"łatwa","t":"6–7 dni","o":"Camino Portugués, ok. 119 km.","s":"Trasy (całość)"},{"n":"Etap 1: St-Jean-Pied-de-Port → Roncesvalles","d":"trudna","t":"7–9 h","o":"Przez Pireneje, ok. 25 km.","s":"Camino Francés – etapy"},{"n":"Etap 2: Roncesvalles → Zubiri","d":"średnia","t":"5–7 h","o":"Ok. 22 km przez lasy.","s":"Camino Francés – etapy"},{"n":"Etap 3: Zubiri → Pamplona","d":"średnia","t":"5–6 h","o":"Ok. 21 km.","s":"Camino Francés – etapy"},{"n":"Etap 4: Pamplona → Puente la Reina","d":"średnia","t":"6–7 h","o":"Ok. 24 km przez Alto del Perdón.","s":"Camino Francés – etapy"},{"n":"Etap 5: Puente la Reina → Estella","d":"łatwa","t":"6 h","o":"Ok. 22 km.","s":"Camino Francés – etapy"},{"n":"Etap 6: Estella → Los Arcos","d":"łatwa","t":"6 h","o":"Ok. 21 km, winnica Irache.","s":"Camino Francés – etapy"},{"n":"Etap 7: Los Arcos → Logroño","d":"łatwa","t":"7 h","o":"Ok. 28 km.","s":"Camino Francés – etapy"},{"n":"Etap 8: Logroño → Nájera","d":"łatwa","t":"7 h","o":"Ok. 29 km przez La Rioja.","s":"Camino Francés – etapy"},{"n":"Etap 9: Nájera → Santo Domingo de la Calzada","d":"łatwa","t":"5–6 h","o":"Ok. 21 km.","s":"Camino Francés – etapy"},{"n":"Etap 10: Santo Domingo → Belorado","d":"łatwa","t":"5 h","o":"Ok. 22 km.","s":"Camino Francés – etapy"},{"n":"Etap 11: Belorado → San Juan de Ortega","d":"średnia","t":"6 h","o":"Ok. 24 km.","s":"Camino Francés – etapy"},{"n":"Etap 12: San Juan de Ortega → Burgos","d":"średnia","t":"6–7 h","o":"Ok. 26 km, wejście do Burgos.","s":"Camino Francés – etapy"},{"n":"Etap 13: Burgos → Hornillos del Camino","d":"łatwa","t":"6 h","o":"Ok. 21 km, początek Mesety.","s":"Camino Francés – etapy"},{"n":"Etap 14: Hornillos → Castrojeriz","d":"łatwa","t":"5–6 h","o":"Ok. 20 km.","s":"Camino Francés – etapy"},{"n":"Etap 15: Castrojeriz → Frómista","d":"łatwa","t":"6 h","o":"Ok. 25 km.","s":"Camino Francés – etapy"},{"n":"Etap 16: Frómista → Carrión de los Condes","d":"łatwa","t":"6 h","o":"Ok. 19 km.","s":"Camino Francés – etapy"},{"n":"Etap 17: Carrión → Terradillos de los Templarios","d":"łatwa","t":"6–7 h","o":"Ok. 26 km.","s":"Camino Francés – etapy"},{"n":"Etap 18: Terradillos → Bercianos del Real Camino","d":"łatwa","t":"7 h","o":"Ok. 31 km.","s":"Camino Francés – etapy"},{"n":"Etap 19: Bercianos → Mansilla de las Mulas","d":"łatwa","t":"7 h","o":"Ok. 27 km.","s":"Camino Francés – etapy"},{"n":"Etap 20: Mansilla → León","d":"łatwa","t":"5–6 h","o":"Ok. 18 km, katedra w León.","s":"Camino Francés – etapy"},{"n":"Etap 21: León → San Martín del Camino","d":"średnia","t":"7 h","o":"Ok. 25 km.","s":"Camino Francés – etapy"},{"n":"Etap 22: San Martín → Astorga","d":"łatwa","t":"6–7 h","o":"Ok. 24 km.","s":"Camino Francés – etapy"},{"n":"Etap 23: Astorga → Foncebadón","d":"średnia","t":"6 h","o":"Ok. 26 km, podejście w górę.","s":"Camino Francés – etapy"},{"n":"Etap 24: Foncebadón → Ponferrada","d":"trudna","t":"6–7 h","o":"Ok. 27 km przez Cruz de Ferro i Monte Irago.","s":"Camino Francés – etapy"},{"n":"Etap 25: Ponferrada → Villafranca del Bierzo","d":"łatwa","t":"6–7 h","o":"Ok. 24 km.","s":"Camino Francés – etapy"},{"n":"Etap 26: Villafranca → O Cebreiro","d":"trudna","t":"8 h","o":"Ok. 28 km, strome podejście do Galicji.","s":"Camino Francés – etapy"},{"n":"Etap 27: O Cebreiro → Triacastela","d":"średnia","t":"6 h","o":"Ok. 21 km.","s":"Camino Francés – etapy"},{"n":"Etap 28: Triacastela → Sarria","d":"łatwa","t":"5–6 h","o":"Ok. 18 km.","s":"Camino Francés – etapy"},{"n":"Etap 29: Sarria → Portomarín","d":"łatwa","t":"6–7 h","o":"Ok. 22 km.","s":"Camino Francés – etapy"},{"n":"Etap 30: Portomarín → Palas de Rei","d":"średnia","t":"6–7 h","o":"Ok. 24 km.","s":"Camino Francés – etapy"},{"n":"Etap 31: Palas de Rei → Arzúa","d":"średnia","t":"7 h","o":"Ok. 29 km.","s":"Camino Francés – etapy"},{"n":"Etap 32: Arzúa → O Pedrouzo","d":"łatwa","t":"6 h","o":"Ok. 19 km.","s":"Camino Francés – etapy"},{"n":"Etap 33: O Pedrouzo → Santiago de Compostela","d":"łatwa","t":"5–6 h","o":"Ok. 20 km, Monte do Gozo i plac Obradoiro.","s":"Camino Francés – etapy"}]}]};
+let MODE = "w";
+const WINTER = {R: DATA.resorts, G: DATA.groups};
+const SUMMER = {R: (DATA.hubs || []).map(h => ({id:h.id, n:h.n, full:h.n, c:h.c, r:h.r, l:"", k:h.hikes.length, g:[], x:h.x, y:h.y, hikes:h.hikes})), G: []};
+const byIdW = {}, byIdS = {}; WINTER.R.forEach(r => byIdW[r.id] = r); SUMMER.R.forEach(r => byIdS[r.id] = r);
+let R = WINTER.R, G = WINTER.G, byId = byIdW;
+const CN = {AT:"Austria",CH:"Szwajcaria",DE:"Niemcy",FR:"Francja",IT:"Włochy",ES:"Hiszpania",PL:"Polska",SK:"Słowacja",CZ:"Czechy",SI:"Słowenia",LI:"Liechtenstein",AD:"Andora"};
+const flag = cc => cc.length===2 ? String.fromCodePoint(...[...cc.toUpperCase()].map(ch => 127397 + ch.charCodeAt(0))) : "";
+const cname = cc => CN[cc] || cc;
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const norm = s => String(s||"").toLowerCase().replace(/ł/g,"l").normalize("NFD").replace(/[̀-ͯ]/g,"");
+[...WINTER.R, ...SUMMER.R].forEach(r => { r.s = norm([r.full, r.n, r.l, r.r, r.c.split(",").map(cname).join(" ")].join(" ")); });
+const todayISO = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const $ = id => document.getElementById(id);
+const useCap = n => (window.claude && claude.use) ? claude.use(n) : Promise.resolve(null);
+const DIFF = ["łatwa","średnia","trudna"];
+const MONTHS = ["styczeń","luty","marzec","kwiecień","maj","czerwiec","lipiec","sierpień","wrzesień","październik","listopad","grudzień"];
+const SHORT = ["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"];
+const cy = new Date().getFullYear();
+const fmtYM = (y, m) => !y ? (m ? SHORT[+m - 1] : "bez roku") : m ? SHORT[+m - 1] + " " + y : y;
+const fmtPd = pd => fmtYM(pd.slice(0,4), pd.slice(5,7));
+const plur = (n, a, b, c) => n === 1 ? a : (n % 10 >= 2 && n % 10 <= 4 && !(n % 100 >= 12 && n % 100 <= 14)) ? b : c;
+function yearOpts(sel, a, b, blank){ let h = blank ? `<option value="">rok</option>` : ""; const st = a <= b ? 1 : -1; for (let y = a; st > 0 ? y <= b : y >= b; y += st) h += `<option value="${y}" ${String(y)===String(sel)?"selected":""}>${y}</option>`; return h; }
+function monthOpts(sel){ return `<option value="">miesiąc (opcjonalnie)</option>` + MONTHS.map((m,i) => { const v = String(i+1).padStart(2,"0"); return `<option value="${v}" ${v===sel?"selected":""}>${m}</option>`; }).join(""); }
+const TIERS = [["S","linear-gradient(135deg,#ff7b8a,#ff9f7b)"],["A","linear-gradient(135deg,#ffb36b,#ffd36b)"],["B","linear-gradient(135deg,#ffe66b,#e9f27b)"],["C","linear-gradient(135deg,#a6e36b,#7be3a0)"],["D","linear-gradient(135deg,#6bd0ff,#7ba6ff)"]];
+
+/* ---------- stan i zapis ---------- */
+// wpis: {s:"v"|"p", stays:[{y,m}], pd:"RRRR[-MM]", pr:0..5, r:0..5, t:"S".."D"|"", n:"", done:{idxSzlaku:1}}
+let wVisits = {}, sVisits = {}, visits = wVisits;
+const LS = "skibeen.v1", LSH = "skibeen.h1", LSM = "skibeen.mode";
+let store = {mode:"local", ref:null};
+let writing = false, dirty = false, saveTimer = null;
+
+function migrate(o){
+  const out = {};
+  Object.keys(o || {}).forEach(id => {
+    if (!o[id]) return;
+    const v = Object.assign({}, o[id]);
+    v.s = v.s === "p" ? "p" : "v";
+    let st = (Array.isArray(v.stays) ? v.stays : []).map(x => x.y !== undefined ? {y:String(x.y||""), m:String(x.m||"")} : {y:(x.f||x.e||"").slice(0,4), m:(x.f||"").slice(5,7)}).filter(x => x);
+    if (v.d !== undefined) { if (v.s === "p") v.pd = v.pd || v.d || ""; else if (v.d && !st.length) st = [{y:v.d.slice(0,4), m:v.d.slice(5,7)}]; delete v.d; }
+    v.stays = st; v.pd = String(v.pd || "").slice(0,7);
+    v.pr = +v.pr || 0; v.r = v.r || 0; v.t = v.t || ""; v.n = v.n || "";
+    v.done = (v.done && typeof v.done === "object") ? Object.assign({}, v.done) : {};
+    out[id] = v;
+  });
+  return out;
+}
+function syncVisits(){ visits = MODE === "w" ? wVisits : sVisits; }
+function loadLocal(){ try { const t = localStorage.getItem(LS); if (t) wVisits = migrate(JSON.parse(t)); const h = localStorage.getItem(LSH); if (h) sVisits = migrate(JSON.parse(h)); } catch(e){} syncVisits(); }
+function saveLocal(){ try { localStorage.setItem(LS, JSON.stringify(wVisits)); localStorage.setItem(LSH, JSON.stringify(sVisits)); } catch(e){} }
+const exportJSON = pretty => JSON.stringify({visits: wVisits, hvisits: sVisits}, null, pretty ? 1 : 0);
+function setSaveState(t){ $("saveState").textContent = t; }
+function scheduleSave(){
+  saveLocal(); dirty = true;
+  if (store.mode !== "db") { setSaveState("zapis: ta przeglądarka"); return; }
+  setSaveState("zapisuję…"); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700);
+}
+async function flush(){
+  if (writing) { saveTimer = setTimeout(flush, 400); return; }
+  if (!dirty || !store.ref) return;
+  writing = true; dirty = false;
+  try { await store.ref.set({visits: wVisits, hvisits: sVisits}); setSaveState("zapisano ✓"); } catch(e){ setSaveState("zapis: ta przeglądarka"); }
+  writing = false; if (dirty) flush();
+}
+async function initStore(){
+  loadLocal(); renderAll();
+  try {
+    const user = await useCap("user"), db = await useCap("db");
+    if (!user || !db) { setSaveState("zapis: ta przeglądarka"); return; }
+    const uid = await user.id(); if (!uid) { setSaveState("zapis: ta przeglądarka"); return; }
+    const ref = db.doc("data/users/" + uid + "/profile");
+    const snap = await ref.get(); const dd = snap.exists ? snap.data() : null;
+    if (dd && (dd.visits || dd.hvisits)) {
+      wVisits = migrate(JSON.parse(JSON.stringify(dd.visits || {}))); sVisits = migrate(JSON.parse(JSON.stringify(dd.hvisits || {}))); syncVisits(); saveLocal();
+    } else if (Object.keys(wVisits).length || Object.keys(sVisits).length) { await ref.set({visits: wVisits, hvisits: sVisits}); }
+    store = {mode:"db", ref}; setSaveState("zapisano ✓"); renderAll();
+  } catch(e){ setSaveState("zapis: ta przeglądarka"); }
+}
+
+/* ---------- logika ---------- */
+const isVis = id => !!visits[id] && visits[id].s === "v";
+const isPlan = id => !!visits[id] && visits[id].s === "p";
+const newEntry = st => ({s: st, stays: [], pd: "", pr: 0, r: 0, t: "", n: "", done: {}});
+function setStatus(id, st){
+  if (!visits[id]) visits[id] = newEntry(st); else visits[id].s = st;
+  scheduleSave(); renderAll();
+}
+function stats(){
+  const v = R.filter(r => isVis(r.id));
+  const countries = new Set(); v.forEach(r => r.c.split(",").forEach(c => countries.add(c)));
+  const km = v.reduce((s, r) => s + r.k, 0);
+  let stays = 0, hikes = 0; v.forEach(r => { stays += visits[r.id].stays.length; hikes += Object.keys(visits[r.id].done).length; });
+  const gdone = G.filter(g => g.m.length >= 2 && g.m.every(isVis)).length;
+  return {n:v.length, countries, km, stays, hikes, gdone};
+}
+const lastYear = id => { const y = visits[id].stays.map(x => x.y).filter(Boolean).sort(); return y.length ? y[y.length-1] : ""; };
+
+/* ---------- nagłówek ---------- */
+function renderHeader(){
+  const s = stats(), W = MODE === "w";
+  $("progBar").style.width = (100 * s.n / R.length) + "%";
+  $("hstats").innerHTML =
+    `<div><b>${s.n}</b><small>z ${R.length} ${W ? "ośrodków" : "miejsc"}</small></div>` +
+    `<div><b>${s.countries.size}</b><small>${s.countries.size===1?"kraj":"krajów"}</small></div>` +
+    `<div><b>${W ? Math.round(s.km) : s.hikes}</b><small>${W ? "km tras" : plur(s.hikes,"szlak","szlaki","szlaków")}</small></div>` +
+    `<div><b>${s.stays}</b><small>${plur(s.stays,"pobyt","pobyty","pobytów")}</small></div>`;
+}
+
+/* ---------- lista ---------- */
+let fStat = "all", fCountry = "", fSort = "k", fQ = "";
+function buildCountrySelect(){
+  const cs = {}; R.forEach(r => r.c.split(",").forEach(c => cs[c] = (cs[c]||0) + 1));
+  $("fcountry").innerHTML = `<option value="">Wszystkie kraje</option>` +
+    Object.keys(cs).sort((a,b)=>cname(a).localeCompare(cname(b),"pl")).map(c => `<option value="${c}">${flag(c)} ${esc(cname(c))} (${cs[c]})</option>`).join("");
+}
+function setFStat(v){ fStat = v; [...$("fstat").children].forEach(x => x.classList.toggle("on", x.dataset.v === v)); }
+function initListControls(){
+  buildCountrySelect();
+  $("q").addEventListener("input", e => { fQ = norm(e.target.value.trim()); renderList(); });
+  $("fcountry").addEventListener("change", e => { fCountry = e.target.value; renderList(); });
+  $("fsort").addEventListener("change", e => { fSort = e.target.value; renderList(); });
+  $("fstat").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    setFStat(b.dataset.v);
+    if (b.dataset.v === "plan") { fSort = "p"; $("fsort").value = "p"; } else if (fSort === "p") { fSort = "k"; $("fsort").value = "k"; }
+    renderList();
+  });
+  $("list").addEventListener("click", e => {
+    const t = e.target.closest(".tick"), it = e.target.closest(".item"); if (!it) return;
+    const id = it.dataset.id;
+    if (t && !visits[id]) setStatus(id, "v");
+    openSheet(id);
+  });
+}
+function renderList(){
+  let a = R.filter(r =>
+    (fStat==="all" || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id])) &&
+    (!fCountry || r.c.split(",").includes(fCountry)) && (!fQ || r.s.includes(fQ)));
+  const pr = id => (visits[id] && visits[id].s === "p") ? visits[id].pr : -1;
+  if (fSort==="k") a.sort((x,y)=>y.k-x.k);
+  else if (fSort==="n") a.sort((x,y)=>x.n.localeCompare(y.n,"pl"));
+  else if (fSort==="p") a.sort((x,y)=>pr(y.id)-pr(x.id) || y.k-x.k);
+  else a.sort((x,y)=>cname(x.c.split(",")[0]).localeCompare(cname(y.c.split(",")[0]),"pl") || y.k-x.k);
+  const W = MODE === "w";
+  $("list").innerHTML = a.length ? a.map(r => {
+    const v = visits[r.id]; let extra = "";
+    if (v && v.s === "v") {
+      const n = v.stays.length;
+      extra = " · " + (n ? n + " " + plur(n,"pobyt","pobyty","pobytów") + (lastYear(r.id) ? ", ostatnio " + lastYear(r.id) : "") : "byłem") + (v.t ? " · tier " + v.t : "");
+      if (!W) { const dn = Object.keys(v.done).length; if (dn) extra += " · " + dn + "/" + r.hikes.length + " szlaków"; }
+    } else if (v && v.s === "p") extra = " · planuję" + (v.pr ? " · priorytet " + v.pr : "") + (v.pd ? " · " + esc(fmtPd(v.pd)) : "");
+    return `<div class="item ${v ? (v.s==="v"?"v":"p") : ""}" data-id="${esc(r.id)}">
+      <div class="flg">${flag(r.c.split(",")[0])}</div>
+      <div class="t"><b>${esc(r.n)}</b><small>${esc(r.c.split(",").map(cname).join(", "))}${r.g.length ? " · " + esc(r.g[r.g.length-1]) : ""}${extra}</small></div>
+      <div class="kmb"><b>${W ? Math.round(r.k) : r.hikes.length}</b>${W ? "km" : plur(r.hikes.length,"szlak","szlaki","szlaków")}</div>
+      <button class="tick ${isVis(r.id)?"on":isPlan(r.id)?"plan":""}" aria-label="Byłem">${isPlan(r.id)?"📅":"✓"}</button>
+    </div>`; }).join("") : `<div class="empty">Nic nie pasuje do filtrów.</div>`;
+}
+
+/* ---------- ranking ---------- */
+function renderTiers(){
+  const vis = R.filter(r => isVis(r.id)).sort((x,y)=>(visits[y.id].r||0)-(visits[x.id].r||0) || y.k-x.k);
+  const chip = r => `<button class="m on chip" data-id="${esc(r.id)}">${esc(r.n)}</button>`;
+  const rows = TIERS.map(([t,c]) => {
+    const a = vis.filter(r => visits[r.id].t === t);
+    return `<div class="tier"><div class="lab" style="background:${c}">${t}</div><div class="box" data-t="${t}">${a.map(chip).join("")}</div></div>`;
+  }).join("");
+  const none = vis.filter(r => !visits[r.id].t);
+  const plans = R.filter(r => isPlan(r.id));
+  const wish = plans.length ? `<div class="card" style="margin-top:14px"><h3>📅 Lista życzeń</h3><div class="sub">Plany według priorytetu (5 = bardzo mnie ciekawi).</div>` +
+    [5,4,3,2,1,0].map(p => { const a = plans.filter(r => visits[r.id].pr === p).sort((x,y)=>y.k-x.k); return a.length ? `<div class="small" style="margin:8px 0 4px">${p ? "Priorytet " + p : "Bez priorytetu"}</div><div class="members" style="margin-top:0">${a.map(r => `<button class="m" data-id="${esc(r.id)}" style="border-color:rgba(255,198,92,.5);color:var(--warn)">${esc(r.n)}${visits[r.id].pd ? " · " + esc(fmtPd(visits[r.id].pd)) : ""}</button>`).join("")}</div>` : ""; }).join("") + `</div>` : "";
+  $("tiers").innerHTML = (vis.length ? `<div class="hint">Przytrzymaj miejsce i przeciągnij do wybranego tieru (S–D). Z powrotem na dół, żeby zdjąć tier. Dotknięcie otwiera szczegóły.</div>` : `<div class="empty">Oznacz kilka miejsc jako "Byłem", a potem ułożysz je tutaj w tier listę.</div>`) + rows +
+    (vis.length ? `<div class="card" style="margin-top:14px"><h3>Do ułożenia</h3><div class="sub">Miejsca, w których byłeś i które nie mają jeszcze tieru.</div><div class="members pool box" data-t="">${none.map(chip).join("") || `<span class="small">Wszystko ułożone ✓</span>`}</div></div>` : "") + wish;
+}
+(function(){
+  let drag = null;
+  const host = $("tiers");
+  const boxAt = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest ? el.closest(".box[data-t]") : null; };
+  const noScroll = e => { if (drag && drag.on) e.preventDefault(); };
+  document.addEventListener("touchmove", noScroll, {passive:false});
+  host.addEventListener("pointerdown", e => {
+    const c = e.target.closest(".chip"); if (!c) return;
+    drag = {c, id:c.dataset.id, x:e.clientX, y:e.clientY, on:false, g:null, pid:e.pointerId, over:null};
+    const mouse = e.pointerType === "mouse";
+    drag.timer = setTimeout(() => start(), mouse ? 0 : 230);
+  });
+  function start(){
+    if (!drag) return; drag.on = true; drag.c.classList.add("drag");
+    const g = drag.c.cloneNode(true); g.classList.add("ghost"); g.classList.remove("drag"); document.body.append(g); drag.g = g;
+    g.style.left = drag.x + "px"; g.style.top = drag.y + "px";
+    try { host.setPointerCapture(drag.pid); } catch(_){}
+  }
+  host.addEventListener("pointermove", e => {
+    if (!drag) return;
+    if (!drag.on) { if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 10) { clearTimeout(drag.timer); if (e.pointerType === "mouse") start(); else drag = null; } if (!drag || !drag.on) return; }
+    drag.g.style.left = e.clientX + "px"; drag.g.style.top = e.clientY + "px";
+    const b = boxAt(e.clientX, e.clientY); if (drag.over && drag.over !== b) drag.over.classList.remove("over"); if (b) b.classList.add("over"); drag.over = b;
+  });
+  function end(e, cancel){
+    if (!drag) return; const d = drag; drag = null; clearTimeout(d.timer);
+    if (!d.on) return;
+    d.c.classList.remove("drag"); d.g.remove(); if (d.over) d.over.classList.remove("over");
+    d.moved = true; host._swallow = true; setTimeout(() => host._swallow = false, 0);
+    const b = cancel ? null : boxAt(e.clientX, e.clientY);
+    if (b && visits[d.id]) { visits[d.id].t = b.dataset.t; scheduleSave(); renderAll(); }
+  }
+  host.addEventListener("pointerup", e => end(e, false));
+  host.addEventListener("pointercancel", e => end(e, true));
+  host.addEventListener("click", e => { if (host._swallow) { e.stopPropagation(); return; } const b = e.target.closest(".m"); if (b) openSheet(b.dataset.id); }, true);
+})();
+
+/* ---------- grupy ---------- */
+function renderGroups(){
+  const a = G.filter(g => g.m.length >= 2).sort((x,y)=>{
+    const px = x.m.filter(isVis).length / x.m.length, py = y.m.filter(isVis).length / y.m.length; return (py - px) || (y.k - x.k); });
+  $("groups").innerHTML = `<div class="hint">Duże domeny narciarskie. Liczą się ośrodki z Twojej listy należące do grupy.</div>` +
+    a.map(g => {
+      const done = g.m.filter(isVis).length, tot = g.m.length, full = done === tot;
+      return `<div class="card"><h3>${full?"🏆 ":""}${esc(g.n)}</h3>
+        <div class="sub">${g.c.split(",").map(flag).join(" ")} ${Math.round(g.k)} km tras · ${done} z ${tot} ośrodków</div>
+        <div class="bar"><i class="${full?"full":""}" style="width:${100*done/tot}%"></i></div>
+        <div class="members">${g.m.map(id => `<button class="m ${isVis(id)?"on":""}" data-id="${esc(id)}">${esc(byId[id].n)}</button>`).join("")}</div></div>`;
+    }).join("");
+}
+$("groups").addEventListener("click", e => { const b = e.target.closest(".m"); if (b) openSheet(b.dataset.id); });
+
+/* ---------- statystyki ---------- */
+
+/* ---------- eksport i udostępnianie ---------- */
+async function saveBlob(name, blob, msg){
+  try { const dl = await useCap("downloads"); if (dl) { await dl.save({filename:name, data:blob}); if (msg) msg.textContent = "Zapisano ✓"; return true; } } catch(e){}
+  try { const u = URL.createObjectURL(blob), a = document.createElement("a"); a.href = u; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); if (msg) msg.textContent = "Pobrano ✓"; return true; } catch(e){}
+  if (msg) msg.textContent = "Nie udało się pobrać pliku."; return false;
+}
+const xmlEsc = t => String(t).replace(/[<>&"']/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;"}[c]));
+function markedList(){ return R.filter(r => visits[r.id]).map(r => ({r, v:visits[r.id]})); }
+function noteFor(r, v){
+  const parts = [v.s === "v" ? "Byłem" : "Planuję" + (v.pr ? " (priorytet " + v.pr + ")" : "")];
+  if (v.s === "v") { if (v.t) parts.push("tier " + v.t); if (v.r) parts.push(v.r + "/5"); if (v.stays.length) parts.push("pobyty: " + v.stays.map(x => fmtYM(x.y, x.m)).join(", ")); }
+  if (v.n) parts.push(v.n);
+  return parts.join(" · ");
+}
+function exportGPX(){
+  const w = markedList().map(({r, v}) => `<wpt lat="${r.y}" lon="${r.x}"><name>${xmlEsc(r.n)}</name><desc>${xmlEsc(noteFor(r, v))}</desc><type>${v.s === "v" ? "visited" : "planned"}</type></wpt>`).join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Ski Been" xmlns="http://www.topografix.com/GPX/1/1">\n${w}\n</gpx>`;
+}
+function exportKML(){
+  const pm = markedList().map(({r, v}) => `<Placemark><name>${xmlEsc(r.n)}</name><description>${xmlEsc(noteFor(r, v))}</description><styleUrl>#${v.s}</styleUrl><Point><coordinates>${r.x},${r.y},0</coordinates></Point></Placemark>`).join("\n");
+  const st = (id, col) => `<Style id="${id}"><IconStyle><color>${col}</color><scale>1.1</scale></IconStyle></Style>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Ski Been</name>${st("v","ff8ae038")}${st("p","ff5cc6ff")}\n${pm}\n</Document></kml>`;
+}
+function periodOptions(){
+  const ys = new Set(); R.forEach(r => { if (isVis(r.id)) visits[r.id].stays.forEach(x => { if (+x.y) ys.add(+x.y); }); });
+  const out = [], all = [...ys].sort((a,b) => b - a);
+  if (MODE === "w") {
+    const seas = new Set(); R.forEach(r => { if (isVis(r.id)) visits[r.id].stays.forEach(x => { const y = +x.y, m = +x.m; if (!y) return; seas.add(m && m >= 7 ? y : m ? y - 1 : y - 1); }); });
+    [...seas].sort((a,b) => b - a).forEach(y => out.push({v:"s" + y, label:"Sezon " + y + "/" + String(y + 1).slice(2), test:x => { const yy = +x.y, m = +x.m; return m ? ((yy === y && m >= 7) || (yy === y + 1 && m < 7)) : (yy === y + 1); }}));
+  }
+  all.forEach(y => out.push({v:"y" + y, label:"Rok " + y, test:x => +x.y === y}));
+  return out;
+}
+function periodData(per){
+  const places = R.filter(r => isVis(r.id) && visits[r.id].stays.some(per.test));
+  const cs = new Set(); places.forEach(r => r.c.split(",").forEach(c => cs.add(c)));
+  const stays = places.reduce((a, r) => a + visits[r.id].stays.filter(per.test).length, 0);
+  return {places, countries:cs, stays, km:places.reduce((a, r) => a + r.k, 0)};
+}
+function shareCanvas(kind, per){
+  const W = MODE === "w", S = stats(), cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1350;
+  const c = cv.getContext("2d"), F = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif";
+  const g = c.createLinearGradient(0, 0, 0, 1350);
+  if (W) { g.addColorStop(0, "#14305a"); g.addColorStop(1, "#070d19"); } else { g.addColorStop(0, "#21402f"); g.addColorStop(1, "#08140f"); }
+  c.fillStyle = g; c.fillRect(0, 0, 1080, 1350);
+  const acc = W ? "#5ad1ff" : "#ffd35a";
+  c.textAlign = "left"; c.fillStyle = "#fff"; c.font = `800 58px ${F}`; c.fillText(per ? per.label : (W ? "Moje ośrodki narciarskie" : "Moje górskie szlaki"), 60, 105);
+  c.fillStyle = acc; c.font = `600 30px ${F}`; c.fillText("Ski Been" + (W ? "  ·  ❄️" : "  ·  ☀️"), 60, 152);
+  const PD = per ? periodData(per) : null;
+  const st = PD ? (W ? [[PD.places.length, "ośrodków"], [PD.countries.size, "krajów"], [Math.round(PD.km), "km tras"], [PD.stays, "pobytów"]] : [[PD.places.length, "miejsc"], [PD.countries.size, "krajów"], [PD.stays, "pobytów"], [0, ""]].slice(0, 3)) : W ? [[S.n, "ośrodków"], [S.countries.size, "krajów"], [Math.round(S.km), "km tras"], [S.stays, "pobytów"]] : [[S.n, "miejsc"], [S.countries.size, "krajów"], [S.hikes, "szlaków"], [S.stays, "pobytów"]];
+  st.forEach((x, i) => { const px0 = 60 + i * 240; c.fillStyle = "rgba(255,255,255,.07)"; c.beginPath(); c.roundRect(px0, 190, 225, 130, 22); c.fill(); c.fillStyle = "#fff"; c.font = `800 52px ${F}`; c.fillText(String(x[0]), px0 + 22, 255); c.fillStyle = "#9db0d0"; c.font = `500 24px ${F}`; c.fillText(x[1], px0 + 22, 295); });
+  const vis = R.filter(r => isVis(r.id));
+  if (kind === "period") {
+    const pl = PD.places.slice().sort((a, b) => b.k - a.k);
+    c.fillStyle = "rgba(255,255,255,.05)"; c.beginPath(); c.roundRect(60, 350, 960, 520, 26); c.fill();
+    if (!pl.length) { c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText("Brak pobytów w tym okresie.", 100, 420); }
+    else {
+      const xs = pl.map(r => px(r.x)), ys = pl.map(r => py(r.y)); let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const pad = Math.max(0.6, (x1 - x0) * 0.1); x0 -= pad; x1 += pad; y0 -= pad * 0.9; y1 += pad * 0.9;
+      const sc = Math.min(920 / (x1 - x0), 480 / (y1 - y0)), ox = 60 + (960 - (x1 - x0) * sc) / 2, oy = 350 + (520 - (y1 - y0) * sc) / 2;
+      pl.forEach((r, i) => { const X = ox + (px(r.x) - x0) * sc, Y = oy + (py(r.y) - y0) * sc;
+        c.fillStyle = "rgba(56,224,160,.28)"; c.beginPath(); c.arc(X, Y, 20, 0, 7); c.fill();
+        c.fillStyle = "#38e0a0"; c.strokeStyle = "#fff"; c.lineWidth = 3; c.beginPath(); c.arc(X, Y, 10, 0, 7); c.fill(); c.stroke(); });
+      c.fillStyle = "#e8f0ff"; c.font = `600 27px ${F}`;
+      pl.slice(0, 12).forEach((r, i) => {
+        const col = i % 2, row = Math.floor(i / 2), X = 70 + col * 480, Y = 925 + row * 58;
+        const ms = visits[r.id].stays.filter(per.test).map(x => x.m ? SHORT[+x.m - 1] : "").filter(Boolean).join(", ");
+        const nm = r.n.length > 24 ? r.n.slice(0, 23) + "…" : r.n; c.fillStyle = "#e8f0ff"; c.fillText(nm, X, Y);
+        if (ms) { c.fillStyle = "#9db0d0"; c.font = `500 22px ${F}`; c.fillText(ms, X + 10, Y + 25); c.font = `600 27px ${F}`; }
+      });
+      if (pl.length > 12) { c.fillStyle = acc; c.fillText("+" + (pl.length - 12) + " więcej", 70, 1290); }
+    }
+  } else if (kind === "ranking") {
+    const rows = TIERS.map(([t, gr]) => ({t, col:(gr.match(/#[0-9a-f]{6}/i)||["#ccc"])[0], a: vis.filter(r => visits[r.id].t === t).sort((x, y) => (visits[y.id].r || 0) - (visits[x.id].r || 0) || y.k - x.k)}));
+    const any = rows.some(r => r.a.length);
+    if (!any) { c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText("Ułóż miejsca w zakładce Ranking, a pojawią się tutaj.", 60, 420); }
+    else rows.forEach((row, i) => {
+      const y0 = 350 + i * 190; c.fillStyle = row.col; c.beginPath(); c.roundRect(60, y0, 120, 170, 22); c.fill();
+      c.fillStyle = "#0b1626"; c.font = `800 72px ${F}`; c.textAlign = "center"; c.fillText(row.t, 120, y0 + 108); c.textAlign = "left";
+      c.fillStyle = "rgba(255,255,255,.06)"; c.beginPath(); c.roundRect(196, y0, 824, 170, 22); c.fill();
+      c.fillStyle = "#e8f0ff"; c.font = `600 27px ${F}`;
+      let line = "", ly = y0 + 44, lines = 0, shown = 0;
+      for (const r of row.a) { const nm = r.n.length > 26 ? r.n.slice(0, 25) + "…" : r.n; const t = line ? line + "  ·  " + nm : nm;
+        if (c.measureText(t).width > 780) { if (lines >= 3) break; c.fillText(line, 216, ly); ly += 38; lines++; line = nm; } else line = t; shown++; }
+      if (lines < 4 && line) c.fillText(line, 216, ly);
+      if (shown < row.a.length) { c.fillStyle = acc; c.fillText("+" + (row.a.length - shown), 960, y0 + 150); }
+    });
+  } else {
+    const pts = R.filter(r => visits[r.id]);
+    c.fillStyle = "rgba(255,255,255,.05)"; c.beginPath(); c.roundRect(60, 350, 960, 880, 26); c.fill();
+    if (!pts.length) { c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText("Oznacz miejsca, a pojawią się tutaj na mapie.", 100, 420); }
+    else {
+      const xs = pts.map(r => px(r.x)), ys = pts.map(r => py(r.y)); let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const pad = Math.max(0.6, (x1 - x0) * 0.08); x0 -= pad; x1 += pad; y0 -= pad * 0.9; y1 += pad * 0.9;
+      const sc = Math.min(920 / (x1 - x0), 840 / (y1 - y0)), ox = 60 + (960 - (x1 - x0) * sc) / 2, oy = 350 + (880 - (y1 - y0) * sc) / 2;
+      pts.slice().sort((a, b) => b.k - a.k).forEach((r, i) => {
+        const X = ox + (px(r.x) - x0) * sc, Y = oy + (py(r.y) - y0) * sc, v = isVis(r.id);
+        c.fillStyle = v ? "rgba(56,224,160,.28)" : "rgba(255,198,92,.28)"; c.beginPath(); c.arc(X, Y, 22, 0, 7); c.fill();
+        c.fillStyle = v ? "#38e0a0" : "#ffc65c"; c.strokeStyle = "#fff"; c.lineWidth = 3; c.beginPath(); c.arc(X, Y, 11, 0, 7); c.fill(); c.stroke();
+        if (i < 14) { c.font = `600 22px ${F}`; c.lineWidth = 6; c.strokeStyle = "#07101e"; c.fillStyle = "#fff"; c.textAlign = "center"; const LY = Y - 20 - (i % 3) * 26; c.strokeText(r.n, X, LY); c.fillText(r.n, X, LY); c.textAlign = "left"; }
+      });
+    }
+    c.fillStyle = "#38e0a0"; c.beginPath(); c.arc(90, 1275, 10, 0, 7); c.fill(); c.fillStyle = "#cdd8ee"; c.font = `500 24px ${F}`; c.fillText("byłem", 110, 1283);
+    c.fillStyle = "#ffc65c"; c.beginPath(); c.arc(250, 1275, 10, 0, 7); c.fill(); c.fillStyle = "#cdd8ee"; c.fillText("planuję", 270, 1283);
+  }
+  c.fillStyle = "#6f86ad"; c.font = `500 22px ${F}`; c.textAlign = "right"; c.fillText("Ski Been", 1020, 1315); c.textAlign = "left";
+  return cv;
+}
+function openShare(kind, per){
+  let ov = $("shareov"); if (!ov) { ov = document.createElement("div"); ov.id = "shareov"; document.body.append(ov); }
+  const cv = shareCanvas(kind, per); ov.innerHTML = ""; ov.append(cv);
+  const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px";
+  const sv = Object.assign(document.createElement("button"), {className:"btn pri", textContent:"Pobierz obraz"}), cl = Object.assign(document.createElement("button"), {className:"btn", textContent:"Zamknij"});
+  const msg = document.createElement("div"); msg.className = "small";
+  sv.onclick = () => cv.toBlob(b => saveBlob("ski-been-" + kind + ".png", b, msg), "image/png");
+  cl.onclick = () => { ov.style.display = "none"; };
+  row.append(sv, cl); ov.append(row, msg); ov.style.display = "flex";
+}
+function renderStats(){
+  const s = stats(), W = MODE === "w";
+  const by = {}; R.forEach(r => { const c = r.c.split(",")[0]; (by[c] = by[c] || {t:0, v:0, m:0}); by[c].t++; if (isVis(r.id)) { by[c].v++; by[c].m += W ? r.k : Object.keys(visits[r.id].done).length; } });
+  const rows = Object.keys(by).sort((a,b)=>by[b].v-by[a].v || by[b].t-by[a].t).map(c =>
+    `<tr><td>${flag(c)} ${esc(cname(c))}</td><td class="r">${by[c].v} / ${by[c].t}</td><td class="r">${Math.round(by[c].m)}${W ? " km" : ""}</td></tr>`).join("");
+  const years = {}; R.forEach(r => { if (isVis(r.id)) visits[r.id].stays.forEach(st => { const k = st.y || "bez roku"; years[k] = (years[k]||0) + 1; }); });
+  const yrows = Object.keys(years).sort().reverse().map(y => `<tr><td>${y}</td><td class="r">${years[y]} ${plur(years[y],"pobyt","pobyty","pobytów")}</td></tr>`).join("");
+  const planned = R.filter(r => isPlan(r.id)).length;
+  const cards = W
+    ? [[s.n, "ośrodków z " + R.length], [s.countries.size, "krajów"], [s.stays, "pobytów"], [Math.round(s.km), "km tras w tych ośrodkach"], [planned, "w planach"], [s.gdone, "kompletnych grup"]]
+    : [[s.n, "miejsc z " + R.length], [s.countries.size, "krajów"], [s.stays, "pobytów"], [s.hikes, "zaliczonych szlaków"], [planned, "w planach"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
+  $("stats").innerHTML = `
+    <div class="big">${cards.map(c => `<div class="card"><div class="n">${c[0]}</div><div class="l">${c[1]}</div></div>`).join("")}</div>
+    <div class="card"><h3>Według kraju</h3><table><tr><th>Kraj</th><th class="r">Byłem</th><th class="r">${W ? "Trasy" : "Szlaki"}</th></tr>${rows}</table></div>
+    ${yrows ? `<div class="card"><h3>Pobyty według roku</h3><table><tr><th>Rok</th><th class="r">Pobyty</th></tr>${yrows}</table></div>` : ""}
+    <div class="card"><h3>Udostępnij i eksportuj</h3>
+      <div class="sub">Obraz do wrzucenia na TikToka/Instagram oraz pliki z Twoimi miejscami do map.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" id="shrank">🖼️ Obraz: ranking</button><button class="btn pri" id="shmap">🗺️ Obraz: mapa</button></div>
+      <div class="fld" style="margin-top:12px"><label>PODSUMOWANIE SEZONU / ROKU</label><div style="display:flex;gap:8px"><select class="sel" id="shper">${periodOptions().map(o => `<option value="${o.v}">${o.label}</option>`).join("") || `<option value="">brak pobytów</option>`}</select><button class="btn pri" id="shyear" style="white-space:nowrap">🗓️ Obraz</button></div><div class="small" style="margin-top:6px">Na podstawie dodanych pobytów (rok i miesiąc). Km to suma długości tras w ośrodkach, w których byłeś.</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="exgpx">Eksport GPX</button><button class="btn" id="exkml">Eksport KML (Google My Maps)</button></div>
+      <div class="small" id="exmsg" style="margin-top:6px"></div>
+    </div>
+    <div class="card"><h3>Kopia zapasowa</h3>
+      <div class="sub">Zapis: ${store.mode==="db" ? "na Twoim koncie Claude (przetrwa zmianę telefonu)" : "tylko w tej przeglądarce. Zrób kopię poniżej, żeby nie stracić danych"}. Kopia obejmuje zimę i lato.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="bcopy">Kopiuj dane</button><button class="btn" id="bdl">Pobierz plik</button></div>
+      <div class="fld"><label>Wklej dane, żeby je wczytać (zastąpią obecne)</label><textarea id="bimp" placeholder='{"visits":{…},"hvisits":{…}}'></textarea></div>
+      <button class="btn" id="bload">Wczytaj</button> <span class="small" id="bmsg"></span>
+    </div>
+    <div class="small" style="margin:6px 4px 24px">Ośrodki: © współtwórcy OpenStreetMap / OpenSkiMap (licencja ODbL); długości tras bywają zaniżone tam, gdzie mapowanie jest niepełne. Szlaki letnie to ręcznie wybrana lista orientacyjna, czasy i trudność sprawdź w mapach turystycznych przed wyjściem.</div>`;
+  $("shyear").onclick = () => { const o = periodOptions().find(x => x.v === $("shper").value); if (o) openShare("period", o); };
+  $("shrank").onclick = () => openShare("ranking"); $("shmap").onclick = () => openShare("map");
+  $("exgpx").onclick = () => saveBlob("ski-been-" + (MODE === "w" ? "zima" : "lato") + ".gpx", new Blob([exportGPX()], {type:"application/gpx+xml"}), $("exmsg"));
+  $("exkml").onclick = () => saveBlob("ski-been-" + (MODE === "w" ? "zima" : "lato") + ".kml", new Blob([exportKML()], {type:"application/vnd.google-earth.kml+xml"}), $("exmsg"));
+  $("bcopy").onclick = async () => { try { await navigator.clipboard.writeText(exportJSON()); $("bmsg").textContent = "Skopiowano ✓"; } catch(e){ $("bmsg").textContent = "Nie udało się skopiować, skopiuj ręcznie z pola poniżej."; $("bimp").value = exportJSON(); } };
+  $("bload").onclick = () => {
+    try { const o = JSON.parse($("bimp").value); if (!o || typeof o.visits !== "object") throw 0;
+      wVisits = migrate(o.visits); if (o.hvisits) sVisits = migrate(o.hvisits); syncVisits(); scheduleSave(); renderAll(); $("bmsg").textContent = "Wczytano ✓"; }
+    catch(e){ $("bmsg").textContent = "To nie wygląda na poprawne dane."; } };
+  $("bdl").onclick = () => saveBlob("ski-been-backup.json", new Blob([exportJSON(true)], {type:"application/json"}), $("bmsg"));
+}
+
+/* ---------- arkusz szczegółów ---------- */
+let curId = null, confirmDel = false, armedStay = -1;
+const stayKey = st => st.y + "-" + (st.m || "00");
+function openSheet(id){
+  curId = id; confirmDel = false; armedStay = -1;
+  if (visits[id] && visits[id].s === "v") visits[id].stays.sort((a,b) => stayKey(b).localeCompare(stayKey(a)));
+  renderSheet(); $("sheetbg").style.display = "block"; const sh = $("sheet"); sh.style.display = "block"; sh.classList.remove("open"); void sh.offsetWidth; sh.classList.add("open"); sh.scrollTop = 0; mapRefresh();
+}
+function closeSheet(){ curId = null; $("sheetbg").style.display = "none"; $("sheet").style.display = "none"; mapRefresh(); }
+$("sheetbg").addEventListener("click", closeSheet);
+function toggleHike(i){
+  if (!visits[curId]) visits[curId] = newEntry("v");
+  const v = visits[curId]; v.s = "v"; if (v.done[i]) delete v.done[i]; else v.done[i] = 1;
+  scheduleSave(); renderAll(); renderSheet();
+}
+function renderSheet(){
+  const r = byId[curId]; if (!r) return; const v = visits[curId], W = MODE === "w";
+  const tags = W ? r.g.map(g => `<span>${esc(g)}</span>`).join("") : "";
+  const href = (W && r.w) ? esc(r.w) : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze");
+  const link = `<a class="lnk" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Strona ośrodka: cennik i status tras ↗" : "Szukaj cen karnetów ↗") : "Szukaj szlaków i informacji ↗"}</a>`;
+  const hikes = W ? "" : `<div class="sect"><div class="sh"><b>Najpopularniejsze szlaki</b></div><div class="small" style="margin:-4px 0 8px">Nie musisz zaznaczać szlaku. „Byłem” powyżej wystarczy, jeśli nie pamiętasz nazwy.</div>${r.hikes.map((h,i) => { const d = !!(v && v.done[i]); const sh = (h.s && (i === 0 || r.hikes[i-1].s !== h.s)) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""; return sh + `<div class="hike ${d?"done":""}">
+      <button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>
+      <div class="hb"><b>${esc(h.n)}</b><div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>
+      <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("")}</div>`;
+  let body = "", top = "";
+  if (!v) {
+    top = `<div class="two" style="margin:4px 0 12px"><button class="btn ok" id="sadd">✓ Byłem</button><button class="btn warn" id="splan">📅 Planuję</button></div>`;
+  } else {
+    const seg = `<div class="seg" id="sstat" style="margin:4px 0 2px"><button data-s="v" class="${v.s==="v"?"on":""}">✓ Byłem</button><button data-s="p" class="${v.s==="p"?"on":""}">📅 Planuję</button></div>`;
+    let mid = "";
+    if (v.s === "v") {
+      mid = `<div class="sect"><div class="sh"><b>Pobyty</b><button class="btn sm pri" id="saddstay">+ Dodaj pobyt</button></div>
+        ${v.stays.length ? v.stays.map((st,i) => `<div class="stay" data-i="${i}">
+            <div class="dt"><label>Rok</label><select class="sel" data-k="y">${yearOpts(st.y, cy, Math.min(1980, +st.y || 1980), true)}</select></div>
+            <div class="dt"><label>Miesiąc (opcjonalnie)</label><select class="sel" data-k="m">${monthOpts(st.m)}</select></div>
+            <button class="x ${armedStay===i?"arm":""}" data-del="${i}">${armedStay===i?"Usunąć?":"Usuń"}</button></div>`).join("") : `<div class="small">Jeszcze bez pobytów. Dodaj pobyt z rokiem (i opcjonalnie miesiącem).</div>`}
+      </div>
+      <div class="fld"><label>OCENA (GWIAZDKI)</label><div class="stars" id="sstars">${[1,2,3,4,5].map(i => `<button data-i="${i}" class="${(v.r||0)>=i?"on":""}">★</button>`).join("")}</div></div>
+      `;
+    } else {
+      mid = `<div class="fld"><label>KIEDY (OPCJONALNIE)</label><div style="display:flex;gap:8px"><select class="sel" id="spy">${yearOpts(v.pd.slice(0,4), cy, Math.max(cy + 8, +v.pd.slice(0,4) || 0), true)}</select><select class="sel" id="spm">${monthOpts(v.pd.slice(5,7))}</select></div></div>
+      <div class="fld"><label>JAK BARDZO CHCĘ TAM BYĆ</label><div class="prio" id="sprio">${[1,2,3,4,5].map(i => `<button data-i="${i}" class="${(v.pr||0)>=i?"on":""}">${i}</button>`).join("")}</div><div class="small" style="margin-top:6px">1 = kiedyś, bez przesady · 5 = bardzo mnie ciekawi</div></div>`;
+    }
+    top = seg; body = mid + `<div class="fld"><label>NOTATKA / OPINIA</label><textarea id="snote" placeholder="np. śnieg, kolejki, z kim, gdzie jedliśmy…">${esc(v.n||"")}</textarea></div>
+      <button class="btn bad" id="sdel" style="width:100%">${confirmDel?"Na pewno? Dotknij ponownie":"Usuń z mojej listy"}</button>`;
+  }
+  const t1 = W ? `<div class="tile"><b>${Math.round(r.k*10)/10}</b><span>km tras zjazdowych</span></div>` : `<div class="tile"><b>${r.hikes.length}</b><span>szlaków poniżej</span></div>`;
+  const t2 = W ? `<div class="tile"><b>${r.g.length ? esc(r.g[r.g.length-1]) : "—"}</b><span>${r.g.length ? "grupa" : "bez grupy"}</span></div>` : `<div class="tile"><b>${v ? Object.keys(v.done).length : 0}/${r.hikes.length}</b><span>zrobionych</span></div>`;
+  $("sheet").innerHTML = `<div class="grab"></div>
+    <div class="hero"><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}</div></div></div>
+    <div class="tiles">${t1}${t2}<div class="tile"><b>${r.c.split(",").length > 1 ? r.c.replace(/,/g," / ") : esc(r.c)}</b><span>kraj</span></div></div>
+    ${tags ? `<div class="tags">${tags}</div>` : ""}${link}${top}${hikes}${body}
+    <div style="margin-top:12px"><button class="btn" id="sclose" style="width:100%">Zamknij</button></div>`;
+  $("sclose").onclick = closeSheet;
+  document.querySelectorAll("#sheet .hike .tick").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
+  if (!v) { $("sadd").onclick = () => { setStatus(curId, "v"); renderSheet(); }; $("splan").onclick = () => { setStatus(curId, "p"); renderSheet(); }; return; }
+  $("sstat").onclick = e => { const b = e.target.closest("button"); if (!b) return; setStatus(curId, b.dataset.s); renderSheet(); };
+  $("sdel").onclick = () => { if (!confirmDel) { confirmDel = true; renderSheet(); setTimeout(()=>{ if (confirmDel){ confirmDel=false; if (curId) renderSheet(); } }, 3500); } else { delete visits[curId]; scheduleSave(); confirmDel = false; renderAll(); renderSheet(); } };
+  let nt; $("snote").oninput = e => { visits[curId].n = e.target.value; clearTimeout(nt); nt = setTimeout(scheduleSave, 400); };
+  if (v.s === "p") {
+    const upd = () => { const y = $("spy").value, m = $("spm").value; visits[curId].pd = y ? (m ? y + "-" + m : y) : ""; scheduleSave(); renderAll(); };
+    $("spy").onchange = upd; $("spm").onchange = upd;
+    $("sprio").onclick = e => { const b = e.target.closest("button"); if (!b) return; const i = +b.dataset.i; visits[curId].pr = (visits[curId].pr === i) ? 0 : i; scheduleSave(); renderAll(); renderSheet(); };
+    return;
+  }
+  $("saddstay").onclick = () => { visits[curId].stays.unshift({y: "", m: ""}); armedStay = -1; scheduleSave(); renderAll(); renderSheet(); };
+  document.querySelectorAll("#sheet .stay").forEach(row => {
+    const i = +row.dataset.i;
+    row.querySelectorAll("select").forEach(inp => inp.onchange = e => { visits[curId].stays[i][inp.dataset.k] = e.target.value; scheduleSave(); renderAll(); });
+    row.querySelector(".x").onclick = () => {
+      if (armedStay !== i) { armedStay = i; renderSheet(); setTimeout(() => { if (armedStay === i) { armedStay = -1; if (curId) renderSheet(); } }, 3000); }
+      else { visits[curId].stays.splice(i, 1); armedStay = -1; scheduleSave(); renderAll(); renderSheet(); }
+    };
+  });
+  $("sstars").onclick = e => { const b = e.target.closest("button"); if (!b) return; const i = +b.dataset.i; visits[curId].r = (visits[curId].r === i) ? 0 : i; scheduleSave(); renderAll(); renderSheet(); };
+}
+
+/* ---------- mapa ---------- */
+const svg = $("map"), NS = "http://www.w3.org/2000/svg";
+const COS = Math.cos(47 * Math.PI / 180);
+const px = lon => lon * COS, py = lat => -lat;
+let vb = {x:0, y:0, w:10, h:10}, base = null, dots = [], gGrat, gLand, gDots, gLbl;
+const mk = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+let showAll = false;
+function mapInit(){
+  gGrat = mk("g", {}); gLand = mk("g", {}); gDots = mk("g", {}); gLbl = mk("g", {"pointer-events":"none"});
+  svg.append(gGrat, gLand, gDots, gLbl);
+  for (let lon = -10; lon <= 30; lon += 5) gGrat.append(mk("line", {x1:px(lon), y1:py(30), x2:px(lon), y2:py(58), stroke:"#17304f", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
+  for (let lat = 32; lat <= 56; lat += 4) gGrat.append(mk("line", {x1:px(-14), y1:py(lat), x2:px(30), y2:py(lat), stroke:"#17304f", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
+  buildDots(); fit(); loadLand();
+  new ResizeObserver(() => { const rc = svg.getBoundingClientRect(); if (rc.width) { vb.h = vb.w * rc.height / rc.width; applyVB(); } }).observe(svg);
+  $("zin").onclick = () => zoomAt(0.6, null); $("zout").onclick = () => zoomAt(1 / 0.6, null); $("zfit").onclick = fit;
+  const toggleAll = () => { showAll = !showAll; mapRefresh(); };
+  $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
+  const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
+  $("madd").onclick = goAdd; $("madd2").onclick = goAdd;
+  bindMapGestures();
+}
+function buildDots(){
+  gDots.replaceChildren(); gLbl.replaceChildren(); dots = [];
+  R.forEach(r => {
+    const h = mk("circle", {cx:px(r.x), cy:py(r.y), "pointer-events":"none"});
+    const c = mk("circle", {cx:px(r.x), cy:py(r.y), "vector-effect":"non-scaling-stroke"});
+    const t = mk("text", {x:px(r.x), y:py(r.y), fill:"#dbe8ff", "text-anchor":"middle", "paint-order":"stroke", stroke:"#07101e", "stroke-linejoin":"round", "font-family":"Inter, sans-serif", "font-weight":"600"});
+    t.textContent = r.n.length > 22 ? r.n.slice(0, 21) + "…" : r.n;
+    gDots.append(h, c); gLbl.append(t); dots.push({r, h, c, t, rad: MODE === "w" ? 2 + Math.sqrt(r.k) / 5 : 5});
+  });
+  const xs = R.map(r => px(r.x)), ys = R.map(r => py(r.y)), pad = 1.0;
+  base = {x0: Math.min(...xs) - pad, x1: Math.max(...xs) + pad, y0: Math.min(...ys) - pad, y1: Math.max(...ys) + pad};
+}
+const marked = id => isVis(id) || isPlan(id);
+function shownBounds(){
+  let pts = dots.filter(d => showAll || marked(d.r.id));
+  if (!pts.length) pts = dots;
+  const xs = pts.map(d => px(d.r.x)), ys = pts.map(d => py(d.r.y)), pad = 1.2;
+  return {x0: Math.min(...xs) - pad, x1: Math.max(...xs) + pad, y0: Math.min(...ys) - pad, y1: Math.max(...ys) + pad};
+}
+function fit(){
+  const rc = svg.getBoundingClientRect(); const W = rc.width || 360, H = rc.height || 500, b = shownBounds();
+  const bw = b.x1 - b.x0, bh = b.y1 - b.y0, s = Math.min(W / bw, H / bh);
+  vb.w = W / s; vb.h = H / s; vb.x = b.x0 - (vb.w - bw) / 2; vb.y = b.y0 - (vb.h - bh) / 2; applyVB();
+}
+function scale(){ const rc = svg.getBoundingClientRect(); return (rc.width || 360) / vb.w; }
+function applyVB(){
+  svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  const s = scale(), z = s / ((svg.getBoundingClientRect().width || 360) / (base.x1 - base.x0));
+  dots.forEach(d => {
+    const id = d.r.id, v = isVis(id), pl = isPlan(id), sel = id === curId, on = v || pl, show = showAll || on || sel;
+    const col = v ? "#38e0a0" : pl ? "#ffc65c" : "#7aa8ff";
+    d.c.style.display = show ? "" : "none"; d.h.style.display = show ? "" : "none";
+    d.c.setAttribute("r", (on ? d.rad + 1.5 : d.rad) / s);
+    d.c.setAttribute("fill", on ? col : "rgba(122,168,255,.6)");
+    d.c.setAttribute("stroke", (sel || on) ? "#ffffff" : "rgba(255,255,255,.3)");
+    d.c.setAttribute("stroke-width", sel ? 2.5 : on ? 1.5 : 1);
+    d.h.setAttribute("r", (d.rad + 7) / s); d.h.setAttribute("fill", sel ? "#5ad1ff" : col); d.h.setAttribute("opacity", sel ? .35 : on ? .26 : 0);
+    d.t.setAttribute("font-size", 11 / s); d.t.setAttribute("stroke-width", 3 / s); d.t.setAttribute("dy", -(d.rad + 6) / s);
+    const lab = show && ((on || sel) ? z >= 1.4 : (z >= 5 || (MODE === "w" && z >= 3 && d.r.k > 100) || (MODE === "s" && z >= 1.8)));
+    d.t.style.display = lab ? "" : "none";
+  });
+}
+function updateMapUI(){
+  const n = R.filter(r => marked(r.id)).length;
+  $("mapempty").style.display = (!n && !showAll) ? "flex" : "none";
+  $("mall").textContent = showAll ? "Ukryj nieoznaczone" : "Pokaż wszystkie";
+}
+function mapRefresh(){ if (dots.length) { applyVB(); updateMapUI(); } }
+function zoomAt(f, ctr){
+  const rc = svg.getBoundingClientRect();
+  const cx = ctr ? vb.x + (ctr.x - rc.left) / rc.width * vb.w : vb.x + vb.w / 2;
+  const cy2 = ctr ? vb.y + (ctr.y - rc.top) / rc.height * vb.h : vb.y + vb.h / 2;
+  const maxW = (base.x1 - base.x0) * 1.3, minW = (base.x1 - base.x0) / 60;
+  let nw = Math.min(maxW, Math.max(minW, vb.w * f)); f = nw / vb.w;
+  vb.x = cx - (cx - vb.x) * f; vb.y = cy2 - (cy2 - vb.y) * f; vb.w = nw; vb.h = vb.h * f; applyVB();
+}
+function bindMapGestures(){
+  const ptrs = new Map(); let moved = 0, startPt = null;
+  svg.addEventListener("pointerdown", e => { svg.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY}); moved = 0; startPt = {x:e.clientX, y:e.clientY}; });
+  svg.addEventListener("pointermove", e => {
+    if (!ptrs.has(e.pointerId)) return;
+    const p = ptrs.get(e.pointerId), rc = svg.getBoundingClientRect();
+    if (ptrs.size === 1) { const dx = e.clientX - p.x, dy = e.clientY - p.y; moved += Math.abs(dx) + Math.abs(dy); vb.x -= dx / rc.width * vb.w; vb.y -= dy / rc.height * vb.h; applyVB(); }
+    else if (ptrs.size === 2) {
+      const other = [...ptrs.entries()].find(([id]) => id !== e.pointerId)[1];
+      const d0 = Math.hypot(p.x - other.x, p.y - other.y), d1 = Math.hypot(e.clientX - other.x, e.clientY - other.y);
+      moved += 10; if (d0 > 0 && d1 > 0) zoomAt(d0 / d1, {x:(e.clientX + other.x) / 2, y:(e.clientY + other.y) / 2});
+    }
+    ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  });
+  svg.addEventListener("pointerup", e => { const wasOne = ptrs.size === 1; ptrs.delete(e.pointerId); if (wasOne && moved < 8 && startPt) tapAt(e.clientX, e.clientY); });
+  svg.addEventListener("pointercancel", e => ptrs.delete(e.pointerId));
+  svg.addEventListener("wheel", e => { e.preventDefault(); zoomAt(e.deltaY < 0 ? 0.8 : 1.25, {x:e.clientX, y:e.clientY}); }, {passive:false});
+}
+function tapAt(cx, cy){
+  const rc = svg.getBoundingClientRect(), s = scale(); let best = null, bd = 22;
+  dots.forEach(d => { if (d.c.style.display === "none") return; const sx = rc.left + (px(d.r.x) - vb.x) * s, sy = rc.top + (py(d.r.y) - vb.y) * s; const dist = Math.hypot(sx - cx, sy - cy) - d.rad; if (dist < bd) { bd = dist; best = d; } });
+  if (best) openSheet(best.r.id);
+}
+/* obrysy państw: best-effort z biblioteki ECharts (jeśli się wczyta) */
+function loadLand(){
+  const urls = ["https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js", "https://cdn.jsdelivr.net/npm/echarts@4.2.1/map/js/world.js"]; let i = 0;
+  const next = () => {
+    if (i >= urls.length) { $("mapnote").textContent = "Mapa bez obrysów państw"; return; }
+    const prev = window.echarts; let got = null; window.echarts = {registerMap: (n, g) => { got = g; }};
+    const sc = document.createElement("script"); sc.src = urls[i++];
+    sc.onload = () => { window.echarts = prev; try { if (got) drawLand(got); else next(); } catch(e){ next(); } };
+    sc.onerror = () => { window.echarts = prev; next(); };
+    document.head.appendChild(sc);
+  };
+  next();
+}
+function decodePoly(str, off, scl){
+  const out = []; let X = off[0], Y = off[1];
+  for (let i = 0; i < str.length; i += 2) { let x = str.charCodeAt(i) - 64, y = str.charCodeAt(i + 1) - 64; x = (x >> 1) ^ (-(x & 1)); y = (y >> 1) ^ (-(y & 1)); X += x; Y += y; out.push([X / scl, Y / scl]); }
+  return out;
+}
+function drawLand(geo){
+  const scl = geo.UTF8Scale || 1024, enc = geo.UTF8Encoding; let d = "";
+  const ring = pts => { let inside = false; for (const p of pts) if (p[0] > -16 && p[0] < 36 && p[1] > 28 && p[1] < 62) { inside = true; break; } return inside ? "M" + pts.map(p => px(p[0]).toFixed(3) + " " + py(p[1]).toFixed(3)).join("L") + "Z" : ""; };
+  geo.features.forEach(f => {
+    const g = f.geometry; if (!g) return;
+    const polys = g.type === "Polygon" ? [g.coordinates] : g.coordinates, offs = g.type === "Polygon" ? [g.encodeOffsets] : g.encodeOffsets;
+    polys.forEach((poly, pi) => poly.forEach((rg, ri) => { d += ring((enc && typeof rg === "string") ? decodePoly(rg, offs[pi][ri], scl) : rg); }));
+  });
+  if (!d) { $("mapnote").textContent = "Mapa bez obrysów państw"; return; }
+  gLand.append(mk("path", {d, fill:"#12294a", stroke:"#2b4c7c", "stroke-width":1, "vector-effect":"non-scaling-stroke", "stroke-linejoin":"round"}));
+}
+
+/* ---------- zakładki i tryb ---------- */
+function show(t){
+  if (!["mapa","lista","ranking","grupy","statystyki"].includes(t) || (t === "grupy" && MODE !== "w")) t = "mapa";
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t));
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  try { if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t); } catch(e){}
+  if (t === "mapa") requestAnimationFrame(() => { fit(); });
+}
+$("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b) show(b.dataset.t); });
+window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+function setMode(m){
+  if (m === MODE) return;
+  closeSheet(); MODE = m; syncVisits();
+  const T = m === "w" ? WINTER : SUMMER; R = T.R; G = T.G; byId = m === "w" ? byIdW : byIdS;
+  document.body.classList.toggle("summer", m === "s");
+  document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
+  document.querySelector('#nav button[data-t="grupy"]').style.display = m === "w" ? "" : "none";
+  try { localStorage.setItem(LSM, m); } catch(e){}
+  fCountry = ""; fQ = ""; fSort = "k"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
+  $("fsort").options[0].textContent = m === "w" ? "Najwięksi" : "Najwięcej szlaków";
+  buildCountrySelect(); showAll = false; buildDots(); renderAll();
+  const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
+  if (cur === "v-grupy") show("mapa"); else fit();
+}
+$("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); });
+function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); mapRefresh(); }
+
+initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
+try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
+initStore();
+</script>
+</body>
+</html>
