@@ -426,7 +426,7 @@ async function refreshSb(){
     const r = await store.sb.from("profiles").select("data,updated_at").eq("user_id", store.uid).maybeSingle();
     if (r.error) throw r.error;
     if (r.data) { const rd = r.data.data || {}; store.friends = Array.isArray(rd.friends) ? rd.friends : (store.friends || []); wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); syncVisits(); store.rev = r.data.updated_at; closeSheet(); renderAll(); }
-    setSaveState("odświeżono ✓ · konto");
+    setSaveState("odświeżono ✓ · konto"); loadFriendsData();
   } catch(e){ setSaveState("nie udało się odświeżyć: " + String((e && (e.message || e.code)) || e).slice(0,70)); }
   if (b) b.disabled = false;
 }
@@ -1005,7 +1005,7 @@ function renderSheet(){
   const link = `<a class="lnk" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Strona ośrodka: cennik i status tras ↗" : "Szukaj cen karnetów ↗") : "Szukaj szlaków i informacji ↗"}</a>`;
   const fa = RO ? [] : friendsAt(r.id);
   const fsec = !fa.length ? "" : `<div class="sect"><div class="sh"><b>Byli tu obserwowani</b></div>${fa.map(x => { const ys = [...new Set((x.e.stays || []).map(k => k.y).filter(Boolean))].sort().join(", "), hd = x.e.done ? Object.keys(x.e.done).length : 0, nt = (x.e.n || "").trim();
-    return `<div class="frow" style="align-items:flex-start"><div style="min-width:0"><b>@${esc(x.u)}</b> <span class="small">${esc(ys)}${!W && hd ? (ys ? " · " : "") + hd + " " + plur(hd, "szlak", "szlaki", "szlaków") : ""}</span>${x.e.r ? ` <span style="color:var(--warn)">${"★".repeat(x.e.r)}</span>` : ""}${nt ? `<div class="small" data-nt style="white-space:pre-wrap;margin-top:2px">📝 ${esc(nt.length > 160 ? nt.slice(0, 159) + "…" : nt)}</div>` : ""}</div><button class="btn sm pri fgo3" data-u="${esc(x.u)}" style="flex:none">Profil</button></div>`; }).join("")}</div>`;
+    return `<div class="frow" style="align-items:flex-start"><div style="min-width:0"><b>@${esc(x.u)}</b> <span class="small">${esc(ys)}${!W && hd ? (ys ? " · " : "") + hd + " " + plur(hd, "szlak", "szlaki", "szlaków") : ""}</span>${x.e.r ? ` <span style="color:var(--warn)">${"★".repeat(x.e.r)}</span>` : ""}${nt ? `<div class="small" data-nt style="white-space:pre-wrap;margin-top:2px">📝 ${esc(nt.length > 160 ? nt.slice(0, 159) + "…" : nt)}</div>` : ""}${W ? "" : Object.keys(x.e.done || {}).map(i => { const h = r.hikes[i]; if (!h) return ""; const st = (x.e.hr && x.e.hr[i]) || 0, hn = ((x.e.hn && x.e.hn[i]) || "").trim(); return `<div class="small" style="margin-top:4px"><b>${esc(h.n)}</b> ${st ? `<span style="color:var(--warn)">${"★".repeat(st)}</span>` : ""}${hn ? `<div data-nt style="white-space:pre-wrap">📝 ${esc(hn.length > 160 ? hn.slice(0, 159) + "…" : hn)}</div>` : ""}</div>`; }).join("")}</div><button class="btn sm pri fgo3" data-u="${esc(x.u)}" style="flex:none">Profil</button></div>`; }).join("")}</div>`;
   const secOn = r.id === "h-camino";
   let lastSec = null;
   const hikeCards = W ? "" : r.hikes.map((h, i) => {
