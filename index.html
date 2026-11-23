@@ -292,6 +292,48 @@ nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.
 .view.on .frow:active{transform:scale(.99)}
 #mapwrap circle{transition:fill .3s,stroke .3s}
 }
+
+/* ===== motyw jasny, cząsteczki, powitanie, przejścia ===== */
+:root{--lblf:#dbe8ff;--lbls:#07101e}
+body.summer{--lblf:#f6efe4;--lbls:#120d08}
+body.light{--bg:#f2f6fc;--bg2:#ffffff;--glass:rgba(10,30,70,.045);--glass2:rgba(10,30,70,.08);--line:rgba(10,30,70,.14);--text:#0e1b2e;--mute:#4d5f7c;--faint:#7686a3;--accent:#1e7fe0;--accent2:#6c5ce7;--grad:linear-gradient(135deg,#2f9bf0,#6c5ce7);--halo:#dbe8fa;--maphalo:#e8f1fc;--mapend:#cfe0f5;--accentbg:rgba(30,127,224,.11);--pn:255,255,255;--pn2:244,248,253;--land:#dde8f5;--landline:#9fb6d5;--grat:#d3e0f0;--ok:#0f9e72;--warn:#b87400;--bad:#d1384a;--lblf:#12253f;--lbls:#f4f8fd;color-scheme:light}
+body.summer.light{--bg:#faf5ec;--bg2:#fffdf8;--glass:rgba(80,50,10,.05);--glass2:rgba(80,50,10,.09);--line:rgba(80,50,10,.15);--text:#2a2014;--mute:#6a5842;--faint:#9a8870;--accent:#d2601a;--accent2:#b23b2a;--grad:linear-gradient(135deg,#f0a04b,#d2601a);--halo:#f3e4cc;--maphalo:#f6ecda;--mapend:#e6d5b8;--accentbg:rgba(210,96,26,.1);--pn:255,252,245;--pn2:248,241,229;--land:#eadfc8;--landline:#b79f77;--grat:#e2d5ba;--ok:#4c8a1f;--lblf:#3a2a17;--lbls:#fbf5ea}
+body.light::before{background-image:radial-gradient(rgba(30,60,110,.07) 1.2px,transparent 1.8px),radial-gradient(rgba(30,60,110,.05) 1px,transparent 1.6px)}
+body.summer.light::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120' viewBox='0 0 220 120' fill='none' stroke='%23a0783c' stroke-opacity='.12' stroke-width='1.2'%3E%3Cpath d='M0 20c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 46c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 72c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 98c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3C/svg%3E")}
+body.light header,body.summer.light header{background:rgba(var(--pn),.96)}
+body.light .btn.pri,body.light .mode button.on{color:#fff}
+body.summer.light .btn.pri,body.summer.light .mode button.on{color:#fff}
+body.light .stars button,body.light .szs button{color:rgba(10,30,70,.18);-webkit-text-fill-color:rgba(10,30,70,.18)}
+body.light #mapwrap{background:radial-gradient(ellipse at 50% 35%,var(--maphalo) 0%,var(--mapend) 70%)}
+body.light #acctov{background:rgba(20,30,50,.45)}
+body.light #sheetbg{background:rgba(20,30,50,.4)}
+body.light #sheet{box-shadow:0 -12px 40px rgba(20,30,50,.18)}
+body.light .card{background:rgba(255,255,255,.75)}
+body.light .hstats small{color:var(--mute)}
+body.light .hike .bd span:not([class]){color:var(--mute)}
+body.light .tdel,body.light .thandle{color:var(--mute)}
+#fx{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#fx i{position:absolute;display:block;border-radius:50%;top:-6px;background:#fff}
+#fx.snow i{animation:snowf linear infinite}
+#fx.dust i{background:#e8c48a;top:auto;bottom:-6px;animation:dustf ease-in-out infinite}
+body.light #fx.snow i{background:#7ea6d8}body.light #fx.dust i{background:#c98f3a}
+@keyframes snowf{0%{transform:translate(0,0)}50%{transform:translate(14px,60px)}100%{transform:translate(-6px,130px)}}
+@keyframes dustf{0%{transform:translate(0,0)}50%{transform:translate(-12px,-50px)}100%{transform:translate(8px,-120px)}}
+header>*:not(#fx){position:relative;z-index:1}header{position:relative;overflow:hidden}
+.welcome{max-width:310px;text-align:center;padding:20px 18px}
+.welcome h3{font-size:26px;margin-bottom:6px}
+.welcome .sub{font-size:14px;margin-bottom:14px}
+.wpins{display:flex;justify-content:center;gap:10px;margin-bottom:10px}
+.wpins i{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent);animation:ringpulse 1.8s ease-out infinite}
+.wpins i:nth-child(2){animation-delay:.3s;background:var(--accent2)}.wpins i:nth-child(3){animation-delay:.6s;background:var(--ok)}
+.view.on{animation:none}
+.view.sl-r{animation:slr .34s cubic-bezier(.2,.8,.3,1)}
+.view.sl-l{animation:sll .34s cubic-bezier(.2,.8,.3,1)}
+@keyframes slr{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes sll{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.view.sl-r,.view.sl-l{animation:none}#fx{display:none}}
+.welcome h3{line-height:1.05}
+body.light .hike .bd .d0{background:rgba(15,158,114,.14);color:#0a7a56}body.light .hike .bd .d1{background:rgba(184,116,0,.14);color:#8a5600}body.light .hike .bd .d2{background:rgba(209,56,74,.12);color:#b02a3b}
 </style>
 </head>
 <body>
@@ -312,7 +354,7 @@ nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.
       <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="zfit" aria-label="Cała Europa" style="font-size:16px">⌂</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button></div>
       <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
-      <div class="mapempty" id="mapempty"><div class="card" style="text-align:center;max-width:290px"><h3>Twoja mapa jest pusta</h3><div class="sub">Dodaj miejsca z listy: dotknij kółka ✓ przy miejscu, w którym byłeś, albo wyszukaj i oznacz plan. Pojawią się tu na mapie.</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
+      <div class="mapempty" id="mapempty"><div class="card welcome"><div class="wpins"><i></i><i></i><i></i></div><h3 id="welh">Gdzie już byłeś?</h3><div class="sub" id="wels">Zaznacz miejsca, w których byłeś, a zobaczysz swoją mapę i statystyki.</div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" id="madd2">Zaznacz, gdzie byłem</button><button class="btn sm" id="mall2">Zobacz wszystkie</button></div></div></div>
       <div class="legend"><span><i style="background:var(--ok)"></i>byłem</span><span><i style="background:var(--warn)"></i>planuję</span><span><i style="background:#7aa8ff"></i>jeszcze nie</span></div>
       <div class="note" id="mapnote"></div>
     </div>
@@ -911,14 +953,14 @@ function shareCanvasBase(kind, per){
   const W = MODE === "w", S = stats(), cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1350;
   const c = cv.getContext("2d"), F = "Barlow, system-ui, -apple-system, 'Segoe UI', sans-serif";
   const g = c.createLinearGradient(0, 0, 0, 1350);
-  if (W) { g.addColorStop(0, "#14305a"); g.addColorStop(1, "#070d19"); } else { g.addColorStop(0, "#21402f"); g.addColorStop(1, "#08140f"); }
+  if (W) { g.addColorStop(0, "#14305a"); g.addColorStop(1, "#070d19"); } else { g.addColorStop(0, "#3b2a1c"); g.addColorStop(1, "#15110c"); }
   c.fillStyle = g; c.fillRect(0, 0, 1080, 1350);
-  const acc = W ? "#5ad1ff" : "#ffd35a";
-  c.textAlign = "left"; c.fillStyle = "#fff"; c.font = `800 58px ${F}`; c.fillText(per ? tr(per.label) : tr(W ? "Moje ośrodki narciarskie" : "Moje górskie szlaki"), 60, 105);
-  c.fillStyle = acc; c.font = `600 30px ${F}`; c.fillText((W ? "Skied there  ·  ❄️" : "Hiked there  ·  ☀️"), 60, 152);
+  const acc = W ? "#5ad1ff" : "#f2a65a", FD = "Barlow Condensed, Arial Narrow, sans-serif";
+  c.textAlign = "left"; c.fillStyle = "#fff"; { const ttl = (per ? tr(per.label) : tr(W ? "Moje ośrodki narciarskie" : "Moje górskie szlaki")).toUpperCase(); let fs = 72; do { c.font = `800 ${fs}px ${FD}`; fs -= 2; } while (c.measureText(ttl).width > 960 && fs > 30); c.fillText(ttl, 60, 108); }
+  c.fillStyle = acc; c.font = `700 32px ${FD}`; c.fillText((W ? "SKIED THERE  ·  ❄️" : "HIKED THERE  ·  ☀️"), 60, 152);
   const PD = per ? periodData(per) : null;
   const st = PD ? (W ? [[PD.places.length, "ośrodków"], [PD.countries.size, "krajów"], [Math.round(PD.km), "km tras"], [PD.stays, "wizyt"]] : [[PD.places.length, "miejsc"], [PD.countries.size, "krajów"]]) : W ? [[S.n, "ośrodków"], [S.countries.size, "krajów"], [Math.round(S.km), "km tras"], [S.stays, "wizyt"]] : [[S.n, "miejsc"], [S.countries.size, "krajów"], [S.hikes, "szlaków"]];
-  st.forEach((x, i) => { const px0 = 60 + i * 240; c.fillStyle = "rgba(255,255,255,.07)"; c.beginPath(); c.roundRect(px0, 190, 225, 130, 22); c.fill(); c.fillStyle = "#fff"; c.font = `800 52px ${F}`; c.fillText(String(x[0]), px0 + 22, 255); c.fillStyle = "#9db0d0"; c.font = `500 24px ${F}`; c.fillText(tr(x[1]), px0 + 22, 295); });
+  st.forEach((x, i) => { const px0 = 60 + i * 240; c.fillStyle = "rgba(255,255,255,.07)"; c.beginPath(); c.roundRect(px0, 190, 225, 130, 22); c.fill(); c.fillStyle = acc; c.font = `800 66px ${FD}`; c.fillText(String(x[0]), px0 + 22, 262); c.fillStyle = "#9db0d0"; c.font = `500 24px ${F}`; c.fillText(tr(x[1]), px0 + 22, 295); });
   const vis = R.filter(r => isVis(r.id));
   if (kind === "period") {
     const pl = PD.places.slice().sort((a, b) => b.k - a.k);
@@ -962,20 +1004,21 @@ function shareCanvasBase(kind, per){
 }
 function shareCanvas(kind, per, tall){
   const base = shareCanvasBase(kind, per); if (!tall) return base;
-  const W = MODE === "w", cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1920;
+  const W = MODE === "w", FD = "Barlow Condensed, Arial Narrow, sans-serif", cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1920;
   const c = cv.getContext("2d"), F = "Barlow, system-ui, -apple-system, 'Segoe UI', sans-serif";
   const g = c.createLinearGradient(0, 0, 0, 1920);
-  const c0 = W ? "#14305a" : "#21402f", c1 = W ? "#070d19" : "#08140f";
+  const c0 = W ? "#14305a" : "#3b2a1c", c1 = W ? "#070d19" : "#15110c";
   g.addColorStop(0, c0); g.addColorStop(285 / 1920, c0); g.addColorStop(1635 / 1920, c1); g.addColorStop(1, c1);
   c.fillStyle = g; c.fillRect(0, 0, 1080, 1920);
   c.drawImage(base, 0, 285);
   const url = (location.protocol.indexOf("http") === 0 ? location.host + location.pathname.replace(/\/$/, "") : "bartoszkrop.github.io/Skied-Hiked-there"), un = store && store.prof && store.prof.username;
-  c.textAlign = "center"; c.fillStyle = "#fff"; c.font = `800 44px ${F}`; c.fillText(tr("Zrób swoją mapę"), 540, 1700);
-  c.fillStyle = W ? "#5ad1ff" : "#ffd35a"; c.font = `700 38px ${F}`; c.fillText(url, 540, 1760);
+  c.textAlign = "center"; c.fillStyle = "#fff"; c.font = `800 56px ${FD}`; c.fillText(tr("Zrób swoją mapę").toUpperCase(), 540, 1700);
+  c.fillStyle = W ? "#5ad1ff" : "#f2a65a"; c.font = `700 38px ${F}`; c.fillText(url, 540, 1760);
   if (un) { c.fillStyle = "#9db3d8"; c.font = `600 30px ${F}`; c.fillText("@" + un, 540, 1810); }
   c.textAlign = "left"; return cv;
 }
 async function openShare(kind, per){
+  try { await Promise.all([document.fonts.load('800 40px "Barlow Condensed"'), document.fonts.load('700 30px "Barlow Condensed"'), document.fonts.load("600 26px Barlow"), document.fonts.load("500 22px Barlow")]); } catch(e){}
   let ov = $("shareov"); if (!ov) { ov = document.createElement("div"); ov.id = "shareov"; document.body.append(ov); }
   if ((kind === "map" || kind === "period") && !GEO && !LANDR) { ov.innerHTML = `<div class="small" style="color:#cdd8ee;text-align:center;padding:30px">Ładuję kontury map…</div>`; ov.style.display = "flex"; await loadGeo(); }
   const cv = shareCanvas(kind, per, true); ov.innerHTML = ""; ov.append(cv);
@@ -1030,7 +1073,7 @@ function bindFriends(){
     fg.onclick = go; $("fsq").onkeydown = e => { if (e.key === "Enter") go(); }; }
 }
 function settingsCard(){
-  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
+  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><select class="sel" id="themesel"><option value="dark">Ciemny</option><option value="light">Jasny</option><option value="auto">Jak w telefonie</option></select></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
 }
 function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
@@ -1038,6 +1081,7 @@ function ovBox(){
 }
 function openSettings(){ ovBox().innerHTML = settingsCard(); bindSettings(); const cl = $("lclose"); if (cl) cl.onclick = closeAccount; }
 function bindSettings(){
+  { const ts = $("themesel"); if (ts) { let v = "dark"; try { v = localStorage.getItem("skibeen.theme") || "dark"; } catch(e){} ts.value = v; ts.onchange = () => { try { localStorage.setItem("skibeen.theme", ts.value); } catch(e){} applyTheme(); }; } }
   const ib = $("instset"); if (ib) ib.onclick = async () => { if (!(await doInstall())) $("instmsg").textContent = installText(); };
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
 }
@@ -1525,7 +1569,7 @@ function buildDots(){
   R.forEach(r => {
     const h = mk("circle", {cx:px(r.x), cy:py(r.y), "pointer-events":"none"});
     const c = mk("circle", {cx:px(r.x), cy:py(r.y), "vector-effect":"non-scaling-stroke"});
-    const t = mk("text", {x:px(r.x), y:py(r.y), fill:"#dbe8ff", "text-anchor":"middle", "paint-order":"stroke", stroke:"#07101e", "stroke-linejoin":"round", "font-family":"Barlow, 'Segoe UI', Roboto, Arial, sans-serif", "font-weight":"600", "letter-spacing":"0.01em"});
+    const t = mk("text", {x:px(r.x), y:py(r.y), style:"fill:var(--lblf);stroke:var(--lbls)", "text-anchor":"middle", "paint-order":"stroke", "stroke-linejoin":"round", "font-family":"Barlow, 'Segoe UI', Roboto, Arial, sans-serif", "font-weight":"600", "letter-spacing":"0.01em"});
     t.textContent = r.n.length > 22 ? r.n.slice(0, 21) + "…" : r.n;
     gDots.append(h, c); gLbl.append(t); dots.push({r, h, c, t, rad: MODE === "w" ? 2 + Math.sqrt(r.k) / 5 : 5});
   });
@@ -1575,6 +1619,7 @@ function updateMapUI(){
   if (show && !emptyShown) { emptyShown = true; try { localStorage.setItem("skibeen.emptyseen", "1"); } catch(e){} }
   if (n) emptyShown = false;
   $("mapempty").style.display = show ? "flex" : "none";
+  if (show) { const W = MODE === "w"; $("welh").textContent = W ? "Gdzie już zjechałeś?" : "Gdzie już byłeś w górach?"; $("wels").textContent = W ? "Zaznacz ośrodki, w których jeździłeś, a zobaczysz swoją mapę, statystyki i ranking." : "Zaznacz miejsca i szlaki, które już zrobiłeś, a zobaczysz swoją mapę i statystyki."; }
   $("mall").textContent = showAll ? "Ukryj nieoznaczone" : "Pokaż wszystkie"; $("mall").style.display = filtN() ? "none" : ""; $("mfilt").textContent = "⚙ Filtry" + (filtN() ? " · " + filtN() : ""); $("mfilt").classList.toggle("pri", !!filtN());
 }
 function openMapFilters(){
@@ -1662,7 +1707,10 @@ function drawLand(geo){
 function show(t){
   if (t === "grupy") { statRank.w = "groups"; t = "statystyki"; if (MODE === "w") renderStats(); }
   if (!["mapa","lista","ranking","grupy","statystyki","wyjazdy"].includes(t) || (t === "ranking" && MODE !== "w") || (t === "wyjazdy" && RO)) t = "mapa";
+  { const ord = ["mapa", "lista", "ranking", "wyjazdy", "statystyki"], np = ord.indexOf(t), pp = ord.indexOf(show._t);
+    if (show._t && show._t !== t && np >= 0 && pp >= 0) show._dir = np > pp ? "sl-r" : "sl-l"; else show._dir = ""; show._t = t; }
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t));
+  if (show._dir) { const vw = $("v-" + t); if (vw) { vw.classList.remove("sl-l", "sl-r"); void vw.offsetWidth; vw.classList.add(show._dir); setTimeout(() => vw.classList.remove("sl-l", "sl-r"), 420); } }
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === (t === "lista" ? "mapa" : t)));
   try { if (!RO && location.hash !== "#" + t && !/access_token|error_description/.test(location.hash)) history.replaceState(null, "", "#" + t); } catch(e){}
   if (t === "mapa") requestAnimationFrame(() => { if (mapFitted) applyVB(); else fit(); });
@@ -1674,7 +1722,8 @@ let lastPt = {x: innerWidth / 2, y: innerHeight * .7};
 addEventListener("pointerdown", e => { lastPt = {x: e.clientX, y: e.clientY}; }, true);
 function toast(msg){ let t = $("toast"); if (!t) { t = document.createElement("div"); t.id = "toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.remove("on"); void t.offsetWidth; t.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 2200); }
 function burst(){ if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const cs = ["#38e0a0", "#ffc65c", "#5ad1ff", "#ff8f5a", "#ffffff"]; for (let i = 0; i < 16; i++) { const p = document.createElement("i"), a = Math.PI * 2 * i / 16 + Math.random() * .4, d = 44 + Math.random() * 46; p.className = "cf"; p.style.cssText = `left:${lastPt.x}px;top:${lastPt.y}px;background:${cs[i % cs.length]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d - 16}px;--rot:${Math.random() * 360}deg`; document.body.appendChild(p); setTimeout(() => p.remove(), 900); } }
-function flipUI(){ const a = document.querySelector("main"), h = document.querySelector("header"); [a, h].forEach(e => { if (!e) return; e.classList.remove("flip"); void e.offsetWidth; e.classList.add("flip"); }); setTimeout(() => [a, h].forEach(e => e && e.classList.remove("flip")), 600); }
+function buildFx(){ const h = document.querySelector("header"); if (!h) return; let f = $("fx"); if (!f) { f = document.createElement("div"); f.id = "fx"; h.prepend(f); } f.replaceChildren(); if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const W = MODE === "w"; for (let i = 0; i < (W ? 16 : 10); i++) { const p = document.createElement("i"), sz = W ? 2 + Math.random() * 3 : 2 + Math.random() * 2.5; p.style.cssText = `left:${Math.random() * 100}%;width:${sz}px;height:${sz}px;animation-duration:${(W ? 9 : 14) + Math.random() * 9}s;animation-delay:-${Math.random() * 18}s;opacity:${.25 + Math.random() * .4}`; f.appendChild(p); } f.className = W ? "snow" : "dust"; }
+function flipUI(){ buildFx(); const a = document.querySelector("main"), h = document.querySelector("header"); [a, h].forEach(e => { if (!e) return; e.classList.remove("flip"); void e.offsetWidth; e.classList.add("flip"); }); setTimeout(() => [a, h].forEach(e => e && e.classList.remove("flip")), 600); }
 function countUp(){ document.querySelectorAll("#hstats b").forEach(b => { const to = parseFloat(b.textContent); if (!isFinite(to) || to <= 0 || to > 99999 || b.dataset.cu === String(to)) return; const from = parseFloat(b.dataset.cu) || 0; b.dataset.cu = String(to); if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), dur = 700, txt = b.textContent; (function f(t){ const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); b.textContent = k < 1 ? String(Math.round(from + (to - from) * e)) : txt; if (k < 1) requestAnimationFrame(f); })(t0); }); }
 function setMode(m){
   if (m === MODE) return;
@@ -1764,6 +1813,7 @@ async function wxFor(lat, lon, iso){
 }
 const PACK_DEF_W = ["Buty narciarskie", "Kask", "Gogle", "Rękawice", "Kurtka narciarska", "Spodnie narciarskie", "Bielizna termoaktywna", "Skarpety narciarskie", "Komin / kominiarka", "Karnet / ski pass", "Krem z filtrem", "Okulary przeciwsłoneczne", "Ciepłe buty na po nartach", "Powerbank", "Ładowarka", "Apteczka", "Dowód / EKUZ", "Gotówka / karta", "Strój na basen / saunę"];
 const PACK_DEF = ["Buty trekkingowe", "Kurtka przeciwdeszczowa", "Polar / warstwa ocieplająca", "Czapka i rękawiczki", "Czapka z daszkiem + okulary", "Krem z filtrem", "Bidon / woda", "Powerbank", "Apteczka + plastry", "Czołówka", "Kijki trekkingowe", "Przekąski / batony", "Mapa offline", "Dowód / EKUZ", "Gotówka / karta", "Zapasowe skarpety", "Pokrowiec na plecak", "Ładowarka"];
+function applyTheme(){ let v = "dark"; try { v = localStorage.getItem("skibeen.theme") || "dark"; } catch(e){} const light = v === "light" || (v === "auto" && matchMedia("(prefers-color-scheme: light)").matches); document.body.classList.toggle("light", light); try { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = light ? "#f2f6fc" : "#08111f"; } catch(e){} }
 let costEditId = null, cmOpen = new Set(), pkOpen = new Set(), tripPrev = 0;
 const PCOL = ["#ff7b8a", "#5ad1ff", "#ffd35a", "#38e0a0", "#c792ff", "#ff9f5a", "#7ab8ff", "#b6e35a"]; let PCM = {};
 const pcHash = n => { let h = 0; for (const ch of String(n || "")) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % PCOL.length; };
@@ -2091,6 +2141,8 @@ $("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("acct").on
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
+
+try { applyTheme(); buildFx(); matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); } catch(e){}
 </script>
 <script>if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script></body>
 </html>
