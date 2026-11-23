@@ -236,7 +236,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
   <div class="brand">
 
     <div class="mode" id="mode" role="tablist"><button data-m="w" class="on"><span class="em">❄️ </span>Skied there</button><button data-m="s"><span class="em">☀️ </span>Hiked there</button></div>
-    <div class="rt"><button id="rfbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Odśwież" title="Odśwież dane">⟳</button><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="acct" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Profil" title="Profil">👤</button></div><i class="brk"></i>
+    <div class="rt"><button id="rfbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Odśwież" title="Odśwież dane">⟳</button><button id="acct" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Profil" title="Profil">👤</button></div><i class="brk"></i>
   </div>
   <div class="hstats" id="hstats"></div>
   <div class="prog"><i id="progBar"></i></div>
@@ -930,7 +930,7 @@ function accountCard(){
        <button class="btn lcl" id="lsend" style="margin-top:8px;font-size:13px">albo wyślij link na e-mail</button>
        <div class="small" id="lmsg" style="margin-top:10px;text-align:center;min-height:16px"></div>
        <div class="small" style="margin-top:6px;text-align:center">Otwórz link na tym samym urządzeniu. Jeśli konto jest puste, dołączą do niego dane wpisane w tej przeglądarce.</div>
-       <button class="btn lcl" id="lclose">Zamknij</button>`) + `<button class="btn lcl" id="lset" style="margin-top:8px">⚙ Ustawienia</button></div>`;
+       <button class="btn lcl" id="lclose">Zamknij</button>`) + `</div>`;
 }
 function updateAcct(){
   const b = $("acct"); if (!b) return;
@@ -966,9 +966,8 @@ function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
   ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; return ov;
 }
-function openSettings(){
-  ovBox().innerHTML = settingsCard();
-  const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
+function openSettings(){ openAccount(); }
+function bindSettings(){
   const ib = $("instset"); if (ib) ib.onclick = async () => { if (!(await doInstall())) $("instmsg").textContent = installText(); };
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
 }
@@ -1182,10 +1181,15 @@ function openAddPlace(sg){
     } catch(e){ $("apsave").disabled = false; st.textContent = "Nie udało się: " + String((e && e.message) || e).slice(0, 90); }
   };
 }
-function openFriends(){ ovBox().innerHTML = friendsCard(); bindFriends(); }
+function openFriends(){ openAccount(); }
 function openAccount(){
-  let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
-  ov.innerHTML = accountCard(); ov.style.display = "flex"; bindAccount(); { const ls = $("lset"); if (ls) ls.onclick = () => { closeAccount(); openSettings(); }; }
+  const sb = SBC && window.supabase, on = sb && (store.mode === "sb" || !!store.authed);
+  const strip = h => h.replace(/<button[^>]*id="lclose"[^>]*>Zamknij<\/button>/g, "");
+  const ov = ovBox();
+  ov.innerHTML = (sb ? strip(accountCard()) : "") + (on ? strip(friendsCard()) : "") + strip(settingsCard()) + `<button class="btn" id="lclose" style="max-width:420px;width:100%;flex:none;margin:0 0 24px">Zamknij</button>`;
+  ov.scrollTop = 0;
+  if (sb) bindAccount(); if (on) bindFriends(); bindSettings();
+  const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
 }
 function closeAccount(){ const ov = $("acctov"); if (ov) ov.style.display = "none"; }
 function bindAccount(){
@@ -1998,7 +2002,7 @@ if (isIOS()) scheduleInstBar();
 $("rfbtn").onclick = async () => { const b = $("rfbtn"); if (b.dataset.busy) return; b.dataset.busy = "1"; b.style.opacity = ".5";
   try { if (RO) await loadRO(); else if (store.mode === "sb") { await refreshSb(); await loadExtra(); await loadShared(true); if ($("v-wyjazdy").classList.contains("on")) renderTrips(); } else { await loadExtra(); location.reload(); } } catch(e){}
   b.style.opacity = ""; delete b.dataset.busy; };
-$("acct").onclick = () => (SBC && window.supabase) ? openAccount() : openSettings(); updateAcct(); $("frbtn").onclick = openFriends; initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
+$("acct").onclick = () => (SBC && window.supabase) ? openAccount() : openSettings(); updateAcct(); initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
