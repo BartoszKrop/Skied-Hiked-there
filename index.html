@@ -280,6 +280,25 @@ nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.
 .hike .bd span:not([class]){border-left:0;padding-left:0;font-weight:600;text-transform:none;letter-spacing:.02em;font-family:var(--fb)}
 .dnum b{font-family:var(--fd)}
 .btn.ok{background:#38d99a;color:#05241a}.btn.warn{background:#ffc65c;color:#2b1d03}
+
+/* ===== ruch i detale ===== */
+#toast{position:fixed;left:50%;bottom:calc(86px + var(--safe-b));transform:translate(-50%,16px);background:var(--bg2);color:var(--text);border:1px solid var(--accent);padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px;z-index:400;opacity:0;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.45);transition:opacity .25s,transform .35s cubic-bezier(.3,1.5,.5,1);white-space:nowrap}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.cf{position:fixed;width:8px;height:8px;border-radius:2px;z-index:500;pointer-events:none;animation:cf .85s cubic-bezier(.15,.7,.3,1) forwards}
+@keyframes cf{0%{transform:translate(-50%,-50%) scale(.4) rotate(0);opacity:1}70%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy) + 30px)) scale(1) rotate(var(--rot));opacity:0}}
+@keyframes selp{0%{transform:scale(.7);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+.selp{transform-box:fill-box;transform-origin:center;animation:selp 1.6s ease-out infinite}
+.prog{height:6px}
+.prog i{background:linear-gradient(90deg,var(--accent),var(--accent2));position:relative;overflow:hidden}
+.prog i::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-100%);animation:shine 3.2s ease-in-out infinite}
+@keyframes shine{0%,55%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@media(prefers-reduced-motion:no-preference){
+#sheet.open .hike{animation:rise .4s cubic-bezier(.2,.8,.3,1) both}
+#sheet.open .hike:nth-of-type(2){animation-delay:.05s}#sheet.open .hike:nth-of-type(3){animation-delay:.1s}#sheet.open .hike:nth-of-type(4){animation-delay:.15s}#sheet.open .hike:nth-of-type(n+5){animation-delay:.2s}
+.hike,.card.tap,.frow{transition:transform .15s,background .2s}.hike:active{transform:scale(.99)}
+.view.on .frow:active{transform:scale(.99)}
+#mapwrap circle{transition:r .2s ease,fill .3s,stroke .3s}
+}
 </style>
 </head>
 <body>
@@ -634,8 +653,10 @@ const isVis = id => !!visits[id] && visits[id].s === "v";
 const isPlan = id => !!visits[id] && visits[id].s === "p";
 const newEntry = st => ({s: st, stays: [], pd: "", pr: 0, r: 0, t: "", n: "", done: {}, sz: {}, hr: {}, hn: {}});
 function setStatus(id, st){
+  const was = visits[id] && visits[id].s;
   if (!visits[id]) visits[id] = newEntry(st); else visits[id].s = st;
   scheduleSave(); renderAll();
+  if (st !== was) { if (st === "v") { burst(); toast("Zapisano na mapie ✓ · " + R.filter(r => isVis(r.id)).length + " z " + R.length); } else if (st === "p") toast("Dodano do planów 📅"); }
 }
 function stats(){
   const v = R.filter(r => isVis(r.id));
@@ -1537,7 +1558,7 @@ function applyVB(){
     d.c.setAttribute("fill", on ? col : "rgba(122,168,255,.6)");
     d.c.setAttribute("stroke", (sel || on) ? "#ffffff" : "rgba(255,255,255,.3)");
     d.c.setAttribute("stroke-width", sel ? 2.5 : on ? 1.5 : 1);
-    d.h.setAttribute("r", (d.rad + 7) / s); d.h.setAttribute("fill", sel ? "#5ad1ff" : col); d.h.setAttribute("opacity", sel ? .35 : on ? .26 : 0);
+    d.h.setAttribute("r", (d.rad + 7) / s); d.h.setAttribute("fill", sel ? "#5ad1ff" : col); d.h.setAttribute("opacity", sel ? .35 : on ? .26 : 0); d.h.classList.toggle("selp", !!sel);
     d.t.setAttribute("font-size", 11 / s); d.t.setAttribute("stroke-width", 3 / s); d.t.setAttribute("dy", -(d.rad + 6) / s);
     const lab = showNames && show && ((on || sel) ? z >= 4 : (z >= 12 || (MODE === "w" && z >= 8 && d.r.k > 100) || (MODE === "s" && z >= 6)));
     d.t.style.display = "none"; d._lab = lab;
@@ -1651,6 +1672,10 @@ function show(t){
 }
 $("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b) show(b.dataset.t); });
 window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+let lastPt = {x: innerWidth / 2, y: innerHeight * .7};
+addEventListener("pointerdown", e => { lastPt = {x: e.clientX, y: e.clientY}; }, true);
+function toast(msg){ let t = $("toast"); if (!t) { t = document.createElement("div"); t.id = "toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.remove("on"); void t.offsetWidth; t.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 2200); }
+function burst(){ if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const cs = ["#38e0a0", "#ffc65c", "#5ad1ff", "#ff8f5a", "#ffffff"]; for (let i = 0; i < 16; i++) { const p = document.createElement("i"), a = Math.PI * 2 * i / 16 + Math.random() * .4, d = 44 + Math.random() * 46; p.className = "cf"; p.style.cssText = `left:${lastPt.x}px;top:${lastPt.y}px;background:${cs[i % cs.length]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d - 16}px;--rot:${Math.random() * 360}deg`; document.body.appendChild(p); setTimeout(() => p.remove(), 900); } }
 function flipUI(){ const a = document.querySelector("main"), h = document.querySelector("header"); [a, h].forEach(e => { if (!e) return; e.classList.remove("flip"); void e.offsetWidth; e.classList.add("flip"); }); setTimeout(() => [a, h].forEach(e => e && e.classList.remove("flip")), 600); }
 function countUp(){ document.querySelectorAll("#hstats b").forEach(b => { const to = parseFloat(b.textContent); if (!isFinite(to) || to <= 0 || to > 99999 || b.dataset.cu === String(to)) return; const from = parseFloat(b.dataset.cu) || 0; b.dataset.cu = String(to); if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), dur = 700, txt = b.textContent; (function f(t){ const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); b.textContent = k < 1 ? String(Math.round(from + (to - from) * e)) : txt; if (k < 1) requestAnimationFrame(f); })(t0); }); }
 function setMode(m){
