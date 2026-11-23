@@ -303,7 +303,7 @@ nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.
   </div>
   <div class="hstats" id="hstats"></div>
   <div class="prog"><i id="progBar"></i></div>
-  <div class="savel"><span id="saveState"></span></div>
+  <div class="savel" style="display:none"><span id="saveState"></span></div>
 </header>
 <div id="robar"></div>
 <main>
@@ -505,7 +505,12 @@ function loadLocal(){ try { const t = localStorage.getItem(LS); if (t) wVisits =
 function saveLocal(){ if (RO) return; if (typeof store !== "undefined" && store && store.mode === "sb") return; try { localStorage.setItem(LS, JSON.stringify(wVisits)); localStorage.setItem(LSH, JSON.stringify(sVisits)); localStorage.setItem(LST, JSON.stringify(TRIPS)); localStorage.setItem("skibeen.packs", JSON.stringify(PACKS)); } catch(e){} }
 const exportJSON = pretty => JSON.stringify({visits: wVisits, hvisits: sVisits}, null, pretty ? 1 : 0);
 function wipeLocal(){ try { localStorage.removeItem(LS); localStorage.removeItem(LSH); localStorage.removeItem(LST); localStorage.removeItem("skibeen.packs"); } catch(e){} }
-function setSaveState(t){ $("saveState").textContent = t; }
+function setSaveState(t){
+  /* pokazujemy tylko problemy i tryb podglądu; zwykłe "zapisano" nie jest potrzebne */
+  if (/^odświeżono/.test(t)) { try { toast("Odświeżono ✓"); } catch(e){} t = ""; }
+  else if (/^(zapis: ta przeglądarka|zapisuję|zapisano|odświeżam)/.test(t)) t = "";
+  $("saveState").textContent = t; const r = $("saveState").parentElement; if (r) r.style.display = t ? "" : "none";
+}
 function scheduleSave(){
   if (RO) return;
   saveLocal(); dirty = true;
