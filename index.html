@@ -1511,9 +1511,14 @@ function applyVB(){
     d.c.setAttribute("stroke-width", sel ? 2.5 : on ? 1.5 : 1);
     d.h.setAttribute("r", (d.rad + 7) / s); d.h.setAttribute("fill", sel ? "#5ad1ff" : col); d.h.setAttribute("opacity", sel ? .35 : on ? .26 : 0);
     d.t.setAttribute("font-size", 11 / s); d.t.setAttribute("stroke-width", 3 / s); d.t.setAttribute("dy", -(d.rad + 6) / s);
-    const lab = showNames && show && ((on || sel) ? z >= 2.2 : (z >= 7 || (MODE === "w" && z >= 4.5 && d.r.k > 100) || (MODE === "s" && z >= 3)));
-    d.t.style.display = lab ? "" : "none";
+    const lab = showNames && show && ((on || sel) ? z >= 4 : (z >= 12 || (MODE === "w" && z >= 8 && d.r.k > 100) || (MODE === "s" && z >= 6)));
+    d.t.style.display = "none"; d._lab = lab;
   });
+  /* etykiety: bez nakładania się, ważniejsze pierwsze */
+  const boxes = [], cand = dots.filter(d => d._lab).sort((a, b) => (b.r.id === curId) - (a.r.id === curId) || (marked(b.r.id) - marked(a.r.id)) || ((b.r.k || 0) - (a.r.k || 0)));
+  cand.forEach(d => { const cx = (px(d.r.x) - vb.x) * s, cy = (py(d.r.y) - vb.y) * s - d.rad - 10, w = Math.min(d.r.n.length, 22) * 6.2 + 6, bx = [cx - w / 2, cy - 7, cx + w / 2, cy + 7];
+    if (boxes.some(q => bx[0] < q[2] && bx[2] > q[0] && bx[1] < q[3] && bx[3] > q[1])) return;
+    boxes.push(bx); d.t.style.display = ""; });
 }
 let emptyShown = false;
 function updateMapUI(){
