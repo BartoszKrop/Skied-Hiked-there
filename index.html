@@ -227,7 +227,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
 .hnote{margin:6px 0 4px;min-height:48px;font-size:13px}.hnro{margin:6px 0 4px;font-size:13px;color:var(--text);opacity:.9;white-space:pre-wrap}
 .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0;color:var(--text)}.chk input{width:18px;height:18px}
 .frow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14px}.frow:last-child{border-bottom:0}
-@media(max-width:560px){.brand{flex-wrap:wrap;row-gap:8px;gap:6px}.brand{flex-wrap:nowrap}.rt{order:2;margin-left:0;gap:6px;flex:none}.mode{order:1;flex:1 1 auto;min-width:0}.mode button{font-size:12.5px;padding:8px 4px;text-align:center}.rt .acct{padding:7px 10px!important;font-size:16px!important}#acct{max-width:none}}
+@media(max-width:560px){.brand{flex-wrap:wrap;row-gap:8px;gap:6px}.brand{flex-wrap:nowrap}.rt{order:2;margin-left:0;gap:4px;flex:none}.mode{order:1;flex:1 1 auto;min-width:0}.mode button{font-size:12.5px;padding:8px 4px;text-align:center}.rt .acct{padding:7px 8px!important;font-size:15px!important}#acct{max-width:none}}
 @media(max-width:380px){.brand h1{font-size:15px}.swt{gap:6px;padding:3px 8px 3px 3px}.logo{width:24px;height:24px}.rt .acct{padding:5px 6px!important}.brand{gap:4px}}
 </style>
 </head>
@@ -236,7 +236,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
   <div class="brand">
 
     <div class="mode" id="mode" role="tablist"><button data-m="w" class="on"><span class="em">❄️ </span>Skied there</button><button data-m="s"><span class="em">☀️ </span>Hiked there</button></div>
-    <div class="rt"><button id="rfbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Odśwież" title="Odśwież dane">⟳</button><button id="acct" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Profil" title="Profil">👤</button></div><i class="brk"></i>
+    <div class="rt"><button id="rfbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Odśwież" title="Odśwież dane">⟳</button><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="acct" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Profil" title="Profil">👤</button></div><i class="brk"></i>
   </div>
   <div class="hstats" id="hstats"></div>
   <div class="prog"><i id="progBar"></i></div>
@@ -934,7 +934,7 @@ function accountCard(){
 }
 function updateAcct(){
   const b = $("acct"); if (!b) return;
-  if (!SBC || !window.supabase) { b.style.display = ""; b.textContent = "⚙"; b.title = "Ustawienia"; b.setAttribute("aria-label", "Ustawienia"); return; }
+  if (!SBC || !window.supabase) { b.style.display = "none"; return; }
   b.style.display = ""; const on = store.mode === "sb" || !!store.authed;
   b.textContent = "👤"; b.title = on ? "Profil: " + (store.name || store.email) : "Zaloguj się"; b.setAttribute("aria-label", b.title); b.classList.toggle("on", on); { const rb = $("rfsh"); if (rb) rb.style.display = store.mode === "sb" ? "" : "none"; }
 }
@@ -1183,12 +1183,7 @@ function openAddPlace(sg){
 }
 function openFriends(){ ovBox().innerHTML = friendsCard(); bindFriends(); }
 function openAccount(){
-  const sb = SBC && window.supabase, on = sb && (store.mode === "sb" || !!store.authed);
-  if (!sb) { openSettings(); return; }
-  const ov = ovBox();
-  ov.innerHTML = accountCard() + `<div class="card" style="display:flex;gap:8px;padding:10px">${on ? `<button class="btn" id="gofr" style="flex:1">👥 Znajomi</button>` : ""}<button class="btn" id="goset" style="flex:1">⚙ Ustawienia</button></div>`;
-  ov.scrollTop = 0; bindAccount();
-  const gf = $("gofr"); if (gf) gf.onclick = openFriends; const gs = $("goset"); if (gs) gs.onclick = openSettings;
+  const ov = ovBox(); ov.innerHTML = accountCard(); ov.scrollTop = 0; bindAccount();
 }
 function closeAccount(){ const ov = $("acctov"); if (ov) ov.style.display = "none"; }
 function bindAccount(){
@@ -2001,7 +1996,7 @@ if (isIOS()) scheduleInstBar();
 $("rfbtn").onclick = async () => { const b = $("rfbtn"); if (b.dataset.busy) return; b.dataset.busy = "1"; b.style.opacity = ".5";
   try { if (RO) await loadRO(); else if (store.mode === "sb") { await refreshSb(); await loadExtra(); await loadShared(true); if ($("v-wyjazdy").classList.contains("on")) renderTrips(); } else { await loadExtra(); location.reload(); } } catch(e){}
   b.style.opacity = ""; delete b.dataset.busy; };
-$("acct").onclick = () => (SBC && window.supabase) ? openAccount() : openSettings(); updateAcct(); initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
+$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("acct").onclick = openAccount; updateAcct(); initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
