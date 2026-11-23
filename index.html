@@ -350,7 +350,7 @@ function applyExtra(rows){
     if (String(x.id).startsWith("ovr:")) { const r = map[String(x.id).slice(4)]; if (!r) return;
       if (d.hidden) { const T = w ? WINTER : SUMMER, ix = T.R.indexOf(r); if (ix >= 0) T.R.splice(ix, 1); delete map[r.id]; (T.G || []).forEach(g => { if (g.m) g.m = g.m.filter(i => map[i]); }); n++; return; }
       if (d.n) { r.n = d.n; r.full = d.n; } if (w) { if (d.k != null && d.k !== "") r.k = +d.k; if (d.e != null && d.e !== "") r.e = +d.e; if (d.w) r.w = d.w; r.auto = false; }
-      if (!w && Array.isArray(d.addHikes)) { r.hikes = r.hikes || []; d.addHikes.forEach(h => { if (h && h.n && !r.hikes.some(z => z.n === h.n)) r.hikes.push(h); }); r.k = r.hikes.length; }
+      if (!w && Array.isArray(d.addHikes)) { r.hikes = r.hikes || []; d.addHikes.forEach(h => { if (h && h.n && !r.hikes.some(z => z.n === h.n)) r.hikes.push(Object.assign({}, h, {added: true})); }); r.k = r.hikes.length; }
       r.s = norm([r.full, r.n, r.l, r.r, String(r.c).split(",").map(cname).join(" ")].join(" ")); n++; return; }
     if (!x.id || map[x.id] || !d.n) return;
     const c = String(d.c || "").toUpperCase(), lat = +d.y, lon = +d.x;
@@ -1294,7 +1294,7 @@ function renderSheet(){
     const noteUi = RO ? (note ? `<div class="hnro" data-nt>📝 ${esc(note)}</div>` : "") : (d ? `<textarea class="hnote" data-h="${i}" rows="2" placeholder="Notatka do tego szlaku…">${esc(note)}</textarea>` : "");
     return sh + `<div class="hike ${d?"done":""} ${pl?"planned":""}">
       ${RO ? `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>` : `<div class="tk2">${onlyPlan ? "" : `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Byłem">✓</button>`}<button class="tick plan ${pl?"pon":""}" data-p="${i}" aria-label="Planuję">◷</button></div>`}
-      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>
+      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>${(h.added && store.admin && !RO) ? `<button class="btn sm hkdel" data-h="${i}" style="color:#ff8a8a;margin-top:4px">🗑 Usuń szlak (admin)</button>` : ""}
       ${(v && v.s === "p") ? "" : `<div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>`}${noteUi}
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
   const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b></div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
@@ -1339,6 +1339,13 @@ function renderSheet(){
     const b = hg.getBoundingClientRect(), w = p.offsetWidth; p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, b.right - w)) + "px"; p.style.top = (b.bottom + 6) + "px";
     p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "w") window.open((W && r.w) ? r.w : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze"), "_blank", "noopener"); else if (bt.dataset.a === "a") { closeSheet(); openEditPlace(r, null); } else if (bt.dataset.a === "d") { adminHidePlace(r); } else if (bt.dataset.a === "h") { closeSheet(); openAddHike(r, null); } else { closeSheet(); openSuggest(r.n, r); } }; }; }
   if (!RO && SBC && store.sb && $("opsec")) loadOpinions(r.id);
+  document.querySelectorAll("#sheet .hkdel").forEach(b => b.onclick = async () => { const h = r.hikes[+b.dataset.h]; if (!h || !h.added) return; if (!confirm("Usunąć dodany szlak „" + h.n + "”? Zniknie u wszystkich.")) return;
+    try { const oid = "ovr:" + r.id; const pv = await store.sb.from("extra_places").select("data").eq("id", oid).maybeSingle(); const prev = pv && pv.data && pv.data.data; if (!prev) throw new Error("brak zmian w bazie");
+      const data = Object.assign({}, prev, {addHikes: (prev.addHikes || []).filter(z => z.n !== h.n)});
+      const dl = await store.sb.from("extra_places").delete().eq("id", oid); if (dl && dl.error) throw dl.error;
+      const ins = await store.sb.from("extra_places").insert({id: oid, mode: "s", data}); if (ins && ins.error) throw ins.error;
+      r.hikes.splice(+b.dataset.h, 1); r.k = r.hikes.length; try { localStorage.removeItem("skibeen.extra"); } catch(e){} renderAll(); renderSheet();
+    } catch(e){ alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); } });
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
   document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
