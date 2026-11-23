@@ -234,7 +234,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
 <body>
 <header>
   <div class="brand">
-    <div class="swt tg" id="swt" data-m="w" role="button" aria-label="Przełącz zima/lato"><div class="logo"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div></div>
+
     <div class="mode" id="mode" role="tablist"><button data-m="w" class="on">❄️ Skied there</button><button data-m="s">☀️ Hiked there</button></div>
     <div class="rt"><button id="rfbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Odśwież" title="Odśwież dane">⟳</button><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button></div><i class="brk"></i>
   </div>
@@ -1597,7 +1597,7 @@ function setMode(m){
   if (m === MODE) return;
   closeSheet(); MODE = m; syncVisits();
   const T = m === "w" ? WINTER : SUMMER; R = T.R; G = T.G; byId = m === "w" ? byIdW : byIdS;
-  document.body.classList.toggle("summer", m === "s"); $("swt").dataset.m = m;
+  document.body.classList.toggle("summer", m === "s");
   document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
     document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
   document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
