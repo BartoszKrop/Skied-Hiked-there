@@ -24,12 +24,15 @@
   --line:rgba(255,255,255,.09); --text:#eaf1ff; --mute:#8ea2c4; --faint:#5d7096;
   --accent:#5ad1ff; --accent2:#8b7bff; --ok:#38e0a0; --warn:#ffc65c; --bad:#ff6f7d;
   --grad:linear-gradient(135deg,#5ad1ff,#8b7bff); --halo:#14305a; --maphalo:#102949; --mapend:#091526; --accentbg:rgba(90,209,255,.09);
-  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --land:#12294a; --landline:#2b4c7c; --grat:#17304f; --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 body{display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 600px at 50% -10%,var(--halo) 0%,var(--bg) 60%)}
-body.summer{--accent:#ffd35a;--accent2:#ff8f5a;--grad:linear-gradient(135deg,#ffd35a,#ff8f5a);--halo:#21402f;--maphalo:#1b3a2d;--mapend:#07140e;--bg:#08140f;--accentbg:rgba(255,211,90,.1)}
+body.summer{--accent:#8de58a;--accent2:#e9c46a;--grad:linear-gradient(135deg,#b4f07a,#2fb97b);--halo:#24512f;--maphalo:#1d4a30;--mapend:#07140d;--bg:#09150e;--bg2:#10241a;--text:#f1f7ea;--mute:#9db79d;--faint:#6a8a6c;--line:rgba(190,255,190,.11);--glass:rgba(190,255,190,.05);--glass2:rgba(190,255,190,.09);--accentbg:rgba(141,229,138,.1);--land:#173a22;--landline:#3f7a4c;--grat:#1a3a26}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.07) 1.2px,transparent 1.8px),radial-gradient(rgba(150,210,255,.05) 1px,transparent 1.6px);background-size:46px 46px,29px 29px;background-position:0 0,13px 17px;transition:opacity .4s}
+body.summer::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120' viewBox='0 0 220 120' fill='none' stroke='%2398e6a0' stroke-opacity='.07' stroke-width='1.2'%3E%3Cpath d='M0 20c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 46c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 72c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 98c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3C/svg%3E");background-size:220px 120px}
+body.summer header{background:linear-gradient(180deg,rgba(16,36,26,.94),rgba(9,21,14,.65))}
 button{font-family:inherit}
 svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 2px}
 
@@ -1430,8 +1433,8 @@ let showAll = false;
 function mapInit(){
   gGrat = mk("g", {}); gLand = mk("g", {}); gDots = mk("g", {}); gLbl = mk("g", {"pointer-events":"none"});
   svg.append(gGrat, gLand, gDots, gLbl);
-  for (let lon = -10; lon <= 30; lon += 5) gGrat.append(mk("line", {x1:px(lon), y1:py(30), x2:px(lon), y2:py(58), stroke:"#17304f", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
-  for (let lat = 32; lat <= 56; lat += 4) gGrat.append(mk("line", {x1:px(-14), y1:py(lat), x2:px(30), y2:py(lat), stroke:"#17304f", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
+  for (let lon = -10; lon <= 30; lon += 5) gGrat.append(mk("line", {x1:px(lon), y1:py(30), x2:px(lon), y2:py(58), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
+  for (let lat = 32; lat <= 56; lat += 4) gGrat.append(mk("line", {x1:px(-14), y1:py(lat), x2:px(30), y2:py(lat), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
   buildDots(); fit(); loadLand();
   new ResizeObserver(() => { const rc = svg.getBoundingClientRect(); if (rc.width) { vb.h = vb.w * rc.height / rc.width; applyVB(); } }).observe(svg);
   $("zin").onclick = () => zoomAt(0.6, null); $("zout").onclick = () => zoomAt(1 / 0.6, null); $("zfit").onclick = fit;
@@ -1576,7 +1579,7 @@ function drawLand(geo){
     polys.forEach((poly, pi) => poly.forEach((rg, ri) => { d += ring((enc && typeof rg === "string") ? decodePoly(rg, offs[pi][ri], scl) : rg); }));
   });
   if (!d) { $("mapnote").textContent = "Mapa bez obrysów państw"; return; }
-  gLand.append(mk("path", {d, fill:"#12294a", stroke:"#2b4c7c", "stroke-width":1, "vector-effect":"non-scaling-stroke", "stroke-linejoin":"round"}));
+  gLand.append(mk("path", {d, style:"fill:var(--land);stroke:var(--landline)", "stroke-width":1, "vector-effect":"non-scaling-stroke", "stroke-linejoin":"round"}));
 }
 
 /* ---------- zakładki i tryb ---------- */
