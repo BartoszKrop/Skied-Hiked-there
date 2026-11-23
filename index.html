@@ -351,8 +351,8 @@ body.spl #splash{display:flex}#splash.out{opacity:0;pointer-events:none}
 
 /* wyjazdy: porządki */
 .tfold .tdel{opacity:.85!important;font-size:15px;padding:4px 6px;cursor:pointer}
-.tctl{display:flex;gap:6px;align-items:center;margin-top:8px}
-.tctl .tdaysel{width:auto;max-width:44%;min-width:0;padding:5px 8px;font-size:12px;flex:1 1 auto}.tctl .tvg,.tctl button{flex:none}
+.tctl{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.tctl .tdaysel{width:auto;max-width:44%;min-width:96px;padding:5px 8px;font-size:12px;flex:1 1 auto}.tctl .tvg,.tctl button{flex:none}
 .tctl .tdx{margin-left:auto}
 .tvg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .tvg .tvote{border:0;border-radius:0}.tvg .tvote+.tvote{border-left:1px solid var(--line)}
@@ -392,28 +392,33 @@ body.summer.light{--ctryf:rgba(210,96,26,.17);--ctrys:rgba(210,96,26,.5)}
 .btn{min-height:40px}.btn.sm{min-height:34px}
 .btn .ic{margin-right:2px}
 
-/* styl: płaskie sekcje, typografia zamiast ramek */
-body.light .view .card,body.light .item,body.light .tfold,body.light .tday{background:none}
+/* styl: płaskie sekcje, delikatne kafelki tam, gdzie pomagają */
+body{--soft:rgba(255,255,255,.045);--softb:rgba(255,255,255,.07)}
+body.light{--soft:rgba(10,30,70,.04);--softb:rgba(10,30,70,.08)}
+body.summer.light{--soft:rgba(80,50,10,.045);--softb:rgba(80,50,10,.09)}
 .view .card{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:18px 0 6px;margin-bottom:4px;box-shadow:none;backdrop-filter:none}
-.view .card:first-child,.big .card:first-child{border-top:0}
+.view .card:first-child{border-top:0}
 .view .card h3{font-size:17px;letter-spacing:.07em}
 .item{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:12px 2px;margin:0}
 .item.v,.item.p{background:none;border-color:var(--line)}
 .item:active{transform:none;background:var(--glass)}
-.big{gap:0 18px;margin-bottom:6px}
-.big .card{border-top:1px solid var(--line);padding:14px 0 10px;margin:0}
-.big .card:nth-child(-n+2){border-top:0}
-.big .n{background:none;-webkit-text-fill-color:currentColor;color:var(--text);font-family:var(--fd);font-size:34px;font-weight:700;letter-spacing:0}
+.view .big{gap:8px;margin-bottom:10px}
+.view .big .card{background:var(--soft);border:1px solid var(--softb);border-radius:14px;padding:12px 14px 10px;margin:0}
+.big .n{background:none;-webkit-text-fill-color:currentColor;color:var(--text);font-family:var(--fd);font-size:32px;font-weight:700;letter-spacing:0;line-height:1.05}
 .big .l{font-size:12.5px}
 .card table{font-size:13.5px}.card td,.card th{padding:9px 8px 9px 0}.card td.r,.card th.r{text-align:right;white-space:nowrap;padding-right:0;padding-left:8px}.card th{letter-spacing:.2px;font-size:10.5px}
-.tiles{gap:26px;margin:14px 0 6px}.tile{background:none;border:0;border-radius:0;padding:0}
-.tile b{font-family:var(--fd);font-size:26px;font-weight:700;display:block;line-height:1.1}
-.tday{background:none;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;padding:0 0 4px;margin-top:24px;overflow:visible}
-.tday .sh,.tday.t0 .sh{background:none;border:0;margin:0 0 10px;padding:14px 0 0}
-.tday.t0{border-style:solid;background:none}
-.tfold{background:none;border:0;border-top:1px solid var(--line);border-radius:0;margin-top:20px}
-.tfold>summary{padding:14px 0}.tfold[open]>summary{border-bottom:0}
-.tfold>*:not(summary){margin-left:0!important;margin-right:0!important}
+.tiles{gap:8px;margin:12px 0 6px}.tile{background:var(--soft);border:1px solid var(--softb);border-radius:13px;padding:8px 14px}
+.tile b{font-family:var(--fd);font-size:24px;font-weight:700;display:block;line-height:1.1}
+#trips .tripc,#trips .pkc{background:var(--soft)!important;border:1px solid var(--softb)!important;border-radius:14px!important;padding:14px!important;margin-bottom:8px!important}
+#trips>.card:not(.tripc):not(.pkc){background:var(--soft);border:1px solid var(--softb);border-radius:14px;padding:14px;margin-bottom:12px}
+.tday{background:var(--soft);border:1px solid var(--softb);border-radius:14px;box-shadow:none;padding:0 12px 6px;margin-top:16px;overflow:hidden}
+.tday .sh,.tday.t0 .sh{background:none;border:0;border-bottom:1px solid var(--softb);margin:0 -12px 10px;padding:12px}
+.tday.t0{border-style:dashed;background:none}
+.tfold{background:var(--soft);border:1px solid var(--softb);border-radius:14px;margin-top:14px}
+.tfold>summary{padding:13px 14px}.tfold[open]>summary{border-bottom:1px solid var(--softb)}
+.tfold>*:not(summary){margin-left:12px!important;margin-right:12px!important}
+body.light .view .card,body.light .item{background:none}
+body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){background:var(--soft)}
 .fld label{text-transform:lowercase;font-family:var(--fb);font-weight:600;font-size:12.5px;letter-spacing:0;color:var(--mute)}
 .fld label::first-letter{text-transform:uppercase}
 .tform .tft{font-family:var(--fb)}
@@ -1451,8 +1456,8 @@ function renderStats(){
   const rankCard = pick === "sz" ? szCard() : pick === "groups" ? groupsHtml() : `<div class="card">${rankBody}</div>`;
   const planned = R.filter(r => isPlan(r.id)).length;
   const cards = W
-    ? [[planned, "w planach"], [s.gdone, "kompletnych grup"], [vis.reduce((a, r) => a + visits[r.id].stays.filter(x => x.y === String(new Date().getFullYear())).length, 0), "wizyt w tym roku"], [(() => { const q = vis.filter(r => rt(r)); return q.length ? (q.reduce((a, r) => a + rt(r), 0) / q.length).toFixed(1).replace(".", ",") : "–"; })(), "średnia ocena"]]
-    : [[R.filter(r => isVis(r.id) && visits[r.id].stays.some(x => x.y === String(new Date().getFullYear()))).length, "miejsc w tym roku"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
+    ? [[s.n, "ośrodków z " + R.length], [s.countries.size, "krajów"], [s.stays, "wizyt"], [Math.round(s.km), "km tras w tych ośrodkach"], [planned, "w planach"], [s.gdone, "kompletnych grup"]]
+    : [[s.n, "miejsc z " + R.length], [s.countries.size, "krajów"], [R.filter(r => isVis(r.id) && visits[r.id].stays.some(x => x.y === String(new Date().getFullYear()))).length, "miejsc w tym roku"], [s.hikes, "zaliczonych szlaków"], [planned, "w planach"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
   $("stats").innerHTML = `
     <div class="big">${cards.map(c => `<div class="card"><div class="n">${c[0]}</div><div class="l">${c[1]}</div></div>`).join("")}</div>
     <div class="card"><h3>Rankingi</h3><select class="sel" id="rkpick">${OPTS.map(o => `<option value="${o[0]}"${o[0] === pick ? " selected" : ""}>${o[1]}</option>`).join("")}</select></div>
