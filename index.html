@@ -236,7 +236,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
   <div class="brand">
 
     <div class="mode" id="mode" role="tablist"><button data-m="w" class="on"><span class="em">❄️ </span>Skied there</button><button data-m="s"><span class="em">☀️ </span>Hiked there</button></div>
-    <div class="rt"><button id="rfbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Odśwież" title="Odśwież dane">⟳</button><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="acct" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Profil" title="Profil">👤</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button></div><i class="brk"></i>
+    <div class="rt"><button id="rfbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Odśwież" title="Odśwież dane">⟳</button><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="acct" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Profil" title="Profil">👤</button></div><i class="brk"></i>
   </div>
   <div class="hstats" id="hstats"></div>
   <div class="prog"><i id="progBar"></i></div>
@@ -930,11 +930,11 @@ function accountCard(){
        <button class="btn lcl" id="lsend" style="margin-top:8px;font-size:13px">albo wyślij link na e-mail</button>
        <div class="small" id="lmsg" style="margin-top:10px;text-align:center;min-height:16px"></div>
        <div class="small" style="margin-top:6px;text-align:center">Otwórz link na tym samym urządzeniu. Jeśli konto jest puste, dołączą do niego dane wpisane w tej przeglądarce.</div>
-       <button class="btn lcl" id="lclose">Zamknij</button>`) + `</div>`;
+       <button class="btn lcl" id="lclose">Zamknij</button>`) + `<button class="btn lcl" id="lset" style="margin-top:8px">⚙ Ustawienia</button></div>`;
 }
 function updateAcct(){
   const b = $("acct"); if (!b) return;
-  if (!SBC || !window.supabase) { b.style.display = "none"; return; }
+  if (!SBC || !window.supabase) { b.style.display = ""; b.textContent = "⚙"; b.title = "Ustawienia"; b.setAttribute("aria-label", "Ustawienia"); return; }
   b.style.display = ""; const on = store.mode === "sb" || !!store.authed;
   b.textContent = "👤"; b.title = on ? "Profil: " + (store.name || store.email) : "Zaloguj się"; b.setAttribute("aria-label", b.title); b.classList.toggle("on", on); { const rb = $("rfsh"); if (rb) rb.style.display = store.mode === "sb" ? "" : "none"; }
 }
@@ -1185,7 +1185,7 @@ function openAddPlace(sg){
 function openFriends(){ ovBox().innerHTML = friendsCard(); bindFriends(); }
 function openAccount(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
-  ov.innerHTML = accountCard(); ov.style.display = "flex"; bindAccount();
+  ov.innerHTML = accountCard(); ov.style.display = "flex"; bindAccount(); { const ls = $("lset"); if (ls) ls.onclick = () => { closeAccount(); openSettings(); }; }
 }
 function closeAccount(){ const ov = $("acctov"); if (ov) ov.style.display = "none"; }
 function bindAccount(){
@@ -1998,7 +1998,7 @@ if (isIOS()) scheduleInstBar();
 $("rfbtn").onclick = async () => { const b = $("rfbtn"); if (b.dataset.busy) return; b.dataset.busy = "1"; b.style.opacity = ".5";
   try { if (RO) await loadRO(); else if (store.mode === "sb") { await refreshSb(); await loadExtra(); await loadShared(true); if ($("v-wyjazdy").classList.contains("on")) renderTrips(); } else { await loadExtra(); location.reload(); } } catch(e){}
   b.style.opacity = ""; delete b.dataset.busy; };
-$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
+$("acct").onclick = () => (SBC && window.supabase) ? openAccount() : openSettings(); updateAcct(); $("frbtn").onclick = openFriends; initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
