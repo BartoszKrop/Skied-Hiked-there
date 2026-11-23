@@ -1689,7 +1689,7 @@ function renderTrips(){
     <div class="small" style="margin:4px 0;font-weight:700">Dzielimy na:</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">${ppl.map(p => `<label style="display:flex;gap:5px;align-items:center;font-size:14px"><input type="checkbox" class="tcsp" value="${esc(p)}" checked> @${esc(p)}</label>`).join("")}</div>` : ""}
     <button class="btn sm pri" id="tcadd">Dodaj wydatek</button></details>`;
   /* pakowanie */
-  const pkFor = x => (x.for && x.for.length) ? x.for.filter(p => ppl.includes(p)) : (x.who && ppl.includes(x.who) ? [x.who] : ppl), pkOk = (x, u) => !!(x.okb && x.okb[u]);
+  const pkFor = x => (x.for && x.for.length) ? x.for.filter(p => ppl.includes(p)) : (x.who && ppl.includes(x.who) ? [x.who] : ppl), pkOk = (x, u) => x.okb ? !!x.okb[u] : !!x.ok;
   const pkDone = x => shared ? (pkFor(x).length > 0 && pkFor(x).every(u => pkOk(x, u))) : !!x.ok;
   const myPk = shared ? t.pack.filter(x => pkFor(x).includes(me)) : [];
   const packHtml = `<details class="tpd" ${t.pack.length ? "open" : ""} style="margin-top:6px"><summary class="small" style="font-weight:700;cursor:pointer;padding:8px 2px">🎒 Do zabrania${t.pack.length ? " · " + t.pack.filter(pkDone).length + "/" + t.pack.length + (shared ? " gotowe" : "") : ""} ▾</summary>
