@@ -199,6 +199,7 @@ select.sel{width:100%;background:var(--glass2);border:1px solid var(--line);colo
 .hike p{margin:2px 0 5px;color:var(--mute);font-size:12.5px}.hike a{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600}
 .hike .tick{margin-top:2px}.tk2{display:flex;flex-direction:column;gap:6px}.tick.pon{background:var(--warn);border-color:var(--warn);color:#2b1d05}.hike.planned{border-color:rgba(255,198,92,.45);background:linear-gradient(90deg,rgba(255,198,92,.08),var(--glass) 60%)}
 .szrow{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:6px 0 8px;padding:8px 10px;border-radius:12px;background:rgba(255,198,92,.07);border:1px solid rgba(255,198,92,.22);font-size:12.5px;color:#ffd99a}
+.szc{border:1px solid rgba(255,198,92,.5);background:none;color:#ffd99a;border-radius:999px;padding:3px 11px;font-weight:700;font-size:13px;cursor:pointer}.szc.on{background:rgba(255,198,92,.22)}
 .szb{border:1px solid rgba(255,198,92,.5);background:none;color:#ffd99a;border-radius:999px;padding:5px 11px;font-weight:700;font-size:12px;cursor:pointer}.szb.on{background:rgba(255,198,92,.22)}
 .szs button{background:none;border:0;font-size:22px;color:#4b4132;cursor:pointer;padding:0 1px;line-height:1}.szs button.on{color:var(--warn)}
 #shareov{position:fixed;inset:0;z-index:200;background:rgba(3,8,16,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:14px}
@@ -1296,6 +1297,7 @@ function setHikeRating(i, n){
   if (v.hr[i] === n) delete v.hr[i]; else v.hr[i] = n;
   scheduleSave(); renderAll(); renderSheet();
 }
+let szOpenId = null;
 function toggleSz(sk){
   if (!visits[curId]) visits[curId] = newEntry("v");
   const v = visits[curId]; v.s = "v"; v.sz = v.sz || {};
@@ -1330,9 +1332,10 @@ function renderSheet(){
   const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b></div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
   const sks0 = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
   const sks = RO ? sks0.filter(sk => v && v.sz && v.sz[sk]) : sks0;
-  const szsec = !sks.length ? "" : (v && v.s === "v"
-    ? `<div class="sect"><div class="sh"><b>Szarlotki w schroniskach</b></div>${sks.map(sk => { const z = v.sz && v.sz[sk]; return `<div class="szrow"><span style="flex:1;min-width:140px">${esc(sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; }).join("")}</div>`
-    : `<div class="small" style="margin:14px 2px">Po zaznaczeniu „Byłem” możesz tu ocenić szarlotki w schroniskach (${sks.length}).</div>`);
+  const szList = () => sks.map(sk => { const z = v.sz && v.sz[sk]; return `<div class="szrow"><span style="flex:1;min-width:140px">${esc(sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; }).join("");
+  const eaten = v && v.sz ? Object.keys(v.sz).filter(k => sks.includes(k)).length : 0;
+  const szsec = (RO && sks.length && v && v.s === "v") ? `<div class="sect"><div class="sh"><b>Szarlotki w schroniskach</b></div>${szList()}</div>` : "";
+  const szchip = (!RO && sks.length && v && v.s === "v") ? `<div class="fld" style="margin:2px 0 8px"><button class="szc ${eaten ? "on" : ""}" id="szchip" title="Szarlotka w schronisku">🥧 ${eaten ? eaten + " ✓" : "?"}</button>${szOpenId === curId ? `<div style="margin-top:6px">${szList()}</div>` : ""}</div>` : "";
   let body = "", top = "";
   if (!v) {
     top = `<div class="two" style="margin:4px 0 12px"><button class="btn ok" id="sadd">✓ Byłem</button><button class="btn warn" id="splan">📅 Planuję</button></div>`;
@@ -1347,7 +1350,7 @@ function renderSheet(){
             <button class="x ${armedStay===i?"arm":""}" data-del="${i}">${armedStay===i?"Usunąć?":"✕"}</button></div>`).join("") : `<div class="small">${W ? "Jeszcze bez wizyt. Dodaj wizytę (rok, opcjonalnie miesiąc)." : "Jeszcze bez roku. Dodaj rok (i opcjonalnie miesiąc), w którym tu byłeś."}</div>`}
       </div>
       <div class="fld"><label>OCENA (GWIAZDKI)</label><div class="stars" id="sstars">${[1,2,3,4,5].map(i => `<button data-i="${i}" class="${(v.r||0)>=i?"on":""}">★</button>`).join("")}</div></div>
-      `;
+      ${szchip}`;
     } else {
       mid = "";
     }
@@ -1378,6 +1381,7 @@ function renderSheet(){
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
   document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
+  { const ch = $("szchip"); if (ch) ch.onclick = () => { szOpenId = szOpenId === curId ? null : curId; renderSheet(); }; }
   document.querySelectorAll("#sheet .hs button").forEach(b => b.onclick = () => setHikeRating(+b.dataset.h, +b.dataset.i));
   document.querySelectorAll("#sheet .szs:not(.hs) button").forEach(b => b.onclick = () => setSzRating(b.dataset.sk, +b.dataset.i));
   if (!v) { $("sadd").onclick = () => { setStatus(curId, "v"); renderSheet(); }; $("splan").onclick = () => { setStatus(curId, "p"); renderSheet(); }; return; }
