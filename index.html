@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Skied &amp; Hiked There – gdzie byłem na nartach i w górach</title>
 <meta name="description" content="Zaznacz ośrodki narciarskie i górskie szlaki, w których byłeś. Mapa, tier lista, plany i podsumowanie sezonu.">
 <meta property="og:title" content="Skied &amp; Hiked There">
@@ -72,6 +72,7 @@ nav button{flex:1;background:none;border:0;color:var(--faint);padding:7px 0 5px;
 nav button.on{color:var(--accent);background:var(--accentbg)}
 
 /* mapa */
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}@media(hover:none){input,select,textarea{font-size:16px!important}}
 #mapwrap{position:absolute;inset:0;touch-action:none;background:radial-gradient(ellipse at 50% 35%,var(--maphalo) 0%,var(--mapend) 70%)}
 #map{width:100%;height:100%;display:block;touch-action:none;user-select:none}
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:8px}
@@ -1321,6 +1322,9 @@ function mapInit(){
   bindMapGestures();
 }
 let showNames = true; try { showNames = localStorage.getItem("skibeen.names") !== "0"; } catch(e){}
+["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => { if (!e.target.closest || !e.target.closest("#mapwrap")) e.preventDefault(); }, {passive:false}));
+document.addEventListener("wheel", e => { if (e.ctrlKey && !(e.target.closest && e.target.closest("#mapwrap"))) e.preventDefault(); }, {passive:false});
+document.addEventListener("touchmove", e => { if (e.touches && e.touches.length > 1 && !(e.target.closest && e.target.closest("#mapwrap"))) e.preventDefault(); }, {passive:false});
 function buildDots(){
   gDots.replaceChildren(); gLbl.replaceChildren(); dots = [];
   R.forEach(r => {
