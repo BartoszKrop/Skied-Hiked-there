@@ -233,7 +233,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
     <div id="mapwrap">
       <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="zfit" aria-label="Cała Europa" style="font-size:16px">⌂</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button></div>
-      <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
+      <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="card" style="text-align:center;max-width:290px"><h3>Twoja mapa jest pusta</h3><div class="sub">Dodaj miejsca z listy: dotknij kółka ✓ przy miejscu, w którym byłeś, albo wyszukaj i oznacz plan. Pojawią się tu na mapie.</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
       <div class="legend"><span><i style="background:var(--ok)"></i>byłem</span><span><i style="background:var(--warn)"></i>planuję</span><span><i style="background:#7aa8ff"></i>jeszcze nie</span></div>
       <div class="note" id="mapnote"></div>
@@ -245,6 +245,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
       <input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off">
       <div class="row2"><div class="seg" id="fstat"><button data-v="all" class="on">Wszystkie</button><button data-v="yes">Byłem</button><button data-v="plan">Planuję</button><button data-v="no">Nie byłem</button></div></div>
       <div class="row2"><select id="fcountry"></select><select id="fsort"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="p">Priorytet planów</option></select></div>
+      <div class="row2" id="frow3"><select id="fgroup"></select></div>
       <div class="row2" id="frow2"><select id="fminkm"><option value="0">Wielkość: dowolna</option><option value="30">od 30 km tras</option><option value="50">od 50 km</option><option value="100">od 100 km</option><option value="150">od 150 km</option><option value="200">od 200 km</option><option value="300">od 300 km</option></select><select id="fminel"><option value="0">Wysokość: dowolna</option><option value="1000">powyżej 1000 m</option><option value="1500">powyżej 1500 m</option><option value="2000">powyżej 2000 m</option><option value="2500">powyżej 2500 m</option><option value="3000">powyżej 3000 m</option></select></div>
     </div>
     <div class="small" id="fcount" style="margin:8px 4px 2px"></div>
@@ -252,15 +253,13 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
   </section>
   <section class="view" id="v-ranking"><div class="pad tiers" id="tiers"></div></section>
   <section class="view" id="v-wyjazdy"><div class="pad" id="trips"></div></section>
-  <section class="view" id="v-grupy"><div class="pad" id="groups"></div></section>
-  <section class="view" id="v-statystyki"><div class="pad" id="stats"></div></section>
+    <section class="view" id="v-statystyki"><div class="pad" id="stats"></div></section>
 </main>
 <nav id="nav">
   <button data-t="mapa" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4z"/><path d="M9 4v13M15 7v13"/></svg>Mapa</button>
   
   <button data-t="ranking"><svg class="i" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a2 2 0 0 0 0 4h3M16 6h3a2 2 0 0 1 0 4h-3M12 13v4M9 20h6M10 17h4"/></svg>Ranking</button>
   <button data-t="wyjazdy" style="display:none"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V8l4-3 4 3v12M12 20V12l4-3 4 3v8M2 20h20"/></svg>Wyjazdy</button>
-  <button data-t="grupy"><svg class="i" viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg>Grupy</button>
   <button data-t="statystyki"><svg class="i" viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>Staty</button>
 </nav>
 <div id="sheetbg"></div>
@@ -595,20 +594,24 @@ function renderHeader(){
 }
 
 /* ---------- lista ---------- */
-let statRank = {w:"visits", s:"hikerate"}, fStat = "all", fCountry = "", fSort = "k", fQ = "", fMinKm = 0, fMinEl = 0;
+let statRank = {w:"visits", s:"hikerate"}, fStat = "all", fCountry = "", fSort = "k", fQ = "", fMinKm = 0, fMinEl = 0, fGroup = "";
+const passF = r => (fStat==="all" || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id])) && (!fCountry || r.c.split(",").includes(fCountry)) && (!fMinKm || r.k >= fMinKm) && (!fMinEl || (r.e || 0) >= fMinEl) && (!fGroup || !G[+fGroup] || G[+fGroup].m.includes(r.id));
+const filtN = () => (fStat !== "all") + !!fCountry + !!fGroup + !!fMinKm + !!fMinEl;
 function buildCountrySelect(){
   const cs = {}; R.forEach(r => r.c.split(",").forEach(c => cs[c] = (cs[c]||0) + 1));
   $("fcountry").innerHTML = `<option value="">Wszystkie kraje</option>` +
     Object.keys(cs).sort((a,b)=>cname(a).localeCompare(cname(b),"pl")).map(c => `<option value="${c}">${flag(c)} ${esc(cname(c))} (${cs[c]})</option>`).join("");
 }
+function buildGroupSelect(){ $("fgroup").innerHTML = `<option value="">Wszystkie grupy / domeny</option>` + G.map((g, i) => g.m.length >= 2 ? `<option value="${i}">${esc(g.n)}</option>` : "").join(""); $("fgroup").value = fGroup; $("frow3").style.display = MODE === "w" && G.length ? "" : "none"; }
 function setFStat(v){ fStat = v; [...$("fstat").children].forEach(x => x.classList.toggle("on", x.dataset.v === v)); }
 function initListControls(){
-  buildCountrySelect();
+  buildCountrySelect(); buildGroupSelect();
+  $("fgroup").addEventListener("change", e => { fGroup = e.target.value; renderList(); mapRefresh(); });
   $("q").addEventListener("input", e => { fQ = norm(e.target.value.trim()); renderList(); });
-  $("fcountry").addEventListener("change", e => { fCountry = e.target.value; renderList(); });
+  $("fcountry").addEventListener("change", e => { fCountry = e.target.value; renderList(); mapRefresh(); });
   $("fsort").addEventListener("change", e => { fSort = e.target.value; renderList(); });
-  $("fminkm").addEventListener("change", e => { fMinKm = +e.target.value; renderList(); });
-  $("fminel").addEventListener("change", e => { fMinEl = +e.target.value; renderList(); });
+  $("fminkm").addEventListener("change", e => { fMinKm = +e.target.value; renderList(); mapRefresh(); });
+  $("fminel").addEventListener("change", e => { fMinEl = +e.target.value; renderList(); mapRefresh(); });
   $("fstat").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
     setFStat(b.dataset.v);
@@ -623,10 +626,7 @@ function initListControls(){
   });
 }
 function renderList(){
-  let a = R.filter(r =>
-    (fStat==="all" || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id])) &&
-    (!fCountry || r.c.split(",").includes(fCountry)) && (!fQ || r.s.includes(fQ)) &&
-    (!fMinKm || r.k >= fMinKm) && (!fMinEl || (r.e || 0) >= fMinEl));
+  let a = R.filter(r => passF(r) && (!fQ || r.s.includes(fQ)));
   const pr = id => (visits[id] && visits[id].s === "p") ? visits[id].pr : -1;
   if (fSort==="k") a.sort((x,y)=>y.k-x.k);
   else if (fSort==="n") a.sort((x,y)=>x.n.localeCompare(y.n,"pl"));
@@ -713,10 +713,10 @@ function renderTiers(){
 })();
 
 /* ---------- grupy ---------- */
-function renderGroups(){
+function groupsHtml(){
   const a = G.filter(g => g.m.length >= 2).sort((x,y)=>{
     const px = x.m.filter(isVis).length / x.m.length, py = y.m.filter(isVis).length / y.m.length; return (py - px) || (y.k - x.k); });
-  $("groups").innerHTML = `<div class="hint">Duże domeny narciarskie. Liczą się ośrodki z Twojej listy należące do grupy.</div>` +
+  return `<div class="hint">Duże domeny narciarskie. Liczą się ośrodki z Twojej listy należące do grupy.</div>` +
     a.map(g => {
       const done = g.m.filter(isVis).length, tot = g.m.length, full = done === tot;
       return `<div class="card"><h3>${full?"🏆 ":""}${esc(g.n)}</h3>
@@ -725,8 +725,7 @@ function renderGroups(){
         <div class="members">${g.m.map(id => `<button class="m ${isVis(id)?"on":""}" data-id="${esc(id)}">${esc(byId[id].n)}</button>`).join("")}</div></div>`;
     }).join("");
 }
-$("groups").addEventListener("click", e => { const b = e.target.closest(".m"); if (b) openSheet(b.dataset.id); });
-
+$("stats").addEventListener("click", e => { const b = e.target.closest(".m"); if (b) openSheet(b.dataset.id); });
 /* ---------- statystyki ---------- */
 
 /* ---------- eksport i udostępnianie ---------- */
@@ -1215,7 +1214,7 @@ function renderStats(){
   const nm = r => `${flag(r.c.split(",")[0])} ${esc(r.n)}`;
   const stars = n => n ? `<span style="color:var(--warn)">${"★".repeat(n)}</span>` : `<span class="small">bez oceny</span>`;
   const OPTS = W
-    ? [["visits", "Najczęściej odwiedzane"], ["rating", "Najwyżej oceniane"], ["km", "Największe (km tras)"], ["country", "Według kraju"], ["year", "Wizyty według roku"]]
+    ? [["visits", "Najczęściej odwiedzane"], ["rating", "Najwyżej oceniane"], ["km", "Największe (km tras)"], ["country", "Według kraju"], ["year", "Wizyty według roku"], ["groups", "Grupy (domeny narciarskie)"]]
     : [["hikerate", "Najwyżej oceniane szlaki"], ["rating", "Najwyżej oceniane miejsca"], ["hikes", "Najwięcej szlaków"], ["country", "Według kraju"], ["year", "Odwiedzone miejsca według roku"], ["sz", "Szarlotki"]];
   if (!OPTS.some(o => o[0] === statRank[MODE])) statRank[MODE] = OPTS[0][0];
   const pick = statRank[MODE];
@@ -1230,7 +1229,7 @@ function renderStats(){
   else if (pick === "hikes") rankBody = tb(["#  Miejsce", "Szlaki"], vis.filter(r => hd(r)).sort((a, b) => hd(b) - hd(a)).map((r, k) => `<tr><td>${k + 1}. ${nm(r)}</td><td class="r">${hd(r)} / ${r.hikes.length}</td></tr>`));
   else if (pick === "country") rankBody = tb(["Kraj", "Byłem", W ? "Trasy" : "Szlaki"], Object.keys(by).sort((a, b) => by[b].v - by[a].v || by[b].t - by[a].t).map(c => `<tr><td>${flag(c)} ${esc(cname(c))}</td><td class="r">${by[c].v} / ${by[c].t}</td><td class="r">${Math.round(by[c].m)}${W ? " km" : ""}</td></tr>`));
   else if (pick === "year") rankBody = tb(["Rok", W ? "Wizyty" : "Miejsca"], Object.keys(years).sort().reverse().map(y => `<tr><td>${y}</td><td class="r">${years[y]} ${W ? plur(years[y],"wizyta","wizyty","wizyt") : plur(years[y],"miejsce","miejsca","miejsc")}</td></tr>`));
-  const rankCard = pick === "sz" ? szCard() : `<div class="card">${rankBody}</div>`;
+  const rankCard = pick === "sz" ? szCard() : pick === "groups" ? groupsHtml() : `<div class="card">${rankBody}</div>`;
   const planned = R.filter(r => isPlan(r.id)).length;
   const cards = W
     ? [[s.n, "ośrodków z " + R.length], [s.countries.size, "krajów"], [s.stays, "wizyt"], [Math.round(s.km), "km tras w tych ośrodkach"], [planned, "w planach"], [s.gdone, "kompletnych grup"]]
@@ -1421,7 +1420,7 @@ function mapInit(){
   $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
   const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
   { const nb = $("znames"); const sync = () => { nb.style.opacity = showNames ? 1 : .45; nb.style.textDecoration = showNames ? "none" : "line-through"; }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
-  $("mlist").onclick = () => show("lista"); $("lback").onclick = () => show("mapa"); $("madd2").onclick = goAdd;
+  $("mfilt").onclick = openMapFilters; $("mlist").onclick = () => show("lista"); $("lback").onclick = () => show("mapa"); $("madd2").onclick = goAdd;
   bindMapGestures();
 }
 let showNames = true; try { showNames = localStorage.getItem("skibeen.names") !== "0"; } catch(e){}
@@ -1442,7 +1441,7 @@ function buildDots(){
 }
 const marked = id => isVis(id) || isPlan(id);
 function shownBounds(){
-  let pts = dots.filter(d => showAll || marked(d.r.id));
+  let pts = dots.filter(d => filtN() ? passF(d.r) : (showAll || marked(d.r.id)));
   if (!pts.length) pts = dots;
   const xs = pts.map(d => px(d.r.x)), ys = pts.map(d => py(d.r.y)), pad = 1.2;
   return {x0: Math.min(...xs) - pad, x1: Math.max(...xs) + pad, y0: Math.min(...ys) - pad, y1: Math.max(...ys) + pad};
@@ -1457,7 +1456,7 @@ function applyVB(){
   svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
   const s = scale(), z = s / ((svg.getBoundingClientRect().width || 360) / (base.x1 - base.x0));
   dots.forEach(d => {
-    const id = d.r.id, v = isVis(id), pl = isPlan(id), sel = id === curId, on = v || pl, show = showAll || on || sel;
+    const id = d.r.id, v = isVis(id), pl = isPlan(id), sel = id === curId, on = v || pl, show = filtN() ? (passF(d.r) || sel) : (showAll || on || sel);
     const col = v ? "#38e0a0" : pl ? "#ffc65c" : "#7aa8ff";
     d.c.style.display = show ? "" : "none"; d.h.style.display = show ? "" : "none";
     d.c.setAttribute("r", (on ? d.rad + 1.5 : d.rad) / s);
@@ -1478,7 +1477,26 @@ function updateMapUI(){
   if (show && !emptyShown) { emptyShown = true; try { localStorage.setItem("skibeen.emptyseen", "1"); } catch(e){} }
   if (n) emptyShown = false;
   $("mapempty").style.display = show ? "flex" : "none";
-  $("mall").textContent = showAll ? "Ukryj nieoznaczone" : "Pokaż wszystkie";
+  $("mall").textContent = showAll ? "Ukryj nieoznaczone" : "Pokaż wszystkie"; $("mall").style.display = filtN() ? "none" : ""; $("mfilt").textContent = "⚙ Filtry" + (filtN() ? " · " + filtN() : ""); $("mfilt").classList.toggle("pri", !!filtN());
+}
+function openMapFilters(){
+  const W = MODE === "w", cnt = () => R.filter(passF).length;
+  const draw = () => {
+    ovBox().innerHTML = `<div class="card" style="width:min(460px,94vw)"><h3>Filtry mapy</h3>
+      <div class="fld"><label>STATUS</label><div class="seg" id="mfs">${[["all", "Wszystkie"], ["yes", "Byłem"], ["plan", "Planuję"], ["no", "Nie byłem"]].map(([v, l]) => `<button data-v="${v}" class="${fStat === v ? "on" : ""}">${l}</button>`).join("")}</div></div>
+      <div class="fld"><label>KRAJ</label><select id="mfc" class="sel">${$("fcountry").innerHTML}</select></div>
+      ${W ? `<div class="fld"><label>GRUPA / DOMENA</label><select id="mfg" class="sel">${$("fgroup").innerHTML}</select></div>
+      <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>WIELKOŚĆ</label><select id="mfk" class="sel">${$("fminkm").innerHTML}</select></div><div class="fld" style="flex:1"><label>WYSOKOŚĆ</label><select id="mfe" class="sel">${$("fminel").innerHTML}</select></div></div>` : ""}
+      <div style="display:flex;gap:8px;margin-top:6px"><button class="btn" id="mfclr" style="flex:1">Wyczyść</button><button class="btn pri" id="mfok" style="flex:2">Pokaż (${cnt()})</button></div></div>`;
+    $("mfc").value = fCountry; if (W) { $("mfg").value = fGroup; $("mfk").value = String(fMinKm); $("mfe").value = String(fMinEl); }
+    const upd = () => { renderList(); mapRefresh(); setTimeout(() => { fit(); }, 0); $("mfok").textContent = "Pokaż (" + cnt() + ")"; };
+    $("mfs").onclick = e => { const b = e.target.closest("button"); if (!b) return; setFStat(b.dataset.v); [...$("mfs").children].forEach(x => x.classList.toggle("on", x === b)); upd(); };
+    $("mfc").onchange = e => { fCountry = e.target.value; $("fcountry").value = fCountry; upd(); };
+    if (W) { $("mfg").onchange = e => { fGroup = e.target.value; $("fgroup").value = fGroup; upd(); }; $("mfk").onchange = e => { fMinKm = +e.target.value; $("fminkm").value = String(fMinKm); upd(); }; $("mfe").onchange = e => { fMinEl = +e.target.value; $("fminel").value = String(fMinEl); upd(); }; }
+    $("mfclr").onclick = () => { fCountry = ""; fGroup = ""; fMinKm = 0; fMinEl = 0; $("fcountry").value = ""; $("fgroup").value = ""; $("fminkm").value = "0"; $("fminel").value = "0"; setFStat("all"); upd(); draw(); };
+    $("mfok").onclick = closeAccount;
+  };
+  draw();
 }
 function mapRefresh(){ if (dots.length) { applyVB(); updateMapUI(); } }
 function zoomAt(f, ctr){
@@ -1544,7 +1562,8 @@ function drawLand(geo){
 
 /* ---------- zakładki i tryb ---------- */
 function show(t){
-  if (!["mapa","lista","ranking","grupy","statystyki","wyjazdy"].includes(t) || ((t === "grupy" || t === "ranking") && MODE !== "w") || (t === "wyjazdy" && RO)) t = "mapa";
+  if (t === "grupy") { statRank.w = "groups"; t = "statystyki"; if (MODE === "w") renderStats(); }
+  if (!["mapa","lista","ranking","grupy","statystyki","wyjazdy"].includes(t) || (t === "ranking" && MODE !== "w") || (t === "wyjazdy" && RO)) t = "mapa";
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t));
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === (t === "lista" ? "mapa" : t)));
   try { if (!RO && location.hash !== "#" + t && !/access_token|error_description/.test(location.hash)) history.replaceState(null, "", "#" + t); } catch(e){}
@@ -1559,16 +1578,15 @@ function setMode(m){
   const T = m === "w" ? WINTER : SUMMER; R = T.R; G = T.G; byId = m === "w" ? byIdW : byIdS;
   document.body.classList.toggle("summer", m === "s"); $("swt").dataset.m = m;
   document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
-  document.querySelector('#nav button[data-t="grupy"]').style.display = m === "w" ? "" : "none";
-  document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
+    document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
   document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
   if (tripOpen) { const tt = allTrips().find(x => x.id === tripOpen); if (!tt || (tt.mode || "s") !== m) tripOpen = null; } packOpen = null; if ($("v-wyjazdy").classList.contains("on")) renderTrips();
   try { localStorage.setItem(LSM, m); } catch(e){}
-  fCountry = ""; fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
+  fCountry = ""; fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
   $("fsort").options[0].textContent = m === "w" ? "Najwięksi" : "Najwięcej szlaków";
-  buildCountrySelect(); showAll = false; buildDots(); renderAll();
+  buildCountrySelect(); buildGroupSelect(); showAll = false; buildDots(); renderAll();
   const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
-  if (cur === "v-grupy" || cur === "v-ranking") show("mapa"); else if (cur !== "v-wyjazdy") fit();
+  if (cur === "v-ranking") show("mapa"); else if (cur !== "v-wyjazdy") fit();
 }
 document.querySelectorAll(".brand .tg").forEach(el => el.addEventListener("click", () => setMode(MODE === "w" ? "s" : "w")));
 $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); });
@@ -1901,7 +1919,7 @@ function pickTripFor(pid, hn){
   $("tpnew").onclick = () => { const x = {id: newTripId(), name: "Nowy wyjazd", from: "", to: "", note: "", items: [], dn: {}, costs: [], pack: [], cur: "zł", mode: MODE}; TRIPS.unshift(x); add(x); closeAccount(); tripOpen = x.id; show("wyjazdy"); };
 }
 
-function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); renderTrips(); mapRefresh(); }
+function renderAll(){ renderHeader(); renderList(); renderTiers(); renderStats(); renderTrips(); mapRefresh(); }
 
 document.addEventListener("click", e => { if (e.target && e.target.id === "sgbtn") openSuggest(fQ ? ($("q").value || "") : ""); });
 /* instalacja jako aplikacja (PWA) */
