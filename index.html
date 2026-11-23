@@ -342,6 +342,7 @@ const esc = s => String(s==null?"":s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<
 const norm = s => String(s||"").toLowerCase().replace(/ł/g,"l").normalize("NFD").replace(/[̀-ͯ]/g,"");
 [...WINTER.R, ...SUMMER.R].forEach(r => { r.s = norm([r.full, r.n, r.l, r.r, r.c.split(",").map(cname).join(" ")].join(" ")); });
 /* miejsca dodane z panelu admina (Supabase: extra_places) */
+const liveN = r => (r.hikes || []).filter(h => !h.del).length;
 function applyExtra(rows){
   let n = 0;
   const arr = (rows || []).slice().sort((p, q) => (String(p.id).startsWith("ovr:") ? 1 : 0) - (String(q.id).startsWith("ovr:") ? 1 : 0));
@@ -351,6 +352,7 @@ function applyExtra(rows){
       if (d.hidden) { const T = w ? WINTER : SUMMER, ix = T.R.indexOf(r); if (ix >= 0) T.R.splice(ix, 1); delete map[r.id]; (T.G || []).forEach(g => { if (g.m) g.m = g.m.filter(i => map[i]); }); n++; return; }
       if (d.n) { r.n = d.n; r.full = d.n; } if (w) { if (d.k != null && d.k !== "") r.k = +d.k; if (d.e != null && d.e !== "") r.e = +d.e; if (d.w) r.w = d.w; r.auto = false; }
       if (!w && Array.isArray(d.addHikes)) { r.hikes = r.hikes || []; d.addHikes.forEach(h => { if (h && h.n && !r.hikes.some(z => z.n === h.n)) r.hikes.push(Object.assign({}, h, {added: true})); }); r.k = r.hikes.length; }
+      if (!w && Array.isArray(d.delHikes) && r.hikes) { r.hikes.forEach(h => { if (d.delHikes.includes(h.n)) h.del = true; }); r.k = r.hikes.filter(h => !h.del).length; }
       r.s = norm([r.full, r.n, r.l, r.r, String(r.c).split(",").map(cname).join(" ")].join(" ")); n++; return; }
     if (!x.id || map[x.id] || !d.n) return;
     const c = String(d.c || "").toUpperCase(), lat = +d.y, lon = +d.x;
@@ -624,14 +626,14 @@ function renderList(){
     if (v && v.s === "v") {
       const n = v.stays.length;
       extra = " · " + (W ? (n ? n + " " + plur(n,"wizyta","wizyty","wizyt") + (lastYear(r.id) ? ", ostatnio " + lastYear(r.id) : "") : "byłem") : (() => { const ys = [...new Set(v.stays.map(x => x.y).filter(Boolean))].sort(); return ys.length ? "byłem: " + ys.join(", ") : "byłem"; })()) + (v.t ? " · tier " + v.t : "");
-      if (!W) { const dn = Object.keys(v.done).length; if (dn) extra += " · " + dn + "/" + r.hikes.length + " szlaków"; }
+      if (!W) { const dn = Object.keys(v.done).length; if (dn) extra += " · " + dn + "/" + liveN(r) + " szlaków"; }
     } else if (v && v.s === "p") extra = " · planuję" + (v.pr ? " · priorytet " + v.pr : "") + (v.pd ? " · " + esc(fmtPd(v.pd)) : "");
     { const q = rateOf(r.id); if (q && q.n) extra += " · ★ " + fmtAvg(q.a); }
     if (!(v && v.s === "v")) { const fa = friendsAt(r.id); if (fa.length) extra += " · 👥 " + fa.slice(0, 3).map(x => "@" + esc(x.u)).join(", ") + (fa.length > 3 ? " +" + (fa.length - 3) : ""); }
     return `<div class="item ${v ? (v.s==="v"?"v":"p") : ""}" data-id="${esc(r.id)}">
       <div class="flg">${flag(r.c.split(",")[0])}</div>
       <div class="t"><b>${esc(r.n)}</b><small>${esc(r.c.split(",").map(cname).join(", "))}${r.g.length ? " · " + esc(r.g[r.g.length-1]) : ""}${W && r.e ? " · do " + r.e + " m" : ""}${extra}</small></div>
-      <div class="kmb"><b>${W ? Math.round(r.k) : r.hikes.length}</b>${W ? "km" : plur(r.hikes.length,"szlak","szlaki","szlaków")}</div>
+      <div class="kmb"><b>${W ? Math.round(r.k) : liveN(r)}</b>${W ? "km" : plur(liveN(r),"szlak","szlaki","szlaków")}</div>
       <button class="tick ${isVis(r.id)?"on":isPlan(r.id)?"plan":""}" aria-label="Byłem">${isPlan(r.id)?"📅":"✓"}</button>
     </div>`; }).join("") : `<div class="empty">Nic nie pasuje do filtrów.</div>`;
   if (!RO && SBC) $("list").insertAdjacentHTML("beforeend", `<div class="sugg"><button class="btn sm" id="sgbtn">+ Brakuje miejsca? Zgłoś</button></div>`);
@@ -1007,6 +1009,17 @@ function showNickPop(el, u){
     else { await setFriends(isFr ? (store.friends || []).filter(x => String(x).toLowerCase() !== lu) : [...(store.friends || []), lu]); try { await loadFriendsData(); } catch(e){} if (curId) renderSheet(); renderList(); } };
 }
 document.addEventListener("click", e => { const n = e.target.closest && e.target.closest(".nick"); if (n) { e.stopPropagation(); showNickPop(n, n.dataset.u); return; } if (!e.target.closest || !e.target.closest("#nickpop")) hideNickPop(); }, true);
+function askTosia(what){
+  const t = prompt(what + "\n\nTo nieodwracalnie zmienia dane u wszystkich. Aby potwierdzić, wpisz imię psa małymi literami:");
+  if (t === null) return false; if (t.trim() !== "tosia") { alert("Niepoprawne słowo. Nic nie zmieniono."); return false; } return true;
+}
+async function ovrApply(r, mode, mutate){
+  const oid = "ovr:" + r.id; let prev = null; try { const pv = await store.sb.from("extra_places").select("data").eq("id", oid).maybeSingle(); prev = pv && pv.data && pv.data.data; } catch(e){}
+  const data = mutate(Object.assign({}, prev || {}));
+  const dl = await store.sb.from("extra_places").delete().eq("id", oid); if (dl && dl.error) throw dl.error;
+  const ins = await store.sb.from("extra_places").insert({id: oid, mode, data}); if (ins && ins.error) throw ins.error;
+  applyExtra([{id: oid, mode, data}]); try { localStorage.removeItem("skibeen.extra"); } catch(e){}
+}
 function openAddHike(r, pre){
   const p = pre || {}, adm = !!store.admin;
   ovBox().innerHTML = `<div class="card"><h3>Dodaj szlak: ${esc(r.n)}</h3><div class="sub">${adm ? "Jako admin dodajesz od razu, bez zatwierdzania." : "Zgłoszenie trafi do zatwierdzenia."}</div>
@@ -1033,14 +1046,9 @@ function openAddHike(r, pre){
   };
 }
 async function adminHidePlace(r){
-  const typed = prompt("Usunięcie ukryje to miejsce u WSZYSTKICH użytkowników (ich zapisane wizyty zostaną w danych).\nAby potwierdzić, przepisz nazwę:\n" + r.n); if (typed === null) return;
-  if (typed.trim().toLowerCase() !== String(r.n).trim().toLowerCase()) { alert("Nazwa się nie zgadza. Nic nie usunięto."); return; }
-  if (!confirm("Na pewno usunąć: " + r.n + "?")) return;
-  const W = MODE === "w", oid = "ovr:" + r.id, data = {hidden: true, n: r.n};
-  try { const d = await store.sb.from("extra_places").delete().eq("id", oid); if (d && d.error) throw d.error;
-    const ins = await store.sb.from("extra_places").insert({id: oid, mode: W ? "w" : "s", data}); if (ins && ins.error) throw ins.error;
-    closeSheet(); applyExtra([{id: oid, mode: W ? "w" : "s", data}]); try { localStorage.removeItem("skibeen.extra"); } catch(e){} buildCountrySelect(); buildDots(); renderAll();
-    alert("Ukryto. Cofnięcie: panel admina → lista „Dodane przez panel” → Cofnij.");
+  if (!askTosia("Usunięcie miejsca: " + r.n)) return;
+  try { const ins = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: MODE, name: ("Usunięcie miejsca: " + r.n).slice(0, 120), country: "", note: ("#id:" + r.id + " · usuń miejsce").slice(0, 500)}); if (ins && ins.error) throw ins.error;
+    closeSheet(); alert("Dodano do propozycji zmian. Usunięcie zatwierdzisz w panelu admina.");
   } catch(e){ alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); }
 }
 function openEditPlace(r, pre){
@@ -1085,12 +1093,19 @@ async function openAdmin(){
   try { const ex = await store.sb.from("extra_places").select("id,mode,data"); if (!ex.error && (ex.data || []).length) { $("aex").innerHTML = `<div class="small" style="margin:10px 0 4px;font-weight:700">Dodane przez panel (${ex.data.length})</div>` + ex.data.map(x => { const ov = String(x.id).startsWith("ovr:"); return `<div class="frow"><span>${ov ? (x.data.hidden ? "🚫 ukryty: " : "✎ zmieniony: ") : ""}${esc(x.data.n)} <span class="small">${x.mode === "s" ? "lato" : "zima"}${ov ? "" : " · " + esc(x.data.c || "")}</span></span><button class="btn sm bad aexdel" data-ov="${ov ? 1 : ""}" data-id="${esc(x.id)}">${ov ? "Cofnij" : "Usuń"}</button></div>`; }).join(""); document.querySelectorAll(".aexdel").forEach(b => b.onclick = async () => { if (!confirm(b.dataset.ov ? "Cofnąć tę zmianę? Oryginalne dane wrócą po odświeżeniu strony." : "Usunąć to miejsce z bazy? Zniknie u wszystkich.")) return; b.disabled = true; const d = await store.sb.from("extra_places").delete().eq("id", b.dataset.id); if (!(d && d.error)) { try { localStorage.removeItem("skibeen.extra"); } catch(e){} b.closest(".frow").remove(); } }); } } catch(e){}
   try { const r = await store.sb.from("suggestions").select("*").order("created_at", {ascending: false}).limit(200); if (r.error) throw r.error;
     const a = r.data || [], box = $("adl");
-    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri ${/^Poprawka:/.test(x.name) ? "afix" : /^Szlak:/.test(x.name) ? "ahk" : "aadd"}" data-i="${esc(x.id)}">${/^Poprawka:/.test(x.name) ? "Zastosuj" : /^Szlak:/.test(x.name) ? "Zatwierdź" : "Dodaj"}</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
+    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri ${/^Poprawka:/.test(x.name) ? "afix" : /^Szlak:/.test(x.name) ? "ahk" : /^Usunięcie/.test(x.name) ? "adok" : "aadd"}" data-i="${esc(x.id)}">${/^Poprawka:/.test(x.name) ? "Zastosuj" : /^Szlak:/.test(x.name) ? "Zatwierdź" : /^Usunięcie/.test(x.name) ? "Usuń" : "Dodaj"}</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
     box.querySelectorAll(".afix").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i), pid = /#id:(\S+)/.exec(x.note || ""), mk = /km:\s*([\d.,]+)/i.exec(x.note || ""), me = /wys\.?:\s*(\d+)/i.exec(x.note || ""), mn = /nazwa:\s*([^·]+)/i.exec(x.note || "");
       const rr = pid && (byIdW[pid[1]] || byIdS[pid[1]]); if (!rr) { alert("Nie znaleziono tego miejsca. Popraw ręcznie lub usuń zgłoszenie."); return; }
       openEditPlace(rr, {n: mn ? mn[1].trim() : "", k: mk ? parseFloat(mk[1].replace(",", ".")) : "", e: me ? parseInt(me[1]) : "", sid: x.id}); });
     box.querySelectorAll(".ahk").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i), pid = /#id:(\S+)/.exec(x.note || ""), t = /szlak:\s*(.*)$/i.exec(x.note || ""), rr = pid && byIdS[pid[1]]; if (!rr || !t) { alert("Nie znaleziono miejsca lub szlaku."); return; }
       const q = t[1].split(";").map(z => z.trim()); const prevM = MODE; openAddHike(rr, {n: q[0], d: q[1], t: q[2], o: q.slice(3).join("; "), sid: x.id}); });
+    box.querySelectorAll(".adok").forEach(b => b.onclick = async () => { const x = a.find(y => String(y.id) === b.dataset.i), pid = /#id:(\S+)/.exec(x.note || ""), th = /usuń szlak:\s*(.*)$/i.exec(x.note || ""), isP = /usuń miejsce/i.test(x.note || "");
+      const isS = /^Usunięcie szlaku/.test(x.name), rr = pid && (isS ? byIdS[pid[1]] : (byIdW[pid[1]] || byIdS[pid[1]])); if (!rr || (isS && !th)) { alert("Nie znaleziono miejsca lub szlaku (może już usunięte). Usuń zgłoszenie."); return; }
+      if (!askTosia((isS ? "ZATWIERDZENIE usunięcia szlaku „" + th[1].trim() + "” z: " : "ZATWIERDZENIE usunięcia miejsca: ") + rr.n)) return;
+      b.disabled = true; const mode = byIdW[rr.id] ? "w" : "s";
+      try { await ovrApply(rr, mode, d => { if (isS) d.delHikes = [...(d.delHikes || []), th[1].trim()]; else { d.hidden = true; d.n = d.n || rr.n; } return d; });
+        await store.sb.from("suggestions").delete().eq("id", x.id); buildCountrySelect(); buildDots(); renderAll(); b.closest(".frow").remove();
+      } catch(e){ b.disabled = false; alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); } });
     box.querySelectorAll(".aadd").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i); openAddPlace(x); });
     box.querySelectorAll(".adel").forEach(b => b.onclick = async () => { b.disabled = true; const d = await store.sb.from("suggestions").delete().eq("id", b.dataset.id); if (!(d && d.error)) b.closest(".frow").remove(); });
   } catch(e){ $("adl").textContent = "Nie udało się wczytać: " + String((e && e.message) || e).slice(0,80); }
@@ -1196,7 +1211,7 @@ function renderStats(){
   const years = {}; vis.forEach(r => { const seen = new Set(); visits[r.id].stays.forEach(st => { const k = st.y || "bez roku"; if (W) years[k] = (years[k]||0) + 1; else if (!seen.has(k)) { seen.add(k); years[k] = (years[k]||0) + 1; } }); });
   let rankBody = "";
   if (pick === "visits") rankBody = tb(["#  Ośrodek", "Wizyty", "Ostatnio"], vis.slice().sort((a, b) => nv(b) - nv(a) || (lastYear(b.id) || "").localeCompare(lastYear(a.id) || "") || b.k - a.k).map((r, k) => `<tr><td>${k + 1}. ${nm(r)}</td><td class="r">${nv(r)}</td><td class="r">${lastYear(r.id) || "–"}</td></tr>`));
-  else if (pick === "hikerate") { const hr = []; vis.forEach(r => { const m = visits[r.id].hr || {}; Object.keys(m).forEach(i => { if (m[i] && r.hikes[i]) hr.push({h: r.hikes[i], r, v: m[i]}); }); });
+  else if (pick === "hikerate") { const hr = []; vis.forEach(r => { const m = visits[r.id].hr || {}; Object.keys(m).forEach(i => { if (m[i] && r.hikes[i] && !r.hikes[i].del) hr.push({h: r.hikes[i], r, v: m[i]}); }); });
     rankBody = tb(["#  Szlak / miejsce", "Ocena"], hr.sort((a, b) => b.v - a.v || a.h.n.localeCompare(b.h.n, "pl")).map((x, k) => `<tr><td>${k + 1}. ${esc(x.h.n)}<div class="small">${flag(x.r.c.split(",")[0])} ${esc(x.r.n)}</div></td><td class="r">${stars(x.v)}</td></tr>`)); }
   else if (pick === "rating") rankBody = tb(["#  " + (W ? "Ośrodek" : "Miejsce"), "Ocena"], vis.filter(r => rt(r)).sort((a, b) => rt(b) - rt(a) || (W ? b.k - a.k : hd(b) - hd(a))).map((r, k) => `<tr><td>${k + 1}. ${nm(r)}</td><td class="r">${stars(rt(r))}</td></tr>`));
   else if (pick === "km") rankBody = tb(["#  Ośrodek", "Trasy"], vis.slice().sort((a, b) => b.k - a.k).map((r, k) => `<tr><td>${k + 1}. ${nm(r)}</td><td class="r">${Math.round(r.k)} km</td></tr>`));
@@ -1286,7 +1301,7 @@ function renderSheet(){
   const opblock = !showOp ? "" : `<div class="sect"><div class="sh" style="justify-content:flex-start;gap:10px"><b>Opinie</b>${ratingLine(r.id)}</div><div id="opfr">${friendsHtml(r.id)}</div><div id="opsec">${opinionsHtml(r.id)}</div></div>`;
   const secOn = r.id === "h-camino";
   let lastSec = null;
-  const hikeCards = W ? "" : r.hikes.map((h, i) => {
+  const hikeCards = W ? "" : r.hikes.map((h, i) => { if (h.del) return "";
     const d = !!(v && v.done[i]), pl = !!(v && v.hp && v.hp[i]); if (RO && !d) return "";
     const onlyPlan = !!(v && v.s === "p");
     const sh = (secOn && h.s && h.s !== lastSec) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""; if (secOn && h.s) lastSec = h.s;
@@ -1294,7 +1309,7 @@ function renderSheet(){
     const noteUi = RO ? (note ? `<div class="hnro" data-nt>📝 ${esc(note)}</div>` : "") : (d ? `<textarea class="hnote" data-h="${i}" rows="2" placeholder="Notatka do tego szlaku…">${esc(note)}</textarea>` : "");
     return sh + `<div class="hike ${d?"done":""} ${pl?"planned":""}">
       ${RO ? `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>` : `<div class="tk2">${onlyPlan ? "" : `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Byłem">✓</button>`}<button class="tick plan ${pl?"pon":""}" data-p="${i}" aria-label="Planuję">◷</button></div>`}
-      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>${(h.added && store.admin && !RO) ? `<button class="btn sm hkdel" data-h="${i}" style="color:#ff8a8a;margin-top:4px">🗑 Usuń szlak (admin)</button>` : ""}
+      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>${(store.admin && !RO && SBC) ? `<button class="btn sm hkdel" data-h="${i}" style="color:#ff8a8a;margin-top:4px">🗑 Usuń szlak (admin)</button>` : ""}
       ${(v && v.s === "p") ? "" : `<div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>`}${noteUi}
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
   const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b></div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
@@ -1323,8 +1338,8 @@ function renderSheet(){
     }
     top = seg; body = mid + (v.s === "v" ? `<div class="fld"><label>NOTATKA / OPINIA</label><textarea id="snote" placeholder="np. śnieg, kolejki, z kim, gdzie jedliśmy…">${esc(v.n||"")}</textarea></div>` : "") + ``;
   }
-  const t1 = W ? `<div class="tile"><b>${Math.round(r.k*10)/10}</b><span>km tras zjazdowych</span></div>` : `<div class="tile"><b>${r.hikes.length}</b><span>szlaków poniżej</span></div>`;
-  const gpill = (W && r.g.length) ? `<span class="gpill">${esc(r.g[r.g.length-1])}</span>` : "", t2 = W ? "" : `<div class="tile"><b>${v ? Object.keys(v.done).length : 0}/${r.hikes.length}</b><span>zrobionych</span></div>`;
+  const t1 = W ? `<div class="tile"><b>${Math.round(r.k*10)/10}</b><span>km tras zjazdowych</span></div>` : `<div class="tile"><b>${liveN(r)}</b><span>szlaków poniżej</span></div>`;
+  const gpill = (W && r.g.length) ? `<span class="gpill">${esc(r.g[r.g.length-1])}</span>` : "", t2 = W ? "" : `<div class="tile"><b>${v ? Object.keys(v.done).length : 0}/${liveN(r)}</b><span>zrobionych</span></div>`;
   $("sheet").innerHTML = `<div class="grab"></div>
     <div class="hero"><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}${gpill}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}${(SBC && ratingLine(r.id)) ? " · " + ratingLine(r.id) : ""}</div></div><button class="hgear" id="hgear" title="Opcje">⚙</button></div>
     <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : `<div class="tile"><b>${r.c.split(",").length > 1 ? r.c.replace(/,/g," / ") : esc(r.c)}</b><span>kraj</span></div>`}</div>
@@ -1339,12 +1354,10 @@ function renderSheet(){
     const b = hg.getBoundingClientRect(), w = p.offsetWidth; p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, b.right - w)) + "px"; p.style.top = (b.bottom + 6) + "px";
     p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "w") window.open((W && r.w) ? r.w : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze"), "_blank", "noopener"); else if (bt.dataset.a === "a") { closeSheet(); openEditPlace(r, null); } else if (bt.dataset.a === "d") { adminHidePlace(r); } else if (bt.dataset.a === "h") { closeSheet(); openAddHike(r, null); } else { closeSheet(); openSuggest(r.n, r); } }; }; }
   if (!RO && SBC && store.sb && $("opsec")) loadOpinions(r.id);
-  document.querySelectorAll("#sheet .hkdel").forEach(b => b.onclick = async () => { const h = r.hikes[+b.dataset.h]; if (!h || !h.added) return; if (!confirm("Usunąć dodany szlak „" + h.n + "”? Zniknie u wszystkich.")) return;
-    try { const oid = "ovr:" + r.id; const pv = await store.sb.from("extra_places").select("data").eq("id", oid).maybeSingle(); const prev = pv && pv.data && pv.data.data; if (!prev) throw new Error("brak zmian w bazie");
-      const data = Object.assign({}, prev, {addHikes: (prev.addHikes || []).filter(z => z.n !== h.n)});
-      const dl = await store.sb.from("extra_places").delete().eq("id", oid); if (dl && dl.error) throw dl.error;
-      const ins = await store.sb.from("extra_places").insert({id: oid, mode: "s", data}); if (ins && ins.error) throw ins.error;
-      r.hikes.splice(+b.dataset.h, 1); r.k = r.hikes.length; try { localStorage.removeItem("skibeen.extra"); } catch(e){} renderAll(); renderSheet();
+  document.querySelectorAll("#sheet .hkdel").forEach(b => b.onclick = async () => { const h = r.hikes[+b.dataset.h]; if (!h) return;
+    if (!askTosia("Usunięcie szlaku „" + h.n + "” (" + r.n + ")")) return;
+    try { const ins = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: "s", name: ("Usunięcie szlaku: " + r.n).slice(0, 120), country: "", note: ("#id:" + r.id + " · usuń szlak: " + h.n).slice(0, 500)}); if (ins && ins.error) throw ins.error;
+      alert("Dodano do propozycji zmian. Usunięcie zatwierdzisz w panelu admina.");
     } catch(e){ alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); } });
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
