@@ -1763,7 +1763,14 @@ function show(t){
   if (t === "mapa") requestAnimationFrame(() => { if (mapFitted) applyVB(); else fit(); });
   if (t === "wyjazdy") loadShared(false);
 }
-$("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b) show(b.dataset.t); });
+$("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const t = b.dataset.t, same = show._t === t || (t === "mapa" && show._t === "lista");
+  if (same) { try {
+    if (t === "wyjazdy") { tripOpen = null; packOpen = null; tripsTab = "trips"; costEditId = null; renderTrips(); }
+    else if (t === "mapa" && show._t === "lista") { /* z listy wraca na mapę */ }
+    else if (t === "statystyki") { statRank.w = statRank.w; }
+    const vw = $("v-" + show._t); if (vw) vw.scrollTo ? vw.scrollTo({top: 0, behavior: "smooth"}) : (vw.scrollTop = 0);
+  } catch(err){} }
+  show(t); });
 window.addEventListener("hashchange", () => show(location.hash.slice(1)));
 let lastPt = {x: innerWidth / 2, y: innerHeight * .7};
 addEventListener("pointerdown", e => { lastPt = {x: e.clientX, y: e.clientY}; }, true);
