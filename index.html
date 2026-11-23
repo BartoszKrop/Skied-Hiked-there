@@ -17,7 +17,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Skied Hiked">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#08111f; --bg2:#0d1b30; --glass:rgba(255,255,255,.045); --glass2:rgba(255,255,255,.08);
@@ -252,6 +252,34 @@ header.flip .hstats{animation:flipin .5s cubic-bezier(.2,.8,.3,1)}
 .btn.pri:active{transform:scale(.96)}
 .btn{transition:transform .12s,filter .15s}.btn:hover{filter:brightness(1.08)}
 }
+
+/* ===== charakter: sportowy, outdoorowy wygląd (łatwo cofnąć usuwając ten blok) ===== */
+:root{--fd:"Barlow Condensed","Arial Narrow","Roboto Condensed",Impact,sans-serif;--fb:Barlow,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+html,body{font-family:var(--fb);font-size:15.5px;letter-spacing:.005em}
+::selection{background:var(--accent);color:#0b0b0b}
+*{scrollbar-width:thin;scrollbar-color:rgba(128,128,128,.35) transparent}
+header{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(var(--pn),.97)}
+nav{backdrop-filter:none;-webkit-backdrop-filter:none}
+nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:8px}
+.hstats{gap:22px;margin-top:12px}
+.hstats b{font-family:var(--fd);font-size:34px;font-weight:800;letter-spacing:0;line-height:.95;background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--accent);-webkit-text-fill-color:currentColor}
+.hstats small{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--mute)}
+.mode{border-radius:10px}
+.mode::before{border-radius:7px;background:var(--accent);box-shadow:none}
+.mode button{font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border-radius:7px}
+.card{border-radius:12px;background:rgba(var(--pn),.55)}
+.card h3,#sheet h2,.sect .sh b{font-family:var(--fd);letter-spacing:.03em}
+.card h3{font-size:19px;font-weight:700;text-transform:uppercase}
+#sheet{border-radius:18px 18px 0 0}
+#sheet h2{font-size:30px;font-weight:800;line-height:1.02;text-transform:uppercase}
+.fld label,.small.cap{font-family:var(--fd);font-weight:700;letter-spacing:.09em}
+.btn{border-radius:8px;font-weight:700;letter-spacing:.015em}
+.btn.pri{background:var(--accent);color:#0c0c0c}
+.btn.sm{border-radius:7px}
+.hike .bd span{border-radius:3px;font-family:var(--fd);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border-left:4px solid currentColor;padding-left:7px}
+.hike .bd span:not([class]){border-left:0;padding-left:0;font-weight:600;text-transform:none;letter-spacing:.02em;font-family:var(--fb)}
+.dnum b{font-family:var(--fd)}
+.btn.ok{background:#38d99a;color:#05241a}.btn.warn{background:#ffc65c;color:#2b1d03}
 </style>
 </head>
 <body>
