@@ -1848,7 +1848,7 @@ function tripToProfile(t){
   syncVisits(); scheduleSave(); renderAll(); alert("Gotowe: " + n + " " + plur(n, "nowy szlak", "nowe szlaki", "nowych szlaków") + " dodano do profilu ✓");
 }
 function openTripPicker(t, pid0, day0){
-  let pid = pid0 || "", q = "", day = day0 == null ? 1 : day0;
+  let pid = pid0 || "", q = "", day = day0 || 0;
   const draw = () => {
     const sel = new Set((t.items || []).map(i => i.p + "|" + i.n));
     let inner;
