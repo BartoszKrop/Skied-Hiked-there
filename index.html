@@ -381,7 +381,7 @@ body.spl #splash{display:flex}#splash.out{opacity:0;pointer-events:none}
 @media(max-width:430px){.mode{flex:1 1 0;min-width:0}.mode button{font-size:12px;letter-spacing:.03em;padding:8px 2px;min-width:0}}
 
 .ctry{transition:fill .5s ease,stroke .5s ease}
-.ctry.vis{fill:var(--ctryf)!important;stroke:var(--ctrys)!important}
+.ctry.vis{fill:var(--ctryf)!important;stroke:var(--ctrys)!important;stroke-width:1.6px}
 body{--ctryf:rgba(90,209,255,.17);--ctrys:rgba(90,209,255,.5)}
 body.summer{--ctryf:rgba(244,162,89,.2);--ctrys:rgba(244,162,89,.55)}
 body.light{--ctryf:rgba(30,127,224,.16);--ctrys:rgba(30,127,224,.5)}
@@ -1760,7 +1760,7 @@ function drawLand(geo){
     const polys = g.type === "Polygon" ? [g.coordinates] : g.coordinates, offs = g.type === "Polygon" ? [g.encodeOffsets] : g.encodeOffsets;
     polys.forEach((poly, pi) => poly.forEach((rg, ri) => { fd += ring((enc && typeof rg === "string") ? decodePoly(rg, offs[pi][ri], scl) : rg); }));
     if (!fd) return; d += fd;
-    const p = mk("path", {d: fd, class: "ctry", style:"fill:var(--land);stroke:var(--landline)", "stroke-width":1, "vector-effect":"non-scaling-stroke", "stroke-linejoin":"round"});
+    const p = mk("path", {d: fd, class: "ctry", style:"fill:var(--land);stroke:var(--landline)", "stroke-width":1, "vector-effect":"non-scaling-stroke", "stroke-linejoin":"round", "fill-rule":"evenodd"});
     gLand.append(p); const nm = f.properties && f.properties.name; if (nm) CPATH[nm] = p;
   });
   if (!d) { $("mapnote").textContent = "Mapa bez obrysów państw"; return; }
@@ -1771,7 +1771,7 @@ const ECN = {AT:"Austria",CH:"Switzerland",DE:"Germany",FR:"France",IT:"Italy",E
 function paintCountries(){
   try {
     const on = new Set(); (typeof R !== "undefined" ? R : []).forEach(r => { if (isVis(r.id)) String(r.c || "").split(",").forEach(c => on.add(ECN[c] || c)); });
-    Object.keys(CPATH).forEach(n => CPATH[n].classList.toggle("vis", on.has(n)));
+    Object.keys(CPATH).forEach(n => { const p = CPATH[n], v = on.has(n); p.classList.toggle("vis", v); if (v && !p._top) { p._top = 1; gLand.append(p); } else if (!v) p._top = 0; });
   } catch(e){}
 }
 
