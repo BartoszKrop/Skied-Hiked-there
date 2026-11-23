@@ -1959,7 +1959,8 @@ document.addEventListener("click", e => { if (e.target && e.target.id === "sgbtn
 let instPrompt = null;
 const isStandalone = () => (navigator.standalone === true) || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-function installText(){ return isIOS() ? "Dotknij ikony Udostępnij (kwadrat ze strzałką), potem „Dodaj do ekranu początkowego”." : "Otwórz menu przeglądarki (⋮) i wybierz „Zainstaluj aplikację” albo „Dodaj do ekranu głównego”."; }
+const isIOSSafari = () => isIOS() && !/crios|fxios|edgios|opios|gsa\//i.test(navigator.userAgent);
+function installText(){ return isIOS() ? (isIOSSafari() ? "Na iPhonie działa to tylko w Safari: dotknij ikony Udostępnij (kwadrat ze strzałką na dole), przewiń i wybierz „Dodaj do ekranu początkowego”, a na końcu „Dodaj”." : "Na iPhonie da się to zrobić tylko w Safari. Skopiuj link do tej strony, otwórz go w Safari, dotknij Udostępnij (kwadrat ze strzałką) i wybierz „Dodaj do ekranu początkowego”.") : "Otwórz menu przeglądarki (⋮) i wybierz „Zainstaluj aplikację” albo „Dodaj do ekranu głównego”."; }
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); instPrompt = e; scheduleInstBar(); });
 window.addEventListener("appinstalled", () => { instPrompt = null; hideInstBar(); });
 function hideInstBar(){ const b = $("instbar"); if (b) b.style.display = "none"; }
@@ -1969,9 +1970,10 @@ function showInstBar(){
   try { if (localStorage.getItem("skibeen.instdismiss")) return; } catch(e){}
   if (!instPrompt && !isIOS()) return;
   let b = $("instbar"); if (!b) { b = document.createElement("div"); b.id = "instbar"; document.body.append(b); }
-  b.innerHTML = `<div class="t"><b>📲 Dodaj do ekranu głównego</b>${instPrompt ? "Dzięki temu strona będzie działała jak aplikacja: na pełnym ekranie, także bez zasięgu." : "Dzięki temu strona będzie działała jak aplikacja. " + esc(installText())}</div>${instPrompt ? `<button class="btn pri sm" id="instgo">Zainstaluj</button>` : ""}<button class="btn sm" id="instx" aria-label="Zamknij">✕</button>`;
+  b.innerHTML = `<div class="t"><b>📲 Dodaj do ekranu głównego</b>${instPrompt ? "Dzięki temu strona będzie działała jak aplikacja: na pełnym ekranie, także bez zasięgu." : "Dzięki temu strona będzie działała jak aplikacja. " + esc(installText())}</div>${instPrompt ? `<button class="btn pri sm" id="instgo">Zainstaluj</button>` : (isIOS() && !isIOSSafari() ? `<button class="btn pri sm" id="instcp">Kopiuj link</button>` : "")}<button class="btn sm" id="instx" aria-label="Zamknij">✕</button>`;
   b.style.display = "flex";
   const go = $("instgo"); if (go) go.onclick = doInstall;
+  const cp = $("instcp"); if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(location.href.split("#")[0]); cp.textContent = "Skopiowano ✓"; } catch(e){ cp.textContent = "Nie udało się"; } };
   $("instx").onclick = () => { hideInstBar(); try { localStorage.setItem("skibeen.instdismiss", "1"); } catch(e){} };
 }
 let instT = null; function scheduleInstBar(){ if (instT) return; instT = setTimeout(showInstBar, 25000); }
