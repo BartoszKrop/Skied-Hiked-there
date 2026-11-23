@@ -966,7 +966,7 @@ function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
   ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; return ov;
 }
-function openSettings(){ openAccount(); }
+function openSettings(){ ovBox().innerHTML = settingsCard(); bindSettings(); const cl = $("lclose"); if (cl) cl.onclick = closeAccount; }
 function bindSettings(){
   const ib = $("instset"); if (ib) ib.onclick = async () => { if (!(await doInstall())) $("instmsg").textContent = installText(); };
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
@@ -1181,15 +1181,14 @@ function openAddPlace(sg){
     } catch(e){ $("apsave").disabled = false; st.textContent = "Nie udało się: " + String((e && e.message) || e).slice(0, 90); }
   };
 }
-function openFriends(){ openAccount(); }
+function openFriends(){ ovBox().innerHTML = friendsCard(); bindFriends(); }
 function openAccount(){
   const sb = SBC && window.supabase, on = sb && (store.mode === "sb" || !!store.authed);
-  const strip = h => h.replace(/<button[^>]*id="lclose"[^>]*>Zamknij<\/button>/g, "");
+  if (!sb) { openSettings(); return; }
   const ov = ovBox();
-  ov.innerHTML = (sb ? strip(accountCard()) : "") + (on ? strip(friendsCard()) : "") + strip(settingsCard()) + `<button class="btn" id="lclose" style="max-width:420px;width:100%;flex:none;margin:0 0 24px">Zamknij</button>`;
-  ov.scrollTop = 0;
-  if (sb) bindAccount(); if (on) bindFriends(); bindSettings();
-  const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
+  ov.innerHTML = accountCard() + `<div class="card" style="display:flex;gap:8px;padding:10px">${on ? `<button class="btn" id="gofr" style="flex:1">👥 Znajomi</button>` : ""}<button class="btn" id="goset" style="flex:1">⚙ Ustawienia</button></div>`;
+  ov.scrollTop = 0; bindAccount();
+  const gf = $("gofr"); if (gf) gf.onclick = openFriends; const gs = $("goset"); if (gs) gs.onclick = openSettings;
 }
 function closeAccount(){ const ov = $("acctov"); if (ov) ov.style.display = "none"; }
 function bindAccount(){
