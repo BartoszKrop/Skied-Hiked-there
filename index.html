@@ -183,8 +183,10 @@ input[type=date]{width:100%;background:var(--glass2);border:1px solid var(--line
 .stay .x.arm{color:var(--bad);font-weight:700}
 .fld{margin:14px 0}
 .stars{display:flex;gap:4px}
-.stars button{background:none;border:0;font-size:34px;color:#3d5278;cursor:pointer;padding:0 2px;line-height:1}
-.stars button.on{color:var(--warn);text-shadow:0 0 12px rgba(255,198,92,.5)}
+.stars button,.szs button{background:none;border:0;cursor:pointer;line-height:1;color:rgba(255,255,255,.16);-webkit-text-fill-color:rgba(255,255,255,.16);transition:transform .12s,filter .15s}
+.stars button{font-size:36px;padding:0 3px}
+.stars button.on,.szs button.on{background:linear-gradient(180deg,#fff0a8,#ffc03a 55%,#ff9a1f);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 5px rgba(255,170,40,.5))}
+.stars button:active,.szs button:active{transform:scale(1.25)}
 .tbtns{display:flex;gap:7px}
 .tbtns button{flex:1;border:1px solid var(--line);background:var(--glass);color:var(--text);border-radius:12px;padding:11px 0;font-weight:800;font-size:15px;cursor:pointer}
 .tbtns button.on{color:#0b1626;border-color:transparent}
@@ -201,7 +203,7 @@ select.sel{width:100%;background:var(--glass2);border:1px solid var(--line);colo
 .szrow{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:6px 0 8px;padding:8px 10px;border-radius:12px;background:rgba(255,198,92,.07);border:1px solid rgba(255,198,92,.22);font-size:12.5px;color:#ffd99a}
 .szc{border:1px solid rgba(255,198,92,.5);background:none;color:#ffd99a;border-radius:999px;padding:3px 11px;font-weight:700;font-size:13px;cursor:pointer}.szc.on{background:rgba(255,198,92,.22)}
 .szb{border:1px solid rgba(255,198,92,.5);background:none;color:#ffd99a;border-radius:999px;padding:5px 11px;font-weight:700;font-size:12px;cursor:pointer}.szb.on{background:rgba(255,198,92,.22)}
-.szs button{background:none;border:0;font-size:22px;color:#4b4132;cursor:pointer;padding:0 1px;line-height:1}.szs button.on{color:var(--warn)}
+.szs button{font-size:24px;padding:0 2px}
 #shareov{position:fixed;inset:0;z-index:200;background:rgba(3,8,16,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:14px}
 #shareov canvas{max-width:100%;max-height:calc(100% - 120px);border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 body.ro .item .tick{pointer-events:none;opacity:.55}
@@ -1297,7 +1299,7 @@ function setHikeRating(i, n){
   if (v.hr[i] === n) delete v.hr[i]; else v.hr[i] = n;
   scheduleSave(); renderAll(); renderSheet();
 }
-let szOpenId = null;
+let szOpenSk = null;
 function toggleSz(sk){
   if (!visits[curId]) visits[curId] = newEntry("v");
   const v = visits[curId]; v.s = "v"; v.sz = v.sz || {};
@@ -1326,16 +1328,14 @@ function renderSheet(){
     const noteUi = RO ? (note ? `<div class="hnro" data-nt>📝 ${esc(note)}</div>` : "") : (d ? `<textarea class="hnote" data-h="${i}" rows="2" placeholder="Notatka do tego szlaku…">${esc(note)}</textarea>` : "");
     return sh + `<div class="hike ${d?"done":""} ${pl?"planned":""}">
       ${RO ? `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>` : `<div class="tk2">${onlyPlan ? "" : `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Byłem">✓</button>`}<button class="tick plan ${pl?"pon":""}" data-p="${i}" aria-label="Planuję">◷</button></div>`}
-      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>${(!RO) ? `<button class="btn sm hktrip" data-h="${i}" style="margin-top:4px;margin-right:6px">＋ Do wyjazdu</button>` : ""}${(store.admin && !RO && SBC) ? `<button class="hkdel" data-h="${i}" title="Usuń szlak (admin)" aria-label="Usuń szlak (admin)">🗑</button>` : ""}
+      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span>${(!RO && h.sk && v && v.s === "v") ? `<button class="szc hkpie ${(v.sz && v.sz[h.sk]) ? "on" : ""}" data-sk="${esc(h.sk)}" title="Szarlotka w schronisku" style="padding:1px 8px;font-size:12px">🥧 ${(v.sz && v.sz[h.sk]) ? "✓" : "?"}</button>` : ""}${!RO ? `<button class="hkgear" data-h="${i}" title="Więcej opcji" aria-label="Więcej opcji" style="margin-left:auto;background:none;border:0;color:var(--mute);font-size:14px;cursor:pointer;padding:0 4px">⚙</button>` : ""}</div>${(!RO && h.sk && v && v.s === "v" && szOpenSk === h.sk) ? `<div class="szrow" style="margin:6px 0"><span style="flex:1;min-width:120px">🥧 ${esc(h.sk)}</span><button class="szb ${(v.sz && v.sz[h.sk]) ? "on" : ""}" data-sk="${esc(h.sk)}">${(v.sz && v.sz[h.sk]) ? "Jadłem ✓" : "Jadłem?"}</button>${(v.sz && v.sz[h.sk]) ? `<span class="szs">${[1,2,3,4,5].map(k => `<button data-sk="${esc(h.sk)}" data-i="${k}" class="${((v.sz[h.sk].r||0)>=k)?"on":""}">★</button>`).join("")}</span>` : ""}</div>` : ""}<p>${esc(h.o)}</p><div class="hkmenu" data-h="${i}" style="display:none;margin:2px 0 6px"><button class="btn sm hktrip" data-h="${i}">＋ Do wyjazdu</button></div>${(store.admin && !RO && SBC) ? `<button class="hkdel" data-h="${i}" title="Usuń szlak (admin)" aria-label="Usuń szlak (admin)">🗑</button>` : ""}
       ${(v && v.s === "p") ? "" : `<div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>`}${noteUi}
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
   const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b></div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
   const sks0 = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
   const sks = RO ? sks0.filter(sk => v && v.sz && v.sz[sk]) : sks0;
   const szList = () => sks.map(sk => { const z = v.sz && v.sz[sk]; return `<div class="szrow"><span style="flex:1;min-width:140px">${esc(sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; }).join("");
-  const eaten = v && v.sz ? Object.keys(v.sz).filter(k => sks.includes(k)).length : 0;
   const szsec = (RO && sks.length && v && v.s === "v") ? `<div class="sect"><div class="sh"><b>Szarlotki w schroniskach</b></div>${szList()}</div>` : "";
-  const szchip = (!RO && sks.length && v && v.s === "v") ? `<div class="fld" style="margin:2px 0 8px"><button class="szc ${eaten ? "on" : ""}" id="szchip" title="Szarlotka w schronisku">🥧 ${eaten ? eaten + " ✓" : "?"}</button>${szOpenId === curId ? `<div style="margin-top:6px">${szList()}</div>` : ""}</div>` : "";
   let body = "", top = "";
   if (!v) {
     top = `<div class="two" style="margin:4px 0 12px"><button class="btn ok" id="sadd">✓ Byłem</button><button class="btn warn" id="splan">📅 Planuję</button></div>`;
@@ -1350,7 +1350,7 @@ function renderSheet(){
             <button class="x ${armedStay===i?"arm":""}" data-del="${i}">${armedStay===i?"Usunąć?":"✕"}</button></div>`).join("") : `<div class="small">${W ? "Jeszcze bez wizyt. Dodaj wizytę (rok, opcjonalnie miesiąc)." : "Jeszcze bez roku. Dodaj rok (i opcjonalnie miesiąc), w którym tu byłeś."}</div>`}
       </div>
       <div class="fld"><label>OCENA (GWIAZDKI)</label><div class="stars" id="sstars">${[1,2,3,4,5].map(i => `<button data-i="${i}" class="${(v.r||0)>=i?"on":""}">★</button>`).join("")}</div></div>
-      ${szchip}`;
+      `;
     } else {
       mid = "";
     }
@@ -1381,7 +1381,8 @@ function renderSheet(){
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
   document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
-  { const ch = $("szchip"); if (ch) ch.onclick = () => { szOpenId = szOpenId === curId ? null : curId; renderSheet(); }; }
+  document.querySelectorAll("#sheet .hkpie").forEach(b => b.onclick = () => { szOpenSk = szOpenSk === b.dataset.sk ? null : b.dataset.sk; renderSheet(); });
+  document.querySelectorAll("#sheet .hkgear").forEach(b => b.onclick = () => { const m = document.querySelector('#sheet .hkmenu[data-h="' + b.dataset.h + '"]'); if (m) m.style.display = m.style.display === "none" ? "block" : "none"; });
   document.querySelectorAll("#sheet .hs button").forEach(b => b.onclick = () => setHikeRating(+b.dataset.h, +b.dataset.i));
   document.querySelectorAll("#sheet .szs:not(.hs) button").forEach(b => b.onclick = () => setSzRating(b.dataset.sk, +b.dataset.i));
   if (!v) { $("sadd").onclick = () => { setStatus(curId, "v"); renderSheet(); }; $("splan").onclick = () => { setStatus(curId, "p"); renderSheet(); }; return; }
