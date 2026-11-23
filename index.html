@@ -1577,7 +1577,9 @@ async function loadShared(force){
   shBusy = true;
   try { const r = await store.sb.from("shared_trips").select("*").order("updated_at", {ascending: false}); if (r.error) throw r.error;
     const sig = a => JSON.stringify(a.map(t => [t.id, t._snap, t.members]));
-    const prev = sig(SHT); SHT = (r.data || []).map(shNorm);
+    const prev = sig(SHT), old = SHT; SHT = (r.data || []).map(shNorm).map(n => { const o = old.find(x => x.id === n.id); if (!o) return n;
+      if (JSON.stringify(shData(o)) !== o._snap) { o.members = n.members; o.invite = n.invite; o.owner_name = n.owner_name; return o; }
+      const ui = {}; Object.keys(n).forEach(k => { o[k] = n[k]; }); return o; });
     if (sig(SHT) !== prev) renderTrips();
   } catch(e){}
   shBusy = false;
@@ -1585,7 +1587,7 @@ async function loadShared(force){
 function saveSharedSoon(){ clearTimeout(shTimer); shTimer = setTimeout(async () => {
   for (const t of SHT) { const js = JSON.stringify(shData(t)); if (js === t._snap) continue;
     try { const r = await store.sb.from("shared_trips").update({data: Object.assign(shData(t), {ed: meName()})}).eq("id", t.id); if (r && r.error) throw r.error; t._snap = js; t.ed = meName(); setSaveState("wyjazd zapisany ✓"); }
-    catch(e){ setSaveState("nie udało się zapisać wyjazdu"); } } }, 700); }
+    catch(e){ setSaveState("nie udało się zapisać wyjazdu"); if (!t._warned) { t._warned = 1; alert("Nie udało się zapisać zmian we wspólnym wyjeździe: " + String((e && e.message) || e).slice(0, 90) + "\nSprawdź, czy SQL dla wyjazdów został uruchomiony."); } setTimeout(saveSharedSoon, 8000); } } }, 700); }
 const tripSave = () => { scheduleSave(); if (SHT.length) saveSharedSoon(); };
 setInterval(() => { const v = $("v-wyjazdy"); if (v && v.classList.contains("on") && !document.hidden) loadShared(false); }, 20000);
 /* zaproszenia linkiem */
