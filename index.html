@@ -348,6 +348,7 @@ function applyExtra(rows){
   arr.forEach(x => { try {
     const d = x.data || {}, w = x.mode !== "s", map = w ? byIdW : byIdS;
     if (String(x.id).startsWith("ovr:")) { const r = map[String(x.id).slice(4)]; if (!r) return;
+      if (d.hidden) { const T = w ? WINTER : SUMMER, ix = T.R.indexOf(r); if (ix >= 0) T.R.splice(ix, 1); delete map[r.id]; (T.G || []).forEach(g => { if (g.m) g.m = g.m.filter(i => map[i]); }); n++; return; }
       if (d.n) { r.n = d.n; r.full = d.n; } if (w) { if (d.k != null && d.k !== "") r.k = +d.k; if (d.e != null && d.e !== "") r.e = +d.e; if (d.w) r.w = d.w; r.auto = false; }
       r.s = norm([r.full, r.n, r.l, r.r, String(r.c).split(",").map(cname).join(" ")].join(" ")); n++; return; }
     if (!x.id || map[x.id] || !d.n) return;
@@ -1005,6 +1006,17 @@ function showNickPop(el, u){
     else { await setFriends(isFr ? (store.friends || []).filter(x => String(x).toLowerCase() !== lu) : [...(store.friends || []), lu]); try { await loadFriendsData(); } catch(e){} if (curId) renderSheet(); renderList(); } };
 }
 document.addEventListener("click", e => { const n = e.target.closest && e.target.closest(".nick"); if (n) { e.stopPropagation(); showNickPop(n, n.dataset.u); return; } if (!e.target.closest || !e.target.closest("#nickpop")) hideNickPop(); }, true);
+async function adminHidePlace(r){
+  const typed = prompt("Usunięcie ukryje to miejsce u WSZYSTKICH użytkowników (ich zapisane wizyty zostaną w danych).\nAby potwierdzić, przepisz nazwę:\n" + r.n); if (typed === null) return;
+  if (typed.trim().toLowerCase() !== String(r.n).trim().toLowerCase()) { alert("Nazwa się nie zgadza. Nic nie usunięto."); return; }
+  if (!confirm("Na pewno usunąć: " + r.n + "?")) return;
+  const W = MODE === "w", oid = "ovr:" + r.id, data = {hidden: true, n: r.n};
+  try { const d = await store.sb.from("extra_places").delete().eq("id", oid); if (d && d.error) throw d.error;
+    const ins = await store.sb.from("extra_places").insert({id: oid, mode: W ? "w" : "s", data}); if (ins && ins.error) throw ins.error;
+    closeSheet(); applyExtra([{id: oid, mode: W ? "w" : "s", data}]); try { localStorage.removeItem("skibeen.extra"); } catch(e){} buildCountrySelect(); buildDots(); renderAll();
+    alert("Ukryto. Cofnięcie: panel admina → lista „Dodane przez panel” → Cofnij.");
+  } catch(e){ alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); }
+}
 function openEditPlace(r, pre){
   const W = MODE === "w", p = pre || {};
   ovBox().innerHTML = `<div class="card"><h3>Edytuj: ${esc(r.n)}</h3><div class="sub">Zmiana jest widoczna u wszystkich użytkowników.</div>
@@ -1044,7 +1056,7 @@ function openSuggest(q, fix){
 }
 async function openAdmin(){
   ovBox().innerHTML = `<div class="card"><h3>Zgłoszone miejsca</h3><button class="btn pri" id="anew" style="width:100%;margin-bottom:10px">+ Dodaj nowe miejsce</button><div class="small" id="adl">Wczytuję…</div><div id="aex"></div><button class="btn" id="lclose" style="width:100%;margin-top:10px">Zamknij</button></div>`; $("lclose").onclick = closeAccount; $("anew").onclick = () => openAddPlace(null);
-  try { const ex = await store.sb.from("extra_places").select("id,mode,data"); if (!ex.error && (ex.data || []).length) { $("aex").innerHTML = `<div class="small" style="margin:10px 0 4px;font-weight:700">Dodane przez panel (${ex.data.length})</div>` + ex.data.map(x => `<div class="frow"><span>${esc(x.data.n)} <span class="small">${x.mode === "s" ? "lato" : "zima"} · ${esc(x.data.c || "")}</span></span><button class="btn sm bad aexdel" data-id="${esc(x.id)}">Usuń</button></div>`).join(""); document.querySelectorAll(".aexdel").forEach(b => b.onclick = async () => { if (!confirm("Usunąć to miejsce z bazy? Zniknie u wszystkich.")) return; b.disabled = true; const d = await store.sb.from("extra_places").delete().eq("id", b.dataset.id); if (!(d && d.error)) { try { localStorage.removeItem("skibeen.extra"); } catch(e){} b.closest(".frow").remove(); } }); } } catch(e){}
+  try { const ex = await store.sb.from("extra_places").select("id,mode,data"); if (!ex.error && (ex.data || []).length) { $("aex").innerHTML = `<div class="small" style="margin:10px 0 4px;font-weight:700">Dodane przez panel (${ex.data.length})</div>` + ex.data.map(x => { const ov = String(x.id).startsWith("ovr:"); return `<div class="frow"><span>${ov ? (x.data.hidden ? "🚫 ukryty: " : "✎ zmieniony: ") : ""}${esc(x.data.n)} <span class="small">${x.mode === "s" ? "lato" : "zima"}${ov ? "" : " · " + esc(x.data.c || "")}</span></span><button class="btn sm bad aexdel" data-ov="${ov ? 1 : ""}" data-id="${esc(x.id)}">${ov ? "Cofnij" : "Usuń"}</button></div>`; }).join(""); document.querySelectorAll(".aexdel").forEach(b => b.onclick = async () => { if (!confirm(b.dataset.ov ? "Cofnąć tę zmianę? Oryginalne dane wrócą po odświeżeniu strony." : "Usunąć to miejsce z bazy? Zniknie u wszystkich.")) return; b.disabled = true; const d = await store.sb.from("extra_places").delete().eq("id", b.dataset.id); if (!(d && d.error)) { try { localStorage.removeItem("skibeen.extra"); } catch(e){} b.closest(".frow").remove(); } }); } } catch(e){}
   try { const r = await store.sb.from("suggestions").select("*").order("created_at", {ascending: false}).limit(200); if (r.error) throw r.error;
     const a = r.data || [], box = $("adl");
     box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri ${/^Poprawka:/.test(x.name) ? "afix" : "aadd"}" data-i="${esc(x.id)}">${/^Poprawka:/.test(x.name) ? "Zastosuj" : "Dodaj"}</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
@@ -1295,9 +1307,9 @@ function renderSheet(){
   document.querySelectorAll("#sheet .hnote").forEach(t => t.oninput = () => { const v = visits[curId]; if (!v) return; v.hn = v.hn || {}; const i = +t.dataset.h; if (t.value.trim()) v.hn[i] = t.value; else delete v.hn[i]; scheduleSave(); });
   { const fx = $("sgfix"); if (fx) fx.onclick = () => { closeSheet(); openSuggest(r.n, r); };
   const hg = $("hgear"); if (hg) hg.onclick = e => { e.stopPropagation(); let p = $("nickpop"); if (!p) { p = document.createElement("div"); p.id = "nickpop"; document.body.append(p); }
-    const canRep = !RO && SBC && store.sb; p.innerHTML = `<button data-a="w">${W ? (r.w ? "Strona ośrodka ↗" : "Ceny karnetów ↗") : "Szlaki i informacje ↗"}</button>${canRep ? `<button data-a="e">⚠ Zgłoś błąd w danych</button>` : ""}${(canRep && store.admin) ? `<button data-a="a">✎ Edytuj dane (admin)</button>` : ""}`; p.style.display = "flex";
+    const canRep = !RO && SBC && store.sb; p.innerHTML = `<button data-a="w">${W ? (r.w ? "Strona ośrodka ↗" : "Ceny karnetów ↗") : "Szlaki i informacje ↗"}</button>${canRep ? `<button data-a="e">⚠ Zgłoś błąd w danych</button>` : ""}${(canRep && store.admin) ? `<button data-a="a">✎ Edytuj dane (admin)</button><button data-a="d" style="color:#ff8a8a">🗑 Usuń ośrodek (admin)</button>` : ""}`; p.style.display = "flex";
     const b = hg.getBoundingClientRect(), w = p.offsetWidth; p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, b.right - w)) + "px"; p.style.top = (b.bottom + 6) + "px";
-    p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "w") window.open((W && r.w) ? r.w : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze"), "_blank", "noopener"); else if (bt.dataset.a === "a") { closeSheet(); openEditPlace(r, null); } else { closeSheet(); openSuggest(r.n, r); } }; }; }
+    p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "w") window.open((W && r.w) ? r.w : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze"), "_blank", "noopener"); else if (bt.dataset.a === "a") { closeSheet(); openEditPlace(r, null); } else if (bt.dataset.a === "d") { adminHidePlace(r); } else { closeSheet(); openSuggest(r.n, r); } }; }; }
   if (!RO && SBC && store.sb && $("opsec")) loadOpinions(r.id);
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
