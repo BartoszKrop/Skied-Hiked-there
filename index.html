@@ -347,7 +347,7 @@ body.spl #splash{display:flex}#splash.out{opacity:0;pointer-events:none}
 #splash .spi{width:104px;height:104px;border-radius:26px;overflow:hidden;animation:spin .7s cubic-bezier(.2,.8,.2,1) both}#splash svg{width:100%;height:100%;display:block}
 #splash .spt{font-family:var(--fd,"Barlow Condensed",sans-serif);font-weight:600;font-size:26px;letter-spacing:.14em;text-transform:uppercase;color:#cfe3ff}#splash .spt b{font-weight:700;color:#fff}#splash .spt i{font-style:normal;color:#f4a259}
 @keyframes spin{from{transform:translateY(14px) scale(.9);opacity:0}to{transform:none;opacity:1}}
-.hero.hsil .hsv{position:absolute;right:34px;top:50%;transform:translateY(-50%);height:76px;width:auto;fill:var(--accent);opacity:.1;pointer-events:none}.hero.hsil>*:not(.hsv){position:relative;z-index:1}.hero.hsil .hgear{position:absolute}
+.hero.hsil .hsv{position:absolute;right:34px;top:50%;transform:translateY(-50%);height:58px;width:auto;fill:var(--accent);opacity:.07;pointer-events:none}.hero.hsil>*:not(.hsv){position:relative;z-index:1}.hero.hsil .hgear{position:absolute}
 
 /* wyjazdy: porządki */
 .tfold .tdel{opacity:.85!important;font-size:15px;padding:4px 6px;cursor:pointer}
@@ -391,6 +391,32 @@ body.summer.light{--ctryf:rgba(210,96,26,.17);--ctrys:rgba(210,96,26,.5)}
 .acct .ic{width:19px;height:19px;vertical-align:middle}
 .btn{min-height:40px}.btn.sm{min-height:34px}
 .btn .ic{margin-right:2px}
+
+/* styl: płaskie sekcje, typografia zamiast ramek */
+body.light .view .card,body.light .item,body.light .tfold,body.light .tday{background:none}
+.view .card{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:18px 0 6px;margin-bottom:4px;box-shadow:none;backdrop-filter:none}
+.view .card:first-child,.big .card:first-child{border-top:0}
+.view .card h3{font-size:17px;letter-spacing:.07em}
+.item{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:12px 2px;margin:0}
+.item.v,.item.p{background:none;border-color:var(--line)}
+.item:active{transform:none;background:var(--glass)}
+.big{gap:0 18px;margin-bottom:6px}
+.big .card{border-top:1px solid var(--line);padding:14px 0 10px;margin:0}
+.big .card:nth-child(-n+2){border-top:0}
+.big .n{background:none;-webkit-text-fill-color:currentColor;color:var(--text);font-family:var(--fd);font-size:34px;font-weight:700;letter-spacing:0}
+.big .l{font-size:12.5px}
+.card table{font-size:13.5px}.card td,.card th{padding:9px 8px 9px 0}.card td.r,.card th.r{text-align:right;white-space:nowrap;padding-right:0;padding-left:8px}.card th{letter-spacing:.2px;font-size:10.5px}
+.tiles{gap:26px;margin:14px 0 6px}.tile{background:none;border:0;border-radius:0;padding:0}
+.tile b{font-family:var(--fd);font-size:26px;font-weight:700;display:block;line-height:1.1}
+.tday{background:none;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;padding:0 0 4px;margin-top:24px;overflow:visible}
+.tday .sh,.tday.t0 .sh{background:none;border:0;margin:0 0 10px;padding:14px 0 0}
+.tday.t0{border-style:solid;background:none}
+.tfold{background:none;border:0;border-top:1px solid var(--line);border-radius:0;margin-top:20px}
+.tfold>summary{padding:14px 0}.tfold[open]>summary{border-bottom:0}
+.tfold>*:not(summary){margin-left:0!important;margin-right:0!important}
+.fld label{text-transform:lowercase;font-family:var(--fb);font-weight:600;font-size:12.5px;letter-spacing:0;color:var(--mute)}
+.fld label::first-letter{text-transform:uppercase}
+.tform .tft{font-family:var(--fb)}
 </style>
 </head>
 <body>
@@ -754,7 +780,7 @@ function setStatus(id, st){
   const was = visits[id] && visits[id].s;
   if (!visits[id]) visits[id] = newEntry(st); else visits[id].s = st;
   scheduleSave(); renderAll();
-  if (st !== was) { if (st === "v") { burst(); toast("Zapisano na mapie ✓ · " + R.filter(r => isVis(r.id)).length + " z " + R.length); } else if (st === "p") toast("Dodano do planów 📅"); }
+  if (st !== was) { if (st === "v") { burst(); toast("Zapisano na mapie ✓ · " + R.filter(r => isVis(r.id)).length + " z " + R.length); } else if (st === "p") toast("Dodano do planów"); }
 }
 function stats(){
   const v = R.filter(r => isVis(r.id));
@@ -1425,8 +1451,8 @@ function renderStats(){
   const rankCard = pick === "sz" ? szCard() : pick === "groups" ? groupsHtml() : `<div class="card">${rankBody}</div>`;
   const planned = R.filter(r => isPlan(r.id)).length;
   const cards = W
-    ? [[s.n, "ośrodków z " + R.length], [s.countries.size, "krajów"], [s.stays, "wizyt"], [Math.round(s.km), "km tras w tych ośrodkach"], [planned, "w planach"], [s.gdone, "kompletnych grup"]]
-    : [[s.n, "miejsc z " + R.length], [s.countries.size, "krajów"], [R.filter(r => isVis(r.id) && visits[r.id].stays.some(x => x.y === String(new Date().getFullYear()))).length, "miejsc w tym roku"], [s.hikes, "zaliczonych szlaków"], [planned, "w planach"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
+    ? [[planned, "w planach"], [s.gdone, "kompletnych grup"], [vis.reduce((a, r) => a + visits[r.id].stays.filter(x => x.y === String(new Date().getFullYear())).length, 0), "wizyt w tym roku"], [(() => { const q = vis.filter(r => rt(r)); return q.length ? (q.reduce((a, r) => a + rt(r), 0) / q.length).toFixed(1).replace(".", ",") : "–"; })(), "średnia ocena"]]
+    : [[R.filter(r => isVis(r.id) && visits[r.id].stays.some(x => x.y === String(new Date().getFullYear()))).length, "miejsc w tym roku"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
   $("stats").innerHTML = `
     <div class="big">${cards.map(c => `<div class="card"><div class="n">${c[0]}</div><div class="l">${c[1]}</div></div>`).join("")}</div>
     <div class="card"><h3>Rankingi</h3><select class="sel" id="rkpick">${OPTS.map(o => `<option value="${o[0]}"${o[0] === pick ? " selected" : ""}>${o[1]}</option>`).join("")}</select></div>
