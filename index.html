@@ -165,7 +165,7 @@ textarea:focus,input[type=date]:focus{border-color:rgba(90,209,255,.5)}
 
 /* arkusz */
 #sheetbg{position:fixed;inset:0;background:rgba(3,8,16,.62);backdrop-filter:blur(2px);display:none;z-index:10}
-#sheet{position:fixed;left:0;right:0;bottom:0;max-height:90%;overflow:auto;background:linear-gradient(180deg,#14233d,#0e1b31);border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;padding:8px 16px calc(18px + var(--safe-b));z-index:11;display:none;box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+#sheet{position:fixed;left:0;right:0;bottom:0;max-height:90%;overflow:auto;background:linear-gradient(180deg,var(--bg2),var(--bg));border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;padding:8px 16px calc(18px + var(--safe-b));z-index:11;display:none;box-shadow:0 -20px 60px rgba(0,0,0,.5)}
 #sheet.open{animation:up .28s cubic-bezier(.2,.8,.2,1)}
 @media(min-width:720px){#sheet{padding:12px 28px calc(24px + var(--safe-b))}#sheet .hero{gap:18px}#sheet .hero .flg{width:68px;height:68px;font-size:38px;border-radius:20px}#sheet .hero h2{font-size:30px}#sheet .hero .meta{font-size:16px;margin-top:4px}#sheet .gpill{font-size:13px;padding:3px 12px}#sheet .hgear{width:42px;height:42px;font-size:22px;border-radius:13px}#sheet .tiles{gap:12px;margin:18px 0 12px}#sheet .tile{padding:14px 24px;border-radius:16px}#sheet .tile b{font-size:26px}#sheet .tile span{font-size:14px}#sheet .seg{padding:5px}#sheet .seg button{padding:16px 4px;font-size:18px;border-radius:12px}#sheet .sh b{font-size:15px}#sheet .small{font-size:14px}#sheet .btn{font-size:19px;padding:20px 24px;border-radius:16px}#sheet .btn.sm{font-size:14px;padding:8px 14px;border-radius:11px}#sheet .two{gap:14px}}
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
@@ -232,6 +232,26 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
 .frow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14px}.frow:last-child{border-bottom:0}
 @media(max-width:560px){.brand{flex-wrap:wrap;row-gap:8px;gap:6px}.brand{flex-wrap:nowrap}.rt{order:2;margin-left:0;gap:4px;flex:none}.mode{order:1;flex:1 1 auto;min-width:0}.mode button{font-size:12.5px;padding:8px 4px;text-align:center}.rt .acct{padding:7px 8px!important;font-size:15px!important}#acct{max-width:none}}
 @media(max-width:380px){.brand h1{font-size:15px}.swt{gap:6px;padding:3px 8px 3px 3px}.logo{width:24px;height:24px}.rt .acct{padding:5px 6px!important}.brand{gap:4px}}
+
+@keyframes pop{0%{transform:scale(.94);opacity:0}60%{transform:scale(1.015)}100%{transform:none;opacity:1}}
+@keyframes starpop{0%{transform:scale(.6)}55%{transform:scale(1.35) rotate(-8deg)}100%{transform:none}}
+@keyframes flipin{0%{opacity:0;transform:translateY(10px) scale(.985);filter:blur(3px)}100%{opacity:1;transform:none;filter:none}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes ringpulse{0%{box-shadow:0 0 0 0 var(--accent)}100%{box-shadow:0 0 0 14px transparent}}
+@media(prefers-reduced-motion:no-preference){
+#acctov>.card,#shareov>*{animation:pop .28s cubic-bezier(.3,1.3,.5,1) both}
+.view.on{animation:fade .32s ease both}
+.view.on .frow,.view.on .sect,.view.on .card,.view.on .tier{animation:rise .38s cubic-bezier(.2,.8,.3,1) both}
+.view.on :is(.frow,.sect,.card,.tier):nth-child(2){animation-delay:.04s}.view.on :is(.frow,.sect,.card,.tier):nth-child(3){animation-delay:.08s}.view.on :is(.frow,.sect,.card,.tier):nth-child(4){animation-delay:.12s}.view.on :is(.frow,.sect,.card,.tier):nth-child(n+5){animation-delay:.16s}
+main.flip{animation:flipin .5s cubic-bezier(.2,.8,.3,1)}
+header.flip .hstats{animation:flipin .5s cubic-bezier(.2,.8,.3,1)}
+.stars button.on,.szs button.on{animation:starpop .35s cubic-bezier(.3,1.6,.5,1)}
+.szc.on{animation:starpop .35s cubic-bezier(.3,1.6,.5,1)}
+.mode button.on{transition:color .25s}
+#nav button.on svg,#nav button.on .ic{animation:starpop .4s cubic-bezier(.3,1.6,.5,1)}
+.btn.pri:active{transform:scale(.96)}
+.btn{transition:transform .12s,filter .15s}.btn:hover{filter:brightness(1.08)}
+}
 </style>
 </head>
 <body>
@@ -603,7 +623,7 @@ const lastYear = id => { const y = visits[id].stays.map(x => x.y).filter(Boolean
 function renderHeader(){
   const s = stats(), W = MODE === "w";
   document.title = (W ? "Skied there" : "Hiked there") + (typeof SBC !== "undefined" && SBC ? " · Skied & Hiked There" : "");
-  $("progBar").style.width = (100 * s.n / R.length) + "%";
+  $("progBar").style.width = (100 * s.n / R.length) + "%"; countUp();
   $("hstats").innerHTML =
     `<div><b>${s.n}</b><small>z ${R.length} ${W ? "ośrodków" : "miejsc"}</small></div>` +
     `<div><b>${s.countries.size}</b><small>${s.countries.size===1?"kraj":"krajów"}</small></div>` +
@@ -1125,7 +1145,7 @@ async function openAdmin(){
   try { const ex = await store.sb.from("extra_places").select("id,mode,data"); if (!ex.error && (ex.data || []).length) { $("aex").innerHTML = `<details style="margin:10px 0"><summary class="small" style="font-weight:700;cursor:pointer;padding:6px 2px">Historia zmian (${ex.data.length}) ▾</summary>` + ex.data.map(x => { const ov = String(x.id).startsWith("ovr:"); return `<div class="frow"><span>${ov ? (x.data.hidden ? "🚫 ukryty: " : "✎ zmieniony: ") : ""}${esc(x.data.n)} <span class="small">${x.mode === "s" ? "lato" : "zima"}${ov ? "" : " · " + esc(x.data.c || "")}</span></span><button class="btn sm bad aexdel" data-ov="${ov ? 1 : ""}" data-id="${esc(x.id)}">${ov ? "Cofnij" : "Usuń"}</button></div>`; }).join("") + "</details>"; document.querySelectorAll(".aexdel").forEach(b => b.onclick = async () => { if (!confirm(b.dataset.ov ? "Cofnąć tę zmianę? Oryginalne dane wrócą po odświeżeniu strony." : "Usunąć to miejsce z bazy? Zniknie u wszystkich.")) return; b.disabled = true; const d = await store.sb.from("extra_places").delete().eq("id", b.dataset.id); if (!(d && d.error)) { try { localStorage.removeItem("skibeen.extra"); } catch(e){} b.closest(".frow").remove(); } }); } } catch(e){}
   try { const r = await store.sb.from("suggestions").select("*").order("created_at", {ascending: false}).limit(200); if (r.error) throw r.error;
     const a = r.data || [], box = $("adl");
-    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri ${/^Poprawka:/.test(x.name) ? "afix" : /^Szlak:/.test(x.name) ? "ahk" : /^Usunięcie/.test(x.name) ? "adok" : "aadd"}" data-i="${esc(x.id)}">${/^Poprawka:/.test(x.name) ? "Zastosuj" : /^Szlak:/.test(x.name) ? "Zatwierdź" : /^Usunięcie/.test(x.name) ? "Usuń" : "Dodaj"}</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
+    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small"><a href="https://www.google.com/maps/search/${encodeURIComponent((x.name || "").replace(/^(Szlak|Poprawka|Usunięcie[^:]*): /, "") + " " + (x.country || ""))}" target="_blank" rel="noopener" style="color:var(--accent)">📍 Znajdź na mapie ↗</a></div><div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri ${/^Poprawka:/.test(x.name) ? "afix" : /^Szlak:/.test(x.name) ? "ahk" : /^Usunięcie/.test(x.name) ? "adok" : "aadd"}" data-i="${esc(x.id)}">${/^Poprawka:/.test(x.name) ? "Zastosuj" : /^Szlak:/.test(x.name) ? "Zatwierdź" : /^Usunięcie/.test(x.name) ? "Usuń" : "Dodaj"}</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
     box.querySelectorAll(".afix").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i), pid = /#id:(\S+)/.exec(x.note || ""), mk = /km:\s*([\d.,]+)/i.exec(x.note || ""), me = /wys\.?:\s*(\d+)/i.exec(x.note || ""), mn = /nazwa:\s*([^·]+)/i.exec(x.note || "");
       const rr = pid && (byIdW[pid[1]] || byIdS[pid[1]]); if (!rr) { alert("Nie znaleziono tego miejsca. Popraw ręcznie lub usuń zgłoszenie."); return; }
       openEditPlace(rr, {n: mn ? mn[1].trim() : "", k: mk ? parseFloat(mk[1].replace(",", ".")) : "", e: me ? parseInt(me[1]) : "", sid: x.id}); });
@@ -1146,7 +1166,7 @@ function openAddPlace(sg){
   const w0 = !(sg && sg.mode === "s");
   ovBox().innerHTML = `<div class="card"><h3>Dodaj miejsce</h3>
     <div class="fld"><label>TRYB</label><select class="sel" id="apm"><option value="w">Zima (ośrodek)</option><option value="s">Lato (miejsce do chodzenia)</option></select></div>
-    <div class="fld"><label>NAZWA</label><div style="display:flex;gap:8px"><input id="apn" class="lin" value="${esc((sg && sg.name) || "")}" style="flex:1"><button class="btn pri" id="apg">Znajdź</button></div><div class="small" id="apmsg" style="min-height:16px">„Znajdź" wypełni kraj, region i współrzędne z OpenStreetMap.</div></div>
+    <div class="fld"><label>NAZWA</label><div style="display:flex;gap:8px"><input id="apn" class="lin" value="${esc((sg && sg.name) || "")}" style="flex:1"><button class="btn pri" id="apg">Znajdź</button></div><div class="small" id="apmsg" style="min-height:16px">„Znajdź" wypełni kraj, region i współrzędne z OpenStreetMap. Możesz też wkleić „46.85, 9.53" w pole szerokości.</div><a class="small" id="apmap" target="_blank" rel="noopener" style="color:var(--accent)" href="#">📍 Szukaj w Google Maps ↗</a></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KRAJ (KOD)</label><input id="apc" class="lin" maxlength="2" placeholder="IT" value=""></div><div class="fld" style="flex:2"><label>REGION</label><input id="apr" class="lin"></div></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>SZEROKOŚĆ (LAT)</label><input id="apy" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>DŁUGOŚĆ (LON)</label><input id="apx" class="lin" inputmode="decimal"></div></div>
     <div id="apw"><div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS</label><input id="apk" class="lin" inputmode="decimal"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ (M)</label><input id="ape" class="lin" inputmode="numeric"></div></div><div class="fld"><label>STRONA WWW</label><input id="apu" class="lin" placeholder="https://"></div></div>
@@ -1157,6 +1177,10 @@ function openAddPlace(sg){
   $("apm").value = w0 ? "w" : "s"; $("apm").onchange = sync; sync();
   if (sg && sg.note) { const mk = /km:\s*([\d.,]+)/i.exec(sg.note), me = /wys\.?:\s*(\d+)/i.exec(sg.note); if (mk) $("apk").value = mk[1].replace(",", "."); if (me) $("ape").value = me[1]; }
   $("apback").onclick = openAdmin;
+  { const upd = () => { const q = $("apn").value.trim(); $("apmap").href = "https://www.google.com/maps/search/" + encodeURIComponent(q + " " + ($("apc").value || "")); }; $("apn").addEventListener("input", upd); upd(); }
+  { const pc = v => { const m = /(-?\d{1,3}(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:[.,]\d+)?)/.exec(v); if (m) { $("apy").value = m[1].replace(",", "."); $("apx").value = m[2].replace(",", "."); } };
+    $("apy").addEventListener("paste", e => { const t = (e.clipboardData || window.clipboardData).getData("text"); if (/[,;\s]/.test(t.trim()) && /\d/.test(t)) { e.preventDefault(); pc(t); } });
+    if (sg && sg.name && !$("apy").value) setTimeout(() => $("apg") && $("apg").click(), 150); }
   $("apg").onclick = async () => {
     const q = $("apn").value.trim(), m = $("apmsg"); if (q.length < 2) return; m.textContent = "Szukam…";
     try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&accept-language=en&q=" + encodeURIComponent(q)); const j = await r.json();
@@ -1594,11 +1618,13 @@ function show(t){
 }
 $("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b) show(b.dataset.t); });
 window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+function flipUI(){ const a = document.querySelector("main"), h = document.querySelector("header"); [a, h].forEach(e => { if (!e) return; e.classList.remove("flip"); void e.offsetWidth; e.classList.add("flip"); }); setTimeout(() => [a, h].forEach(e => e && e.classList.remove("flip")), 600); }
+function countUp(){ document.querySelectorAll("#hstats b").forEach(b => { const to = parseFloat(b.textContent); if (!isFinite(to) || to <= 0 || to > 99999 || b.dataset.cu === String(to)) return; const from = parseFloat(b.dataset.cu) || 0; b.dataset.cu = String(to); if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), dur = 700, txt = b.textContent; (function f(t){ const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); b.textContent = k < 1 ? String(Math.round(from + (to - from) * e)) : txt; if (k < 1) requestAnimationFrame(f); })(t0); }); }
 function setMode(m){
   if (m === MODE) return;
   closeSheet(); MODE = m; syncVisits();
   const T = m === "w" ? WINTER : SUMMER; R = T.R; G = T.G; byId = m === "w" ? byIdW : byIdS;
-  document.body.classList.toggle("summer", m === "s");
+  document.body.classList.toggle("summer", m === "s"); flipUI();
   document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
     document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
   document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
