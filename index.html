@@ -350,6 +350,7 @@ function applyExtra(rows){
     if (String(x.id).startsWith("ovr:")) { const r = map[String(x.id).slice(4)]; if (!r) return;
       if (d.hidden) { const T = w ? WINTER : SUMMER, ix = T.R.indexOf(r); if (ix >= 0) T.R.splice(ix, 1); delete map[r.id]; (T.G || []).forEach(g => { if (g.m) g.m = g.m.filter(i => map[i]); }); n++; return; }
       if (d.n) { r.n = d.n; r.full = d.n; } if (w) { if (d.k != null && d.k !== "") r.k = +d.k; if (d.e != null && d.e !== "") r.e = +d.e; if (d.w) r.w = d.w; r.auto = false; }
+      if (!w && Array.isArray(d.addHikes)) { r.hikes = r.hikes || []; d.addHikes.forEach(h => { if (h && h.n && !r.hikes.some(z => z.n === h.n)) r.hikes.push(h); }); r.k = r.hikes.length; }
       r.s = norm([r.full, r.n, r.l, r.r, String(r.c).split(",").map(cname).join(" ")].join(" ")); n++; return; }
     if (!x.id || map[x.id] || !d.n) return;
     const c = String(d.c || "").toUpperCase(), lat = +d.y, lon = +d.x;
@@ -1006,6 +1007,31 @@ function showNickPop(el, u){
     else { await setFriends(isFr ? (store.friends || []).filter(x => String(x).toLowerCase() !== lu) : [...(store.friends || []), lu]); try { await loadFriendsData(); } catch(e){} if (curId) renderSheet(); renderList(); } };
 }
 document.addEventListener("click", e => { const n = e.target.closest && e.target.closest(".nick"); if (n) { e.stopPropagation(); showNickPop(n, n.dataset.u); return; } if (!e.target.closest || !e.target.closest("#nickpop")) hideNickPop(); }, true);
+function openAddHike(r, pre){
+  const p = pre || {}, adm = !!store.admin;
+  ovBox().innerHTML = `<div class="card"><h3>Dodaj szlak: ${esc(r.n)}</h3><div class="sub">${adm ? "Jako admin dodajesz od razu, bez zatwierdzania." : "Zgłoszenie trafi do zatwierdzenia."}</div>
+    <div class="fld"><label>NAZWA SZLAKU</label><input id="ahn" class="lin" value="${esc(p.n || "")}"></div>
+    <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>TRUDNOŚĆ</label><select id="ahd" class="sel"><option>łatwa</option><option ${p.d === "średnia" || !p.d ? "selected" : ""}>średnia</option><option ${p.d === "trudna" ? "selected" : ""}>trudna</option></select></div><div class="fld" style="flex:1"><label>CZAS</label><input id="aht" class="lin" placeholder="np. 3–4 h" value="${esc(p.t || "")}"></div></div>
+    <div class="fld"><label>KRÓTKI OPIS (OPCJONALNIE)</label><textarea id="aho" class="lin" rows="2">${esc(p.o || "")}</textarea></div>
+    <div class="small" id="ahm" style="min-height:16px"></div>
+    <div style="display:flex;gap:8px"><button class="btn pri" id="ahsave" style="flex:1">${adm ? "Dodaj" : "Wyślij"}</button><button class="btn" id="lclose" style="flex:1">Anuluj</button></div></div>`;
+  $("lclose").onclick = closeAccount;
+  $("ahsave").onclick = async () => {
+    const m = $("ahm"), h = {n: $("ahn").value.trim().slice(0, 100), d: $("ahd").value, t: $("aht").value.trim().slice(0, 30), o: $("aho").value.trim().slice(0, 300), s: ""};
+    if (h.n.length < 2) { m.textContent = "Wpisz nazwę szlaku."; return; }
+    $("ahsave").disabled = true; m.textContent = "Zapisuję…";
+    try {
+      if (adm) { const oid = "ovr:" + r.id; let prev = null; try { const pv = await store.sb.from("extra_places").select("data").eq("id", oid).maybeSingle(); prev = pv && pv.data && pv.data.data; } catch(e){}
+        const data = Object.assign({}, prev || {}, {addHikes: [...((prev && prev.addHikes) || []), h]});
+        const dl = await store.sb.from("extra_places").delete().eq("id", oid); if (dl && dl.error) throw dl.error;
+        const ins = await store.sb.from("extra_places").insert({id: oid, mode: "s", data}); if (ins && ins.error) throw ins.error;
+        applyExtra([{id: oid, mode: "s", data: {addHikes: [h]}}]); if (p.sid) await store.sb.from("suggestions").delete().eq("id", p.sid);
+        try { localStorage.removeItem("skibeen.extra"); } catch(e){} renderAll(); m.textContent = "Dodano ✓"; }
+      else { const ins = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: "s", name: ("Szlak: " + r.n).slice(0, 120), country: "", note: ("#id:" + r.id + " · szlak: " + [h.n, h.d, h.t, h.o].join("; ")).slice(0, 500)}); if (ins && ins.error) throw ins.error; m.textContent = "Dzięki! Zgłoszenie wysłane ✓"; $("ahsave").style.display = "none"; return; }
+      setTimeout(closeAccount, 500);
+    } catch(e){ $("ahsave").disabled = false; m.textContent = "Nie udało się: " + String((e && e.message) || e).slice(0, 90); }
+  };
+}
 async function adminHidePlace(r){
   const typed = prompt("Usunięcie ukryje to miejsce u WSZYSTKICH użytkowników (ich zapisane wizyty zostaną w danych).\nAby potwierdzić, przepisz nazwę:\n" + r.n); if (typed === null) return;
   if (typed.trim().toLowerCase() !== String(r.n).trim().toLowerCase()) { alert("Nazwa się nie zgadza. Nic nie usunięto."); return; }
@@ -1031,8 +1057,8 @@ function openEditPlace(r, pre){
     const m = $("epm"), n = $("epn").value.trim().slice(0, 120); if (n.length < 2) { m.textContent = "Wpisz nazwę."; return; }
     const data = {n}; if (W) { const k = parseFloat($("epk").value.replace(",", ".")), e = parseInt($("epe").value), w = $("epw").value.trim(); if (k >= 0) data.k = k; if (e >= 0) data.e = e; if (/^https?:\/\//i.test(w)) data.w = w; }
     $("epsave").disabled = true; m.textContent = "Zapisuję…";
-    try { const oid = "ovr:" + r.id; const d = await store.sb.from("extra_places").delete().eq("id", oid); if (d && d.error) throw d.error;
-      const ins = await store.sb.from("extra_places").insert({id: oid, mode: W ? "w" : "s", data}); if (ins && ins.error) throw ins.error;
+    try { const oid = "ovr:" + r.id; let prevOv = null; try { const pv = await store.sb.from("extra_places").select("data").eq("id", oid).maybeSingle(); prevOv = pv && pv.data && pv.data.data; } catch(e){} const d = await store.sb.from("extra_places").delete().eq("id", oid); if (d && d.error) throw d.error;
+      const ins = await store.sb.from("extra_places").insert({id: oid, mode: W ? "w" : "s", data: Object.assign({}, prevOv || {}, data)}); if (ins && ins.error) throw ins.error;
       applyExtra([{id: oid, mode: W ? "w" : "s", data}]); if (p.sid) await store.sb.from("suggestions").delete().eq("id", p.sid);
       await done(); m.textContent = "Zapisano ✓"; setTimeout(closeAccount, 500); }
     catch(e){ $("epsave").disabled = false; m.textContent = "Nie udało się: " + String((e && e.message) || e).slice(0, 90); }
@@ -1059,10 +1085,12 @@ async function openAdmin(){
   try { const ex = await store.sb.from("extra_places").select("id,mode,data"); if (!ex.error && (ex.data || []).length) { $("aex").innerHTML = `<div class="small" style="margin:10px 0 4px;font-weight:700">Dodane przez panel (${ex.data.length})</div>` + ex.data.map(x => { const ov = String(x.id).startsWith("ovr:"); return `<div class="frow"><span>${ov ? (x.data.hidden ? "🚫 ukryty: " : "✎ zmieniony: ") : ""}${esc(x.data.n)} <span class="small">${x.mode === "s" ? "lato" : "zima"}${ov ? "" : " · " + esc(x.data.c || "")}</span></span><button class="btn sm bad aexdel" data-ov="${ov ? 1 : ""}" data-id="${esc(x.id)}">${ov ? "Cofnij" : "Usuń"}</button></div>`; }).join(""); document.querySelectorAll(".aexdel").forEach(b => b.onclick = async () => { if (!confirm(b.dataset.ov ? "Cofnąć tę zmianę? Oryginalne dane wrócą po odświeżeniu strony." : "Usunąć to miejsce z bazy? Zniknie u wszystkich.")) return; b.disabled = true; const d = await store.sb.from("extra_places").delete().eq("id", b.dataset.id); if (!(d && d.error)) { try { localStorage.removeItem("skibeen.extra"); } catch(e){} b.closest(".frow").remove(); } }); } } catch(e){}
   try { const r = await store.sb.from("suggestions").select("*").order("created_at", {ascending: false}).limit(200); if (r.error) throw r.error;
     const a = r.data || [], box = $("adl");
-    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri ${/^Poprawka:/.test(x.name) ? "afix" : "aadd"}" data-i="${esc(x.id)}">${/^Poprawka:/.test(x.name) ? "Zastosuj" : "Dodaj"}</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
+    box.innerHTML = a.length ? a.map(x => `<div class="frow" style="align-items:flex-start" data-id="${esc(x.id)}"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small">${x.mode === "s" ? "lato" : "zima"}${x.country ? " · " + esc(x.country) : ""}</span>${x.note ? `<div class="small" style="white-space:pre-wrap">${esc(x.note)}</div>` : ""}<div class="small">od @${esc(x.username || "?")} · ${esc(String(x.created_at || "").slice(0,10))}</div></div><span style="display:flex;gap:6px;flex-direction:column"><button class="btn sm pri ${/^Poprawka:/.test(x.name) ? "afix" : /^Szlak:/.test(x.name) ? "ahk" : "aadd"}" data-i="${esc(x.id)}">${/^Poprawka:/.test(x.name) ? "Zastosuj" : /^Szlak:/.test(x.name) ? "Zatwierdź" : "Dodaj"}</button><button class="btn sm bad adel" data-id="${esc(x.id)}">Usuń</button></span></div>`).join("") : "Brak zgłoszeń.";
     box.querySelectorAll(".afix").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i), pid = /#id:(\S+)/.exec(x.note || ""), mk = /km:\s*([\d.,]+)/i.exec(x.note || ""), me = /wys\.?:\s*(\d+)/i.exec(x.note || ""), mn = /nazwa:\s*([^·]+)/i.exec(x.note || "");
       const rr = pid && (byIdW[pid[1]] || byIdS[pid[1]]); if (!rr) { alert("Nie znaleziono tego miejsca. Popraw ręcznie lub usuń zgłoszenie."); return; }
       openEditPlace(rr, {n: mn ? mn[1].trim() : "", k: mk ? parseFloat(mk[1].replace(",", ".")) : "", e: me ? parseInt(me[1]) : "", sid: x.id}); });
+    box.querySelectorAll(".ahk").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i), pid = /#id:(\S+)/.exec(x.note || ""), t = /szlak:\s*(.*)$/i.exec(x.note || ""), rr = pid && byIdS[pid[1]]; if (!rr || !t) { alert("Nie znaleziono miejsca lub szlaku."); return; }
+      const q = t[1].split(";").map(z => z.trim()); const prevM = MODE; openAddHike(rr, {n: q[0], d: q[1], t: q[2], o: q.slice(3).join("; "), sid: x.id}); });
     box.querySelectorAll(".aadd").forEach(b => b.onclick = () => { const x = a.find(y => String(y.id) === b.dataset.i); openAddPlace(x); });
     box.querySelectorAll(".adel").forEach(b => b.onclick = async () => { b.disabled = true; const d = await store.sb.from("suggestions").delete().eq("id", b.dataset.id); if (!(d && d.error)) b.closest(".frow").remove(); });
   } catch(e){ $("adl").textContent = "Nie udało się wczytać: " + String((e && e.message) || e).slice(0,80); }
@@ -1307,9 +1335,9 @@ function renderSheet(){
   document.querySelectorAll("#sheet .hnote").forEach(t => t.oninput = () => { const v = visits[curId]; if (!v) return; v.hn = v.hn || {}; const i = +t.dataset.h; if (t.value.trim()) v.hn[i] = t.value; else delete v.hn[i]; scheduleSave(); });
   { const fx = $("sgfix"); if (fx) fx.onclick = () => { closeSheet(); openSuggest(r.n, r); };
   const hg = $("hgear"); if (hg) hg.onclick = e => { e.stopPropagation(); let p = $("nickpop"); if (!p) { p = document.createElement("div"); p.id = "nickpop"; document.body.append(p); }
-    const canRep = !RO && SBC && store.sb; p.innerHTML = `<button data-a="w">${W ? (r.w ? "Strona ośrodka ↗" : "Ceny karnetów ↗") : "Szlaki i informacje ↗"}</button>${canRep ? `<button data-a="e">⚠ Zgłoś błąd w danych</button>` : ""}${(canRep && store.admin) ? `<button data-a="a">✎ Edytuj dane (admin)</button><button data-a="d" style="color:#ff8a8a">🗑 Usuń ośrodek (admin)</button>` : ""}`; p.style.display = "flex";
+    const canRep = !RO && SBC && store.sb; p.innerHTML = `<button data-a="w">${W ? (r.w ? "Strona ośrodka ↗" : "Ceny karnetów ↗") : "Szlaki i informacje ↗"}</button>${canRep ? `<button data-a="e">⚠ Zgłoś błąd w danych</button>` : ""}${(canRep && !W) ? `<button data-a="h">＋ Dodaj brakujący szlak</button>` : ""}${(canRep && store.admin) ? `<button data-a="a">✎ Edytuj dane (admin)</button><button data-a="d" style="color:#ff8a8a">🗑 Usuń ośrodek (admin)</button>` : ""}`; p.style.display = "flex";
     const b = hg.getBoundingClientRect(), w = p.offsetWidth; p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, b.right - w)) + "px"; p.style.top = (b.bottom + 6) + "px";
-    p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "w") window.open((W && r.w) ? r.w : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze"), "_blank", "noopener"); else if (bt.dataset.a === "a") { closeSheet(); openEditPlace(r, null); } else if (bt.dataset.a === "d") { adminHidePlace(r); } else { closeSheet(); openSuggest(r.n, r); } }; }; }
+    p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "w") window.open((W && r.w) ? r.w : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze"), "_blank", "noopener"); else if (bt.dataset.a === "a") { closeSheet(); openEditPlace(r, null); } else if (bt.dataset.a === "d") { adminHidePlace(r); } else if (bt.dataset.a === "h") { closeSheet(); openAddHike(r, null); } else { closeSheet(); openSuggest(r.n, r); } }; }; }
   if (!RO && SBC && store.sb && $("opsec")) loadOpinions(r.id);
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
