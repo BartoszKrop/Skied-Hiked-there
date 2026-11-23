@@ -142,7 +142,7 @@ textarea:focus,input[type=date]:focus{border-color:rgba(90,209,255,.5)}
 /* ranking */
 .tiers .tier{display:flex;gap:8px;margin-bottom:9px}
 .tiers .lab{width:46px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:#0b1626;text-shadow:0 1px 0 rgba(255,255,255,.3)}
-.chip{touch-action:pan-y;user-select:none;-webkit-user-select:none}.chip.drag{opacity:.35}.ghost{position:fixed;z-index:99;pointer-events:none;transform:translate(-50%,-120%);box-shadow:0 8px 24px rgba(0,0,0,.5)}.tiers .box.over{outline:2px solid var(--accent);background:var(--accentbg)}.pool{min-height:60px}
+.chip{touch-action:pan-y;user-select:none;-webkit-user-select:none}.chip.drag{visibility:hidden}.chip{-webkit-touch-callout:none}.ghost{position:fixed;z-index:99;pointer-events:none;transform:translate(-50%,-120%);box-shadow:0 8px 24px rgba(0,0,0,.5)}.tiers .box.over{outline:2px solid var(--accent);background:var(--accentbg)}.pool{min-height:60px}
 .tiers .box{flex:1;min-height:48px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:7px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
 .small{font-size:12px;color:var(--mute)}
 .hint{padding:2px 4px 12px;color:var(--mute);font-size:13px}
@@ -651,6 +651,13 @@ function renderTiers(){
   const boxAt = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest ? el.closest(".box[data-t]") : null; };
   const noScroll = e => { if (drag && drag.on) e.preventDefault(); };
   document.addEventListener("touchmove", noScroll, {passive:false});
+  host.addEventListener("contextmenu", e => { if (e.target.closest(".chip")) e.preventDefault(); });
+  const scroller = () => { let n = host; while (n && n !== document.body) { const o = getComputedStyle(n).overflowY; if ((o === "auto" || o === "scroll") && n.scrollHeight > n.clientHeight) return n; n = n.parentElement; } return document.scrollingElement || document.documentElement; };
+  let raf = 0;
+  const autoScroll = () => { raf = 0; if (!drag || !drag.on) return; const y = drag.cy, H = window.innerHeight, edge = 110; let dy = 0;
+    if (y < edge + 40) dy = -Math.ceil((edge + 40 - y) / 6); else if (y > H - edge - 50) dy = Math.ceil((y - (H - edge - 50)) / 6);
+    if (dy) { const sc = scroller(); sc.scrollTop += Math.max(-24, Math.min(24, dy)); const b = boxAt(drag.cx, drag.cy); if (drag.over && drag.over !== b) drag.over.classList.remove("over"); if (b) b.classList.add("over"); drag.over = b; }
+    raf = requestAnimationFrame(autoScroll); };
   host.addEventListener("pointerdown", e => {
     const c = e.target.closest(".chip"); if (!c) return;
     drag = {c, id:c.dataset.id, x:e.clientX, y:e.clientY, on:false, g:null, pid:e.pointerId, over:null};
@@ -661,11 +668,13 @@ function renderTiers(){
     if (!drag) return; drag.on = true; drag.c.classList.add("drag");
     const g = drag.c.cloneNode(true); g.classList.add("ghost"); g.classList.remove("drag"); document.body.append(g); drag.g = g;
     g.style.left = drag.x + "px"; g.style.top = drag.y + "px";
+    drag.cx = drag.x; drag.cy = drag.y; if (!raf) raf = requestAnimationFrame(autoScroll);
     try { host.setPointerCapture(drag.pid); } catch(_){}
   }
   host.addEventListener("pointermove", e => {
     if (!drag) return;
     if (!drag.on) { if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 10) { clearTimeout(drag.timer); if (e.pointerType === "mouse") start(); else drag = null; } if (!drag || !drag.on) return; }
+    drag.cx = e.clientX; drag.cy = e.clientY; if (!raf) raf = requestAnimationFrame(autoScroll);
     drag.g.style.left = e.clientX + "px"; drag.g.style.top = e.clientY + "px";
     const b = boxAt(e.clientX, e.clientY); if (drag.over && drag.over !== b) drag.over.classList.remove("over"); if (b) b.classList.add("over"); drag.over = b;
   });
