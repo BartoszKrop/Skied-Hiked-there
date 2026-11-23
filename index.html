@@ -213,7 +213,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
   <div class="brand">
     <div class="swt tg" id="swt" data-m="w" role="button" aria-label="Przełącz zima/lato"><div class="logo"><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg></div>
     <h1 id="appname">Skied there</h1><span class="swp" id="swp">⇄</span></div>
-    <div class="rt"><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
+    <div class="rt"><button id="rfbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Odśwież" title="Odśwież dane">⟳</button><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Znajomi" title="Znajomi">👥</button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia">⚙</button><button id="acct" class="acct" style="display:none">👤 Niezalogowany</button>
     <div class="mode" id="mode"><button data-m="w" class="on">❄️ Zima</button><button data-m="s">☀️ Lato</button></div></div><i class="brk"></i>
   </div>
   <div class="hstats" id="hstats"></div>
@@ -1894,6 +1894,9 @@ function showInstBar(){
 }
 let instT = null; function scheduleInstBar(){ if (instT) return; instT = setTimeout(showInstBar, 25000); }
 if (isIOS()) scheduleInstBar();
+$("rfbtn").onclick = async () => { const b = $("rfbtn"); if (b.dataset.busy) return; b.dataset.busy = "1"; b.style.opacity = ".5";
+  try { if (RO) await loadRO(); else if (store.mode === "sb") { await refreshSb(); await loadExtra(); await loadShared(true); if ($("v-wyjazdy").classList.contains("on")) renderTrips(); } else { await loadExtra(); location.reload(); } } catch(e){}
+  b.style.opacity = ""; delete b.dataset.busy; };
 $("gear").onclick = openSettings; $("frbtn").onclick = openFriends; initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
 try { if (localStorage.getItem(LSM) === "s") setMode("s"); } catch(e){}
 initStore(); startI18n();
