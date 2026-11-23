@@ -390,7 +390,8 @@ const TIERS = [["S","linear-gradient(135deg,#ff7b8a,#ff9f7b)"],["A","linear-grad
 // wpis: {s:"v"|"p", stays:[{y,m}], pd:"RRRR[-MM]", pr:0..5, r:0..5, t:"S".."D"|"", n:"", done:{idxSzlaku:1}}
 let wVisits = {}, sVisits = {}, visits = wVisits;
 const LS = "skibeen.v1", LSH = "skibeen.h1", LSM = "skibeen.mode", LST = "skibeen.trips";
-let TRIPS = [], tripOpen = null;
+let TRIPS = [], tripOpen = null, PACKS = [], packOpen = null, tripsTab = "trips";
+try { PACKS = JSON.parse(localStorage.getItem("skibeen.packs") || "[]") || []; } catch(e){ PACKS = []; }
 try { TRIPS = JSON.parse(localStorage.getItem(LST) || "[]") || []; } catch(e){ TRIPS = []; }
 let store = {mode:"local", ref:null};
 const ROU = ((location.hash.match(/^#u\/([A-Za-z0-9_-]{3,24})$/) || [])[1] || "");
@@ -417,9 +418,9 @@ function migrate(o){
 }
 function syncVisits(){ visits = MODE === "w" ? wVisits : sVisits; }
 function loadLocal(){ try { const t = localStorage.getItem(LS); if (t) wVisits = migrate(JSON.parse(t)); const h = localStorage.getItem(LSH); if (h) sVisits = migrate(JSON.parse(h)); } catch(e){} syncVisits(); }
-function saveLocal(){ if (RO) return; if (typeof store !== "undefined" && store && store.mode === "sb") return; try { localStorage.setItem(LS, JSON.stringify(wVisits)); localStorage.setItem(LSH, JSON.stringify(sVisits)); localStorage.setItem(LST, JSON.stringify(TRIPS)); } catch(e){} }
+function saveLocal(){ if (RO) return; if (typeof store !== "undefined" && store && store.mode === "sb") return; try { localStorage.setItem(LS, JSON.stringify(wVisits)); localStorage.setItem(LSH, JSON.stringify(sVisits)); localStorage.setItem(LST, JSON.stringify(TRIPS)); localStorage.setItem("skibeen.packs", JSON.stringify(PACKS)); } catch(e){} }
 const exportJSON = pretty => JSON.stringify({visits: wVisits, hvisits: sVisits}, null, pretty ? 1 : 0);
-function wipeLocal(){ try { localStorage.removeItem(LS); localStorage.removeItem(LSH); localStorage.removeItem(LST); } catch(e){} }
+function wipeLocal(){ try { localStorage.removeItem(LS); localStorage.removeItem(LSH); localStorage.removeItem(LST); localStorage.removeItem("skibeen.packs"); } catch(e){} }
 function setSaveState(t){ $("saveState").textContent = t; }
 function scheduleSave(){
   if (RO) return;
@@ -434,7 +435,7 @@ async function flush(){
   writing = true; dirty = false;
   if (store.mode === "sb") {
     try {
-      const r = await store.sb.from("profiles").upsert({user_id: store.uid, data: {visits: wVisits, hvisits: sVisits, friends: store.friends || [], trips: TRIPS}, updated_at: new Date().toISOString()}).select("updated_at").single();
+      const r = await store.sb.from("profiles").upsert({user_id: store.uid, data: {visits: wVisits, hvisits: sVisits, friends: store.friends || [], trips: TRIPS, packs: PACKS}, updated_at: new Date().toISOString()}).select("updated_at").single();
       if (r.error) throw r.error; store.rev = r.data.updated_at; setSaveState("zapisano ✓ · konto");
     } catch(e){ dirty = true; setSaveState("błąd zapisu, spróbuję ponownie"); setTimeout(flush, 8000); }
   } else {
@@ -454,7 +455,7 @@ async function attachUser(user){
     store.admin = false; try { sb.from("admins").select("user_id").eq("user_id", user.id).maybeSingle().then(x => { store.admin = !!(x && x.data); }).catch(() => {}); } catch(e){}
     if (RO) { store.mode = "local"; setSaveState("podgląd profilu @" + RO.username); updateAcct(); renderRoBar(); renderStats(); return; }
     const empty = !Object.keys(rv).length && !Object.keys(rh).length;   // pierwsze logowanie: dane gościa przechodzą na konto; potem konto jest jedynym źródłem
-    if (!empty) { wVisits = rv; sVisits = rh; } if (Array.isArray(rd.trips) && (rd.trips.length || !TRIPS.length)) TRIPS = rd.trips;
+    if (!empty) { wVisits = rv; sVisits = rh; } if (Array.isArray(rd.trips) && (rd.trips.length || !TRIPS.length)) TRIPS = rd.trips; if (Array.isArray(rd.packs) && (rd.packs.length || !PACKS.length)) PACKS = rd.packs;
     syncVisits(); store.mode = "sb"; wipeLocal(); store.rev = r.data ? r.data.updated_at : "";
     dirty = true; await flush(); renderAll(); updateAcct(); closeAccount(); loadFriendsData(); loadShared(true).then(() => tryJoin());
   } catch(e){ store.mode = "local"; setSaveState("zalogowano, ale sync nie działa: " + String((e && (e.message || e.code)) || e).slice(0,90)); renderAll(); updateAcct(); closeAccount(); }
@@ -466,7 +467,7 @@ async function refreshSb(){
     if (dirty || writing) { clearTimeout(saveTimer); dirty = true; let n = 0; while (writing && n++ < 20) await new Promise(r => setTimeout(r, 200)); await flush(); }
     const r = await store.sb.from("profiles").select("data,updated_at").eq("user_id", store.uid).maybeSingle();
     if (r.error) throw r.error;
-    if (r.data) { const rd = r.data.data || {}; store.friends = Array.isArray(rd.friends) ? rd.friends : (store.friends || []); wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); if (Array.isArray(rd.trips)) TRIPS = rd.trips; syncVisits(); store.rev = r.data.updated_at; closeSheet(); renderAll(); }
+    if (r.data) { const rd = r.data.data || {}; store.friends = Array.isArray(rd.friends) ? rd.friends : (store.friends || []); wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); if (Array.isArray(rd.trips)) TRIPS = rd.trips; if (Array.isArray(rd.packs)) PACKS = rd.packs; syncVisits(); store.rev = r.data.updated_at; closeSheet(); renderAll(); }
     setSaveState("odświeżono ✓ · konto"); loadFriendsData(); loadShared(true);
   } catch(e){ setSaveState("nie udało się odświeżyć: " + String((e && (e.message || e.code)) || e).slice(0,70)); }
   if (b) b.disabled = false;
@@ -476,7 +477,7 @@ async function pullSb(){
   try {
     const r = await store.sb.from("profiles").select("data,updated_at").eq("user_id", store.uid).maybeSingle();
     if (r.error || !r.data || r.data.updated_at === store.rev) return;
-    const rd = r.data.data || {}; wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); if (Array.isArray(rd.trips)) TRIPS = rd.trips; syncVisits(); store.rev = r.data.updated_at; renderAll(); setSaveState("zapisano ✓ · konto");
+    const rd = r.data.data || {}; wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); if (Array.isArray(rd.trips)) TRIPS = rd.trips; if (Array.isArray(rd.packs)) PACKS = rd.packs; syncVisits(); store.rev = r.data.updated_at; renderAll(); setSaveState("zapisano ✓ · konto");
   } catch(e){}
 }
 async function loadRO(){
@@ -1628,15 +1629,18 @@ function renderTrips(){
   if (RO || MODE !== "s") { box.innerHTML = ""; return; }
   const t = allTrips().find(x => x.id === tripOpen);
   const me = meName();
+  const segH = `<div class="seg" id="tseg" style="margin-bottom:12px"><button data-s="trips" class="${tripsTab === "trips" ? "on" : ""}">✈ Wyjazdy</button><button data-s="packs" class="${tripsTab === "packs" ? "on" : ""}">🎒 Pakowanie</button></div>`;
+  const bindSeg = () => { const sg = $("tseg"); if (sg) sg.onclick = e => { const b = e.target.closest("button"); if (!b) return; tripsTab = b.dataset.s; packOpen = null; renderTrips(); }; };
+  if (!t && tripsTab === "packs") { renderPacks(box, segH); bindSeg(); return; }
   if (!t) {
-    box.innerHTML = `<div class="hint">Planer górskich wyjazdów: zbierz szlaki, rozłóż je na dni, a znajomi mogą planować razem z Tobą.</div>` +
+    box.innerHTML = segH + `<div class="hint">Planer górskich wyjazdów: zbierz szlaki, rozłóż je na dni, a znajomi mogą planować razem z Tobą.</div>` +
       (allTrips().length ? allTrips().map(x => { const its = x.items || [], hh = its.reduce((s, i) => s + hrs(tripHike(i).h && tripHike(i).h.t), 0), dn = its.filter(i => i.ok).length;
         const places = [...new Set(its.map(i => byIdS[i.p] && byIdS[i.p].n).filter(Boolean))].slice(0, 3).join(", ");
         return `<div class="card tripc" data-id="${esc(x.id)}" style="cursor:pointer"><h3 style="margin:0 0 2px">${esc(x.name || "Wyjazd")}${x.shared ? ` <span class="small" style="font-weight:600">👥 ${1 + (x.members || []).length}</span>` : ""}${tripIsNew(x) ? ` <span class="small" style="color:var(--accent)">● nowe</span>` : ""}</h3><div class="sub" style="margin:0">${esc(tripRange(x))}${tripRange(x) && places ? " · " : ""}${esc(places)}</div><div class="small" style="margin-top:4px">${x.shared && x.owner !== store.uid ? "od @" + esc(x.owner_name) + " · " : ""}${its.length} ${plur(its.length, "szlak", "szlaki", "szlaków")}${hh ? " · " + fmtH(hh) : ""}${dn ? " · zrobione " + dn + "/" + its.length : ""}</div></div>`; }).join("") : `<div class="empty">Nie masz jeszcze żadnego wyjazdu.</div>`) +
       `<button class="btn pri" id="tnew" style="width:100%;margin-top:6px">＋ Nowy wyjazd</button>`;
     $("tnew").onclick = () => { const x = {id: newTripId(), name: "Nowy wyjazd", from: "", to: "", note: "", items: [], dn: {}, costs: [], pack: [], cur: "zł"}; TRIPS.unshift(x); tripOpen = x.id; tripSave(); renderTrips(); };
     box.querySelectorAll(".tripc").forEach(c => c.onclick = () => openTrip(c.dataset.id));
-    return;
+    bindSeg(); return;
   }
   t.items = t.items || []; t.costs = t.costs || []; t.pack = t.pack || []; t.dn = t.dn || {};
   const D = tripDays(t), total = t.items.reduce((s, i) => s + hrs(tripHike(i).h && tripHike(i).h.t), 0), ppl = tripPeople(t), shared = t.shared && ppl.length > 1;
@@ -1723,6 +1727,37 @@ function renderTrips(){
   box.querySelectorAll(".twx").forEach(async el => { const d = +el.dataset.d, its = t.items.filter(i => (i.day || 0) === d), r = its.map(i => tripHike(i).r).find(x => x && x.y != null), iso = dayISO(t.from, d); if (!r || !iso) return;
     const w = await wxFor(+r.y, +r.x, iso); if (!w || !el.isConnected) return; const bad = w.c >= 95 || w.p >= 60 || w.w >= 50;
     el.innerHTML = `${WXI(w.c)} ${Math.round(w.lo)}–${Math.round(w.hi)}°C · opady ${w.p == null ? "?" : w.p}% · wiatr ${Math.round(w.w)} km/h${bad ? ` <span style="color:var(--warn)">⚠ ${w.c >= 95 ? "ryzyko burzy" : w.p >= 60 ? "duże ryzyko deszczu" : "silny wiatr"}</span>` : ""}`; });
+}
+function renderPacks(box, segH){
+  const save = () => scheduleSave(), p = PACKS.find(x => x.id === packOpen), rr = () => { const st = $("v-wyjazdy").scrollTop; renderTrips(); $("v-wyjazdy").scrollTop = st; };
+  if (!p) {
+    box.innerHTML = segH + `<div class="hint">Listy rzeczy do zabrania w góry. Działają osobno od wyjazdów, więc możesz odhaczać to, co już spakowałeś, bez planowania trasy.</div>` +
+      (PACKS.length ? PACKS.map(x => { const n = (x.items || []).length, k = (x.items || []).filter(i => i.ok).length; return `<div class="card pkc" data-id="${esc(x.id)}" style="cursor:pointer"><h3 style="margin:0 0 4px">${esc(x.name || "Lista")}</h3><div class="small">${k} / ${n} spakowane${n && k === n ? " ✓" : ""}</div><div class="bar" style="margin-top:6px"><i class="${n && k === n ? "full" : ""}" style="width:${n ? 100 * k / n : 0}%"></i></div></div>`; }).join("") : `<div class="empty">Nie masz jeszcze żadnej listy.</div>`) +
+      `<button class="btn pri" id="pknew" style="width:100%;margin-top:6px">＋ Nowa lista z gotowymi rzeczami</button><button class="btn" id="pknew0" style="width:100%;margin-top:8px">＋ Pusta lista</button>`;
+    const mk = seed => { const x = {id: newTripId(), name: "Pakowanie w góry", items: seed ? PACK_DEF.map(n => ({id: newTripId(), n, ok: false})) : []}; PACKS.unshift(x); packOpen = x.id; save(); renderTrips(); };
+    $("pknew").onclick = () => mk(true); $("pknew0").onclick = () => mk(false);
+    box.querySelectorAll(".pkc").forEach(c => c.onclick = () => { packOpen = c.dataset.id; renderTrips(); $("v-wyjazdy").scrollTop = 0; });
+    return;
+  }
+  p.items = p.items || [];
+  const n = p.items.length, k = p.items.filter(i => i.ok).length;
+  box.innerHTML = `<button class="btn sm" id="pkback" style="margin-bottom:10px">← Wszystkie listy</button>
+    <div class="card"><div class="fld"><label>NAZWA LISTY</label><input id="pkname" class="lin" value="${esc(p.name || "")}"></div><div class="small">${k} / ${n} spakowane${n && k === n ? " ✓ Gotowe!" : ""}</div><div class="bar" style="margin-top:6px"><i class="${n && k === n ? "full" : ""}" style="width:${n ? 100 * k / n : 0}%"></i></div></div>
+    ${p.items.map(x => `<div class="frow"><label style="display:flex;gap:10px;align-items:center;min-width:0;flex:1;padding:4px 0"><input type="checkbox" class="pki" data-id="${esc(x.id)}" ${x.ok ? "checked" : ""} style="width:20px;height:20px"> <span style="${x.ok ? "text-decoration:line-through;opacity:.55" : ""}">${esc(x.n)}</span></label><button class="tdel pkdl" data-id="${esc(x.id)}" title="Usuń">🗑</button></div>`).join("") || `<div class="small" style="margin:8px 0">Lista jest pusta. Dodaj rzeczy poniżej.</div>`}
+    <div style="display:flex;gap:6px;margin:12px 0"><input id="pkn" class="lin" placeholder="Dodaj własną rzecz…" style="flex:1"><button class="btn pri" id="pkadd">Dodaj</button></div>
+    ${PACK_DEF.some(d => !p.items.some(x => x.n === d)) ? `<div class="small" style="margin:4px 0">Podpowiedzi:</div><div style="display:flex;gap:6px;flex-wrap:wrap">${PACK_DEF.filter(d => !p.items.some(x => x.n === d)).map(d => `<button class="btn sm pkq" data-n="${esc(d)}">+ ${esc(d)}</button>`).join("")}</div>` : ""}
+    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn sm" id="pkreset" style="flex:1">↺ Odznacz wszystko</button><button class="btn sm" id="pkdup" style="flex:1">⧉ Duplikuj</button></div>
+    <button class="btn sm" id="pkdel" style="width:100%;margin-top:10px;color:#ff8a8a">Usuń listę</button>`;
+  $("pkback").onclick = () => { packOpen = null; renderTrips(); };
+  $("pkname").onchange = e => { p.name = e.target.value.trim().slice(0, 60); save(); };
+  const add = nm => { nm = String(nm || "").trim().slice(0, 60); if (!nm || p.items.some(x => x.n === nm)) return; p.items.push({id: newTripId(), n: nm, ok: false}); save(); rr(); };
+  $("pkadd").onclick = () => add($("pkn").value); $("pkn").onkeydown = e => { if (e.key === "Enter") add(e.target.value); };
+  box.querySelectorAll(".pkq").forEach(b => b.onclick = () => add(b.dataset.n));
+  box.querySelectorAll(".pki").forEach(b => b.onchange = () => { const x = p.items.find(z => z.id === b.dataset.id); if (x) { x.ok = b.checked; save(); rr(); } });
+  box.querySelectorAll(".pkdl").forEach(b => b.onclick = () => { p.items = p.items.filter(z => z.id !== b.dataset.id); save(); rr(); });
+  $("pkreset").onclick = () => { p.items.forEach(x => x.ok = false); save(); rr(); };
+  $("pkdup").onclick = () => { const x = {id: newTripId(), name: (p.name || "Lista") + " (kopia)", items: p.items.map(i => ({id: newTripId(), n: i.n, ok: false}))}; PACKS.unshift(x); packOpen = x.id; save(); renderTrips(); };
+  $("pkdel").onclick = () => { if (!confirm("Usunąć listę „" + (p.name || "") + "”?")) return; PACKS = PACKS.filter(x => x !== p); packOpen = null; save(); renderTrips(); };
 }
 function openTrip(id){ const t = allTrips().find(x => x.id === id); tripOpen = id; cmOpen.clear(); tripPrev = seenGet()[id] || 0; if (t) seenSet(id, Date.now()); renderTrips(); $("v-wyjazdy").scrollTop = 0; }
 /* przeciąganie szlaków między dniami */
