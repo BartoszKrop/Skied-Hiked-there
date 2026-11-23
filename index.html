@@ -767,7 +767,7 @@ function periodData(per){
   const stays = places.reduce((a, r) => a + visits[r.id].stays.filter(per.test).length, 0);
   return {places, countries:cs, stays, km:places.reduce((a, r) => a + r.k, 0)};
 }
-let GEO = null, GEOP = null;
+let GEO = null, GEOP = null, LANDR = null;
 function decodeTopo(t){
   const k = t.transform || {scale:[1,1], translate:[0,0]};
   const arcs = t.arcs.map(a => { let x = 0, y = 0; return a.map(p => { x += p[0]; y += p[1]; return [x * k.scale[0] + k.translate[0], y * k.scale[1] + k.translate[1]]; }); });
@@ -782,10 +782,13 @@ function decodeTopo(t){
 }
 function loadGeo(){
   if (GEO) return Promise.resolve(GEO);
+  if (LANDR) return Promise.resolve(LANDR);
   if (GEOP) return GEOP;
   GEOP = new Promise(res => {
-    const ac = typeof AbortController !== "undefined" ? new AbortController() : null, to = setTimeout(() => { try { ac && ac.abort(); } catch(e){} res(null); }, 7000);
-    fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json", ac ? {signal: ac.signal} : {}).then(r => r.json()).then(j => { clearTimeout(to); GEO = decodeTopo(j); res(GEO); }).catch(() => { clearTimeout(to); res(null); });
+    const ac = typeof AbortController !== "undefined" ? new AbortController() : null, to = setTimeout(() => { try { ac && ac.abort(); } catch(e){} res(null); }, 12000);
+    const us = ["https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json", "https://unpkg.com/world-atlas@2/countries-50m.json", "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"]; let i = 0;
+    const go = () => { if (i >= us.length) { clearTimeout(to); res(null); return; } fetch(us[i++], ac ? {signal: ac.signal} : {}).then(r => r.json()).then(j => { clearTimeout(to); GEO = decodeTopo(j); res(GEO); }).catch(() => { if (ac && ac.signal.aborted) return; go(); }); };
+    go();
   }).then(g => { if (!g) GEOP = null; return g; });
   return GEOP;
 }
@@ -798,9 +801,10 @@ function drawMapPanel(c, pts, PX, PY, PW, PH, rad){
   const TX = x => ox + (x - x0) * sc, TY = y => oy + (y - y0) * sc;
   c.save(); c.beginPath(); c.roundRect(PX, PY, PW, PH, 26); c.clip();
   const lx0 = (PX - ox) / sc / COS + x0 / COS, lx1 = (PX + PW - ox) / sc / COS + x0 / COS, la0 = -((PY + PH - oy) / sc + y0), la1 = -((PY - oy) / sc + y0);
-  if (GEO) {
+  const GG = GEO || LANDR;
+  if (GG) {
     c.fillStyle = "rgba(255,255,255,.085)"; c.strokeStyle = "rgba(255,255,255,.32)"; c.lineWidth = 1.6; c.lineJoin = "round";
-    GEO.forEach(rg => {
+    GG.forEach(rg => {
       let a = 1e9, b = -1e9, d = 1e9, e = -1e9; for (const p of rg) { if (p[0] < a) a = p[0]; if (p[0] > b) b = p[0]; if (p[1] < d) d = p[1]; if (p[1] > e) e = p[1]; }
       if (b < lx0 || a > lx1 || e < la0 || d > la1) return;
       c.beginPath(); rg.forEach((p, i) => { const X = TX(px(p[0])), Y = TY(py(p[1])); if (i) c.lineTo(X, Y); else c.moveTo(X, Y); }); c.closePath(); c.fill(); c.stroke();
@@ -888,7 +892,7 @@ function shareCanvas(kind, per, tall){
 }
 async function openShare(kind, per){
   let ov = $("shareov"); if (!ov) { ov = document.createElement("div"); ov.id = "shareov"; document.body.append(ov); }
-  if ((kind === "map" || kind === "period") && !GEO) { ov.innerHTML = `<div class="small" style="color:#cdd8ee;text-align:center;padding:30px">Ładuję kontury map…</div>`; ov.style.display = "flex"; await loadGeo(); }
+  if ((kind === "map" || kind === "period") && !GEO && !LANDR) { ov.innerHTML = `<div class="small" style="color:#cdd8ee;text-align:center;padding:30px">Ładuję kontury map…</div>`; ov.style.display = "flex"; await loadGeo(); }
   const cv = shareCanvas(kind, per, true); ov.innerHTML = ""; ov.append(cv);
   const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px";
   const sv = Object.assign(document.createElement("button"), {className:"btn pri", textContent:"Pobierz 9:16 (TikTok)"}), sq = Object.assign(document.createElement("button"), {className:"btn", textContent:"Pobierz 4:5"}), cl = Object.assign(document.createElement("button"), {className:"btn", textContent:"Zamknij"});
@@ -1550,7 +1554,7 @@ function decodePoly(str, off, scl){
 }
 function drawLand(geo){
   const scl = geo.UTF8Scale || 1024, enc = geo.UTF8Encoding; let d = "";
-  const ring = pts => { let inside = false; for (const p of pts) if (p[0] > -16 && p[0] < 36 && p[1] > 28 && p[1] < 62) { inside = true; break; } return inside ? "M" + pts.map(p => px(p[0]).toFixed(3) + " " + py(p[1]).toFixed(3)).join("L") + "Z" : ""; };
+  const ring = pts => { if (!LANDR) LANDR = []; LANDR.push(pts); let inside = false; for (const p of pts) if (p[0] > -16 && p[0] < 36 && p[1] > 28 && p[1] < 62) { inside = true; break; } return inside ? "M" + pts.map(p => px(p[0]).toFixed(3) + " " + py(p[1]).toFixed(3)).join("L") + "Z" : ""; };
   geo.features.forEach(f => {
     const g = f.geometry; if (!g) return;
     const polys = g.type === "Polygon" ? [g.coordinates] : g.coordinates, offs = g.type === "Polygon" ? [g.encodeOffsets] : g.encodeOffsets;
