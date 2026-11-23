@@ -1632,7 +1632,7 @@ async function wxFor(lat, lon, iso){
     return (WX[k] = {c: d.weathercode[0], hi: d.temperature_2m_max[0], lo: d.temperature_2m_min[0], p: d.precipitation_probability_max[0], w: d.windspeed_10m_max[0]}); } catch(e){ return null; }
 }
 const PACK_DEF = ["Buty trekkingowe", "Kurtka przeciwdeszczowa", "Polar / warstwa ocieplająca", "Czapka i rękawiczki", "Czapka z daszkiem + okulary", "Krem z filtrem", "Bidon / woda", "Powerbank", "Apteczka + plastry", "Czołówka", "Kijki trekkingowe", "Przekąski / batony", "Mapa offline", "Dowód / EKUZ", "Gotówka / karta", "Zapasowe skarpety", "Pokrowiec na plecak", "Ładowarka"];
-let cmOpen = new Set(), tripPrev = 0;
+let cmOpen = new Set(), pkOpen = new Set(), tripPrev = 0;
 function renderTrips(){
   const box = $("trips"); if (!box) return;
   if (RO || MODE !== "s") { box.innerHTML = ""; return; }
@@ -1683,9 +1683,17 @@ function renderTrips(){
     <div class="small" style="margin:4px 0;font-weight:700">Dzielimy na:</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">${ppl.map(p => `<label style="display:flex;gap:5px;align-items:center;font-size:14px"><input type="checkbox" class="tcsp" value="${esc(p)}" checked> @${esc(p)}</label>`).join("")}</div>` : ""}
     <button class="btn sm pri" id="tcadd">Dodaj wydatek</button></details>`;
   /* pakowanie */
-  const packHtml = `<details class="tpd" style="margin-top:6px"><summary class="small" style="font-weight:700;cursor:pointer;padding:8px 2px">🎒 Do zabrania${t.pack.length ? " · " + t.pack.filter(x => x.ok).length + "/" + t.pack.length : ""} ▾</summary>
-    ${t.pack.map(x => `<div class="frow"><label style="display:flex;gap:8px;align-items:center;min-width:0"><input type="checkbox" class="tpk2" data-id="${esc(x.id)}" ${x.ok ? "checked" : ""}> <span style="${x.ok ? "text-decoration:line-through;opacity:.6" : ""}">${esc(x.n)}</span></label><span style="display:flex;gap:6px;align-items:center">${shared ? `<select class="sel tpw" data-id="${esc(x.id)}" style="width:auto;padding:4px 6px;font-size:12px"><option value="">kto?</option>${ppl.map(p => `<option value="${esc(p)}" ${x.who === p ? "selected" : ""}>@${esc(p)}</option>`).join("")}</select>` : ""}<button class="tdel tpdl" data-id="${esc(x.id)}" title="Usuń">🗑</button></span></div>`).join("") || `<div class="small">Lista jest pusta. Dotknij pozycji poniżej albo dodaj własną.</div>`}
-    <div style="display:flex;gap:6px;margin:8px 0"><input id="tpn" class="lin" placeholder="Dodaj własną rzecz…" style="flex:1"><button class="btn sm pri" id="tpadd">Dodaj</button></div>
+  const pkFor = x => (x.for && x.for.length) ? x.for.filter(p => ppl.includes(p)) : (x.who && ppl.includes(x.who) ? [x.who] : ppl), pkOk = (x, u) => !!(x.okb && x.okb[u]);
+  const pkDone = x => shared ? (pkFor(x).length > 0 && pkFor(x).every(u => pkOk(x, u))) : !!x.ok;
+  const myPk = shared ? t.pack.filter(x => pkFor(x).includes(me)) : [];
+  const packHtml = `<details class="tpd" ${t.pack.length ? "open" : ""} style="margin-top:6px"><summary class="small" style="font-weight:700;cursor:pointer;padding:8px 2px">🎒 Do zabrania${t.pack.length ? " · " + t.pack.filter(pkDone).length + "/" + t.pack.length + (shared ? " gotowe" : "") : ""} ▾</summary>
+    ${shared && myPk.length ? `<div class="small" style="margin:0 0 6px">Ty masz do spakowania: <b>${myPk.filter(x => pkOk(x, me)).length}/${myPk.length}</b></div>` : ""}
+    ${t.pack.map(x => { if (!shared) return `<div class="frow"><label style="display:flex;gap:8px;align-items:center;min-width:0"><input type="checkbox" class="tpk2" data-id="${esc(x.id)}" ${x.ok ? "checked" : ""}> <span style="${x.ok ? "text-decoration:line-through;opacity:.6" : ""}">${esc(x.n)}</span></label><button class="tdel tpdl" data-id="${esc(x.id)}" title="Usuń">🗑</button></div>`;
+      const fo = pkFor(x), all = !(x.for && x.for.length) && !x.who, mineIn = fo.includes(me), done = pkDone(x);
+      return `<div class="card" style="margin:4px 0;padding:7px 10px"><div style="display:flex;gap:8px;align-items:center">${mineIn ? `<input type="checkbox" class="tpk2" data-id="${esc(x.id)}" ${pkOk(x, me) ? "checked" : ""}>` : `<span style="width:16px;text-align:center;opacity:.4">–</span>`}<span style="flex:1;min-width:0;font-size:14px;${done ? "text-decoration:line-through;opacity:.6" : ""}">${esc(x.n)}</span><span class="small" style="flex:none">${fo.filter(u => pkOk(x, u)).length}/${fo.length}</span><button class="btn sm tpwb" data-id="${esc(x.id)}" style="padding:2px 8px;font-size:11px">${all ? "👥 wszyscy" : "👤 " + fo.length}</button><button class="tdel tpdl" data-id="${esc(x.id)}" title="Usuń">🗑</button></div>
+      <div class="small" style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap">${fo.map(u => `<span style="${pkOk(x, u) ? "color:#2fb96a" : "opacity:.65"}">${pkOk(x, u) ? "✓" : "○"} @${esc(u)}</span>`).join("")}</div>
+      ${pkOpen.has(x.id) ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(128,128,128,.25)"><div class="small" style="margin-bottom:4px">Kto to bierze? <button class="btn sm tpall" data-id="${esc(x.id)}" style="padding:1px 8px;font-size:11px">wszyscy</button></div><div style="display:flex;gap:10px;flex-wrap:wrap">${ppl.map(p => `<label style="display:flex;gap:4px;align-items:center;font-size:13px"><input type="checkbox" class="tpwho" data-id="${esc(x.id)}" value="${esc(p)}" ${fo.includes(p) ? "checked" : ""}> @${esc(p)}</label>`).join("")}</div></div>` : ""}</div>`; }).join("") || `<div class="small">Lista jest pusta. Dotknij pozycji poniżej albo dodaj własną.${shared ? " Domyślnie każdy ma to zabrać." : ""}</div>`}
+    <div style="display:flex;gap:6px;margin:8px 0"><input id="tpn" class="lin" placeholder="+ własna rzecz" style="flex:1;padding:6px 10px;font-size:13px;min-height:0"><button class="btn sm" id="tpadd" style="padding:4px 10px;font-size:12px">Dodaj</button></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">${PACK_DEF.filter(n => !t.pack.some(x => x.n === n)).map(n => `<button class="btn sm tpq" data-n="${esc(n)}">+ ${esc(n)}</button>`).join("")}</div></details>`;
   box.innerHTML = `<button class="btn sm" id="tback" style="margin-bottom:10px">← Wszystkie wyjazdy</button>
     <div class="card"><div class="fld"><label>NAZWA WYJAZDU</label><input id="tname" class="lin" value="${esc(t.name || "")}"></div>
@@ -1717,11 +1725,13 @@ function renderTrips(){
     const sp = [...box.querySelectorAll(".tcsp")].filter(x => x.checked).map(x => x.value); t.costs.push({id: newTripId(), w, a, by: ($("tcby") && $("tcby").value) || me || "ja", ad: me || "ja", sp: shared && sp.length && sp.length < ppl.length ? sp : null, at: Date.now()}); tripSave(); rr(); box.querySelector(".tcd").open = true; };
   box.querySelectorAll(".tcdl").forEach(b => b.onclick = () => { const c = t.costs.find(x => x.id === b.dataset.c); if (!c || (c.ad || c.by) !== (me || "ja")) return; t.costs = t.costs.filter(x => x !== c); tripSave(); rr(); });
   /* pakowanie */
-  const addPack = n => { n = String(n || "").trim().slice(0, 60); if (!n || t.pack.some(x => x.n === n)) return; t.pack.push({id: newTripId(), n, who: "", ok: false}); tripSave(); rr(); box.querySelector(".tpd").open = true; };
+  const addPack = n => { n = String(n || "").trim().slice(0, 60); if (!n || t.pack.some(x => x.n === n)) return; t.pack.push({id: newTripId(), n, for: null, okb: {}, ok: false}); tripSave(); rr(); box.querySelector(".tpd").open = true; };
   $("tpadd").onclick = () => addPack($("tpn").value); $("tpn").onkeydown = e => { if (e.key === "Enter") addPack(e.target.value); };
   box.querySelectorAll(".tpq").forEach(b => b.onclick = () => addPack(b.dataset.n));
-  box.querySelectorAll(".tpk2").forEach(b => b.onchange = () => { const x = t.pack.find(z => z.id === b.dataset.id); if (x) { x.ok = b.checked; tripSave(); rr(); } });
-  box.querySelectorAll(".tpw").forEach(b => b.onchange = () => { const x = t.pack.find(z => z.id === b.dataset.id); if (x) { x.who = b.value; tripSave(); } });
+  box.querySelectorAll(".tpk2").forEach(b => b.onchange = () => { const x = t.pack.find(z => z.id === b.dataset.id); if (x) { if (shared) { x.okb = x.okb || {}; if (b.checked) x.okb[me] = true; else delete x.okb[me]; } else x.ok = b.checked; tripSave(); rr(); } });
+  box.querySelectorAll(".tpwb").forEach(b => b.onclick = () => { pkOpen.has(b.dataset.id) ? pkOpen.delete(b.dataset.id) : pkOpen.add(b.dataset.id); rr(); });
+  box.querySelectorAll(".tpall").forEach(b => b.onclick = () => { const x = t.pack.find(z => z.id === b.dataset.id); if (x) { x.for = null; x.who = ""; tripSave(); rr(); } });
+  box.querySelectorAll(".tpwho").forEach(b => b.onchange = () => { const x = t.pack.find(z => z.id === b.dataset.id); if (!x) return; const sel = [...box.querySelectorAll('.tpwho[data-id="' + b.dataset.id + '"]')].filter(c => c.checked).map(c => c.value); if (!sel.length) { b.checked = true; return; } x.for = sel.length === ppl.length ? null : sel; x.who = ""; tripSave(); rr(); });
   box.querySelectorAll(".tpdl").forEach(b => b.onclick = () => { t.pack = t.pack.filter(z => z.id !== b.dataset.id); tripSave(); rr(); box.querySelector(".tpd").open = true; });
   /* akcje */
   $("tadd").onclick = () => openTripPicker(t);
