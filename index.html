@@ -142,7 +142,7 @@ textarea:focus,input[type=date]:focus{border-color:rgba(90,209,255,.5)}
 /* ranking */
 .tiers .tier{display:flex;gap:8px;margin-bottom:9px}
 .tiers .lab{width:46px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:#0b1626;text-shadow:0 1px 0 rgba(255,255,255,.3)}
-.chip{touch-action:pan-y;user-select:none;-webkit-user-select:none}.chip.drag{visibility:hidden}.chip{-webkit-touch-callout:none}.ghost{position:fixed;z-index:99;pointer-events:none;transform:translate(-50%,-120%);box-shadow:0 8px 24px rgba(0,0,0,.5)}.tiers .box.over{outline:2px solid var(--accent);background:var(--accentbg)}.pool{min-height:60px}
+.chip{touch-action:pan-y;user-select:none;-webkit-user-select:none}.hike{position:relative}.hkdel,.tdel{background:none;border:0;padding:3px 6px;font-size:14px;line-height:1;opacity:.55;cursor:pointer;border-radius:8px}.hkdel{position:absolute;top:6px;right:6px}.hkdel:hover,.tdel:hover{opacity:1;background:rgba(255,80,80,.15)}.chip.drag{visibility:hidden}.chip{-webkit-touch-callout:none}.ghost{position:fixed;z-index:99;pointer-events:none;transform:translate(-50%,-120%);box-shadow:0 8px 24px rgba(0,0,0,.5)}.tiers .box.over{outline:2px solid var(--accent);background:var(--accentbg)}.pool{min-height:60px}
 .tiers .box{flex:1;min-height:48px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:7px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
 .small{font-size:12px;color:var(--mute)}
 .hint{padding:2px 4px 12px;color:var(--mute);font-size:13px}
@@ -244,6 +244,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
     <div class="list" id="list"></div>
   </section>
   <section class="view" id="v-ranking"><div class="pad tiers" id="tiers"></div></section>
+  <section class="view" id="v-wyjazdy"><div class="pad" id="trips"></div></section>
   <section class="view" id="v-grupy"><div class="pad" id="groups"></div></section>
   <section class="view" id="v-statystyki"><div class="pad" id="stats"></div></section>
 </main>
@@ -251,6 +252,7 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
   <button data-t="mapa" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4z"/><path d="M9 4v13M15 7v13"/></svg>Mapa</button>
   
   <button data-t="ranking"><svg class="i" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a2 2 0 0 0 0 4h3M16 6h3a2 2 0 0 1 0 4h-3M12 13v4M9 20h6M10 17h4"/></svg>Ranking</button>
+  <button data-t="wyjazdy" style="display:none"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V8l4-3 4 3v12M12 20V12l4-3 4 3v8M2 20h20"/></svg>Wyjazdy</button>
   <button data-t="grupy"><svg class="i" viewBox="0 0 24 24"><path d="M2 20 9 7l4.5 7L16 10l6 10H2z"/></svg>Grupy</button>
   <button data-t="statystyki"><svg class="i" viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>Staty</button>
 </nav>
@@ -387,7 +389,9 @@ const TIERS = [["S","linear-gradient(135deg,#ff7b8a,#ff9f7b)"],["A","linear-grad
 /* ---------- stan i zapis ---------- */
 // wpis: {s:"v"|"p", stays:[{y,m}], pd:"RRRR[-MM]", pr:0..5, r:0..5, t:"S".."D"|"", n:"", done:{idxSzlaku:1}}
 let wVisits = {}, sVisits = {}, visits = wVisits;
-const LS = "skibeen.v1", LSH = "skibeen.h1", LSM = "skibeen.mode";
+const LS = "skibeen.v1", LSH = "skibeen.h1", LSM = "skibeen.mode", LST = "skibeen.trips";
+let TRIPS = [], tripOpen = null;
+try { TRIPS = JSON.parse(localStorage.getItem(LST) || "[]") || []; } catch(e){ TRIPS = []; }
 let store = {mode:"local", ref:null};
 const ROU = ((location.hash.match(/^#u\/([A-Za-z0-9_-]{3,24})$/) || [])[1] || "");
 let RO = ROU ? {username: ROU.toLowerCase()} : null;
@@ -413,9 +417,9 @@ function migrate(o){
 }
 function syncVisits(){ visits = MODE === "w" ? wVisits : sVisits; }
 function loadLocal(){ try { const t = localStorage.getItem(LS); if (t) wVisits = migrate(JSON.parse(t)); const h = localStorage.getItem(LSH); if (h) sVisits = migrate(JSON.parse(h)); } catch(e){} syncVisits(); }
-function saveLocal(){ if (RO) return; if (typeof store !== "undefined" && store && store.mode === "sb") return; try { localStorage.setItem(LS, JSON.stringify(wVisits)); localStorage.setItem(LSH, JSON.stringify(sVisits)); } catch(e){} }
+function saveLocal(){ if (RO) return; if (typeof store !== "undefined" && store && store.mode === "sb") return; try { localStorage.setItem(LS, JSON.stringify(wVisits)); localStorage.setItem(LSH, JSON.stringify(sVisits)); localStorage.setItem(LST, JSON.stringify(TRIPS)); } catch(e){} }
 const exportJSON = pretty => JSON.stringify({visits: wVisits, hvisits: sVisits}, null, pretty ? 1 : 0);
-function wipeLocal(){ try { localStorage.removeItem(LS); localStorage.removeItem(LSH); } catch(e){} }
+function wipeLocal(){ try { localStorage.removeItem(LS); localStorage.removeItem(LSH); localStorage.removeItem(LST); } catch(e){} }
 function setSaveState(t){ $("saveState").textContent = t; }
 function scheduleSave(){
   if (RO) return;
@@ -430,7 +434,7 @@ async function flush(){
   writing = true; dirty = false;
   if (store.mode === "sb") {
     try {
-      const r = await store.sb.from("profiles").upsert({user_id: store.uid, data: {visits: wVisits, hvisits: sVisits, friends: store.friends || []}, updated_at: new Date().toISOString()}).select("updated_at").single();
+      const r = await store.sb.from("profiles").upsert({user_id: store.uid, data: {visits: wVisits, hvisits: sVisits, friends: store.friends || [], trips: TRIPS}, updated_at: new Date().toISOString()}).select("updated_at").single();
       if (r.error) throw r.error; store.rev = r.data.updated_at; setSaveState("zapisano ✓ · konto");
     } catch(e){ dirty = true; setSaveState("błąd zapisu, spróbuję ponownie"); setTimeout(flush, 8000); }
   } else {
@@ -450,7 +454,7 @@ async function attachUser(user){
     store.admin = false; try { sb.from("admins").select("user_id").eq("user_id", user.id).maybeSingle().then(x => { store.admin = !!(x && x.data); }).catch(() => {}); } catch(e){}
     if (RO) { store.mode = "local"; setSaveState("podgląd profilu @" + RO.username); updateAcct(); renderRoBar(); renderStats(); return; }
     const empty = !Object.keys(rv).length && !Object.keys(rh).length;   // pierwsze logowanie: dane gościa przechodzą na konto; potem konto jest jedynym źródłem
-    if (!empty) { wVisits = rv; sVisits = rh; }
+    if (!empty) { wVisits = rv; sVisits = rh; } if (Array.isArray(rd.trips) && (rd.trips.length || !TRIPS.length)) TRIPS = rd.trips;
     syncVisits(); store.mode = "sb"; wipeLocal(); store.rev = r.data ? r.data.updated_at : "";
     dirty = true; await flush(); renderAll(); updateAcct(); closeAccount(); loadFriendsData();
   } catch(e){ store.mode = "local"; setSaveState("zalogowano, ale sync nie działa: " + String((e && (e.message || e.code)) || e).slice(0,90)); renderAll(); updateAcct(); closeAccount(); }
@@ -462,7 +466,7 @@ async function refreshSb(){
     if (dirty || writing) { clearTimeout(saveTimer); dirty = true; let n = 0; while (writing && n++ < 20) await new Promise(r => setTimeout(r, 200)); await flush(); }
     const r = await store.sb.from("profiles").select("data,updated_at").eq("user_id", store.uid).maybeSingle();
     if (r.error) throw r.error;
-    if (r.data) { const rd = r.data.data || {}; store.friends = Array.isArray(rd.friends) ? rd.friends : (store.friends || []); wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); syncVisits(); store.rev = r.data.updated_at; closeSheet(); renderAll(); }
+    if (r.data) { const rd = r.data.data || {}; store.friends = Array.isArray(rd.friends) ? rd.friends : (store.friends || []); wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); if (Array.isArray(rd.trips)) TRIPS = rd.trips; syncVisits(); store.rev = r.data.updated_at; closeSheet(); renderAll(); }
     setSaveState("odświeżono ✓ · konto"); loadFriendsData();
   } catch(e){ setSaveState("nie udało się odświeżyć: " + String((e && (e.message || e.code)) || e).slice(0,70)); }
   if (b) b.disabled = false;
@@ -472,7 +476,7 @@ async function pullSb(){
   try {
     const r = await store.sb.from("profiles").select("data,updated_at").eq("user_id", store.uid).maybeSingle();
     if (r.error || !r.data || r.data.updated_at === store.rev) return;
-    const rd = r.data.data || {}; wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); syncVisits(); store.rev = r.data.updated_at; renderAll(); setSaveState("zapisano ✓ · konto");
+    const rd = r.data.data || {}; wVisits = migrate(cloneJ(rd.visits)); sVisits = migrate(cloneJ(rd.hvisits)); if (Array.isArray(rd.trips)) TRIPS = rd.trips; syncVisits(); store.rev = r.data.updated_at; renderAll(); setSaveState("zapisano ✓ · konto");
   } catch(e){}
 }
 async function loadRO(){
@@ -1309,7 +1313,7 @@ function renderSheet(){
     const noteUi = RO ? (note ? `<div class="hnro" data-nt>📝 ${esc(note)}</div>` : "") : (d ? `<textarea class="hnote" data-h="${i}" rows="2" placeholder="Notatka do tego szlaku…">${esc(note)}</textarea>` : "");
     return sh + `<div class="hike ${d?"done":""} ${pl?"planned":""}">
       ${RO ? `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>` : `<div class="tk2">${onlyPlan ? "" : `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Byłem">✓</button>`}<button class="tick plan ${pl?"pon":""}" data-p="${i}" aria-label="Planuję">◷</button></div>`}
-      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>${(store.admin && !RO && SBC) ? `<button class="btn sm hkdel" data-h="${i}" style="color:#ff8a8a;margin-top:4px">🗑 Usuń szlak (admin)</button>` : ""}
+      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div><p>${esc(h.o)}</p>${(!RO) ? `<button class="btn sm hktrip" data-h="${i}" style="margin-top:4px;margin-right:6px">＋ Do wyjazdu</button>` : ""}${(store.admin && !RO && SBC) ? `<button class="hkdel" data-h="${i}" title="Usuń szlak (admin)" aria-label="Usuń szlak (admin)">🗑</button>` : ""}
       ${(v && v.s === "p") ? "" : `<div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>`}${noteUi}
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
   const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b></div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
@@ -1354,6 +1358,7 @@ function renderSheet(){
     const b = hg.getBoundingClientRect(), w = p.offsetWidth; p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, b.right - w)) + "px"; p.style.top = (b.bottom + 6) + "px";
     p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "w") window.open((W && r.w) ? r.w : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze"), "_blank", "noopener"); else if (bt.dataset.a === "a") { closeSheet(); openEditPlace(r, null); } else if (bt.dataset.a === "d") { adminHidePlace(r); } else if (bt.dataset.a === "h") { closeSheet(); openAddHike(r, null); } else { closeSheet(); openSuggest(r.n, r); } }; }; }
   if (!RO && SBC && store.sb && $("opsec")) loadOpinions(r.id);
+  document.querySelectorAll("#sheet .hktrip").forEach(b => b.onclick = () => { const h = r.hikes[+b.dataset.h]; if (h) pickTripFor(r.id, h.n); });
   document.querySelectorAll("#sheet .hkdel").forEach(b => b.onclick = async () => { const h = r.hikes[+b.dataset.h]; if (!h) return;
     if (!askTosia("Usunięcie szlaku „" + h.n + "” (" + r.n + ")")) return;
     try { const ins = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: "s", name: ("Usunięcie szlaku: " + r.n).slice(0, 120), country: "", note: ("#id:" + r.id + " · usuń szlak: " + h.n).slice(0, 500)}); if (ins && ins.error) throw ins.error;
@@ -1531,7 +1536,7 @@ function drawLand(geo){
 
 /* ---------- zakładki i tryb ---------- */
 function show(t){
-  if (!["mapa","lista","ranking","grupy","statystyki"].includes(t) || ((t === "grupy" || t === "ranking") && MODE !== "w")) t = "mapa";
+  if (!["mapa","lista","ranking","grupy","statystyki","wyjazdy"].includes(t) || ((t === "grupy" || t === "ranking") && MODE !== "w") || (t === "wyjazdy" && (MODE !== "s" || RO))) t = "mapa";
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t));
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === (t === "lista" ? "mapa" : t)));
   try { if (!RO && location.hash !== "#" + t && !/access_token|error_description/.test(location.hash)) history.replaceState(null, "", "#" + t); } catch(e){}
@@ -1547,16 +1552,94 @@ function setMode(m){
   document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
   document.querySelector('#nav button[data-t="grupy"]').style.display = m === "w" ? "" : "none";
   document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
+  document.querySelector('#nav button[data-t="wyjazdy"]').style.display = (m === "s" && !RO) ? "" : "none";
   try { localStorage.setItem(LSM, m); } catch(e){}
   fCountry = ""; fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
   $("fsort").options[0].textContent = m === "w" ? "Najwięksi" : "Najwięcej szlaków";
   buildCountrySelect(); showAll = false; buildDots(); renderAll();
   const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
-  if (cur === "v-grupy" || cur === "v-ranking") show("mapa"); else fit();
+  if (cur === "v-grupy" || cur === "v-ranking" || (cur === "v-wyjazdy" && m !== "s")) show("mapa"); else fit();
 }
 document.querySelectorAll(".brand .tg").forEach(el => el.addEventListener("click", () => setMode(MODE === "w" ? "s" : "w")));
 $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); });
-function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); mapRefresh(); }
+/* ---------- planer wyjazdów (lato) ---------- */
+const tripSave = () => scheduleSave();
+const newTripId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const hrs = t => { const s = String(t || ""), nums = (s.match(/\d+(?:[.,]\d+)?/g) || []).map(x => parseFloat(x.replace(",", "."))); if (!nums.length) return 0; const a = nums.reduce((p, q) => p + q, 0) / nums.length; return /min/i.test(s) && !/h/i.test(s) ? a / 60 : a; };
+const fmtH = h => h ? "≈ " + (Math.round(h * 2) / 2).toString().replace(".", ",") + " h" : "";
+const dayDate = (from, k) => { if (!from) return ""; const d = new Date(from + "T12:00:00"); if (isNaN(d)) return ""; d.setDate(d.getDate() + k - 1); return d.toLocaleDateString("pl-PL", {weekday: "short", day: "numeric", month: "numeric"}); };
+const tripDays = t => { let n = 3; if (t.from && t.to) { const a = new Date(t.from), b = new Date(t.to); if (!isNaN(a) && !isNaN(b)) n = Math.max(1, Math.min(21, Math.round((b - a) / 864e5) + 1)); } (t.items || []).forEach(i => { if (i.day > n) n = i.day; }); return n; };
+const tripHike = it => { const r = byIdS[it.p]; const h = r && (r.hikes || []).find(z => z.n === it.n && !z.del); return {r, h}; };
+function tripRange(t){ if (!t.from) return ""; const f = x => new Date(x + "T12:00:00").toLocaleDateString("pl-PL", {day: "numeric", month: "short"}); return t.to && t.to !== t.from ? f(t.from) + " – " + f(t.to) : f(t.from); }
+function renderTrips(){
+  const box = $("trips"); if (!box) return;
+  if (RO || MODE !== "s") { box.innerHTML = ""; return; }
+  const t = TRIPS.find(x => x.id === tripOpen);
+  if (!t) {
+    box.innerHTML = `<div class="hint">Planer górskich wyjazdów: zbierz szlaki, które chcesz zrobić, i rozłóż je na dni.</div>` +
+      (TRIPS.length ? TRIPS.map(x => { const its = x.items || [], hh = its.reduce((s, i) => s + hrs(tripHike(i).h && tripHike(i).h.t), 0), dn = its.filter(i => i.ok).length;
+        const places = [...new Set(its.map(i => byIdS[i.p] && byIdS[i.p].n).filter(Boolean))].slice(0, 3).join(", ");
+        return `<div class="card tripc" data-id="${esc(x.id)}" style="cursor:pointer"><h3 style="margin:0 0 2px">${esc(x.name || "Wyjazd")}</h3><div class="sub" style="margin:0">${esc(tripRange(x))}${tripRange(x) && places ? " · " : ""}${esc(places)}</div><div class="small" style="margin-top:4px">${its.length} ${plur(its.length, "szlak", "szlaki", "szlaków")}${hh ? " · " + fmtH(hh) : ""}${dn ? " · zrobione " + dn + "/" + its.length : ""}</div></div>`; }).join("") : `<div class="empty">Nie masz jeszcze żadnego wyjazdu.</div>`) +
+      `<button class="btn pri" id="tnew" style="width:100%;margin-top:6px">＋ Nowy wyjazd</button>`;
+    $("tnew").onclick = () => { const x = {id: newTripId(), name: "Nowy wyjazd", from: "", to: "", note: "", items: []}; TRIPS.unshift(x); tripOpen = x.id; tripSave(); renderTrips(); };
+    box.querySelectorAll(".tripc").forEach(c => c.onclick = () => { tripOpen = c.dataset.id; renderTrips(); $("v-wyjazdy").scrollTop = 0; });
+    return;
+  }
+  t.items = t.items || [];
+  const D = tripDays(t), total = t.items.reduce((s, i) => s + hrs(tripHike(i).h && tripHike(i).h.t), 0);
+  const row = (it, idx) => { const {r, h} = tripHike(it);
+    return `<div class="hike ${it.ok ? "done" : ""}" style="margin-bottom:8px"><div class="tk2"><button class="tick ${it.ok ? "on" : ""}" data-ti="${idx}" aria-label="Zrobione">✓</button></div><div class="hb"><b>${esc(it.n)}</b> <span class="small">${r ? esc(r.n) : "(miejsce usunięte)"}</span>${h ? `<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div>` : `<div class="small">szlak nie jest już dostępny</div>`}
+      <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap"><select class="sel tdaysel" data-ti="${idx}" style="width:auto;padding:5px 8px;font-size:12px"><option value="0">Bez dnia</option>${Array.from({length: D}, (_, k) => `<option value="${k + 1}" ${it.day === k + 1 ? "selected" : ""}>Dzień ${k + 1}${dayDate(t.from, k + 1) ? " · " + dayDate(t.from, k + 1) : ""}</option>`).join("")}</select><button class="btn sm tup" data-ti="${idx}">↑</button><button class="btn sm tdn" data-ti="${idx}">↓</button><button class="tdel" data-ti="${idx}" title="Usuń z wyjazdu" aria-label="Usuń z wyjazdu" style="margin-left:auto">🗑</button></div></div></div>`; };
+  const groups = [[0, "Do rozplanowania"], ...Array.from({length: D}, (_, k) => [k + 1, "Dzień " + (k + 1) + (dayDate(t.from, k + 1) ? " · " + dayDate(t.from, k + 1) : "")])];
+  const body = groups.map(([d, lab]) => { const its = t.items.map((it, idx) => ({it, idx})).filter(z => (z.it.day || 0) === d); if (!its.length && d !== 0 && !(d <= 1)) return ""; const hh = its.reduce((s, z) => s + hrs(tripHike(z.it).h && tripHike(z.it).h.t), 0);
+    if (!its.length && d === 0) return ""; return `<div class="sect"><div class="sh"><b>${esc(lab)}</b><span class="small">${its.length ? its.length + " " + plur(its.length, "szlak", "szlaki", "szlaków") + (hh ? " · " + fmtH(hh) : "") : ""}</span></div>${its.length ? its.map(z => row(z.it, z.idx)).join("") : `<div class="small" style="margin:0 0 8px">Pusto. Przypisz szlaki do tego dnia.</div>`}</div>`; }).join("");
+  box.innerHTML = `<button class="btn sm" id="tback" style="margin-bottom:10px">← Wszystkie wyjazdy</button>
+    <div class="card"><div class="fld"><label>NAZWA WYJAZDU</label><input id="tname" class="lin" value="${esc(t.name || "")}"></div>
+    <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>OD</label><input id="tfrom" type="date" class="lin" value="${esc(t.from || "")}"></div><div class="fld" style="flex:1"><label>DO</label><input id="tto" type="date" class="lin" value="${esc(t.to || "")}"></div></div>
+    <div class="fld"><label>NOTATKI (NOCLEG, DOJAZD, PAKOWANIE…)</label><textarea id="tnote" class="lin" rows="2">${esc(t.note || "")}</textarea></div>
+    <div class="small">${t.items.length} ${plur(t.items.length, "szlak", "szlaki", "szlaków")}${total ? " · razem " + fmtH(total) : ""}</div></div>
+    ${body || `<div class="empty">Dodaj pierwsze szlaki do wyjazdu.</div>`}
+    <button class="btn pri" id="tadd" style="width:100%;margin-top:4px">＋ Dodaj szlaki</button>
+    <button class="btn sm" id="tdelall" style="width:100%;margin-top:10px;color:#ff8a8a">Usuń cały wyjazd</button>`;
+  $("tback").onclick = () => { tripOpen = null; renderTrips(); };
+  $("tname").onchange = e => { t.name = e.target.value.trim().slice(0, 80); tripSave(); };
+  $("tnote").onchange = e => { t.note = e.target.value.slice(0, 1000); tripSave(); };
+  $("tfrom").onchange = e => { t.from = e.target.value; if (t.to && t.to < t.from) t.to = t.from; tripSave(); renderTrips(); };
+  $("tto").onchange = e => { t.to = e.target.value; if (t.from && t.to < t.from) t.from = t.to; tripSave(); renderTrips(); };
+  box.querySelectorAll(".tick[data-ti]").forEach(b => b.onclick = () => { const it = t.items[+b.dataset.ti]; it.ok = !it.ok; tripSave(); renderTrips(); });
+  box.querySelectorAll(".tdaysel").forEach(s2 => s2.onchange = () => { t.items[+s2.dataset.ti].day = +s2.value; tripSave(); renderTrips(); });
+  const mv = (idx, dir) => { const day = t.items[idx].day || 0; let j = idx + dir; while (j >= 0 && j < t.items.length && (t.items[j].day || 0) !== day) j += dir; if (j < 0 || j >= t.items.length) return; [t.items[idx], t.items[j]] = [t.items[j], t.items[idx]]; tripSave(); renderTrips(); };
+  box.querySelectorAll(".tup").forEach(b => b.onclick = () => mv(+b.dataset.ti, -1)); box.querySelectorAll(".tdn").forEach(b => b.onclick = () => mv(+b.dataset.ti, 1));
+  box.querySelectorAll(".tdel").forEach(b => b.onclick = () => { t.items.splice(+b.dataset.ti, 1); tripSave(); renderTrips(); });
+  $("tadd").onclick = () => openTripPicker(t);
+  $("tdelall").onclick = () => { if (!confirm("Usunąć cały wyjazd „" + (t.name || "") + "”?")) return; TRIPS = TRIPS.filter(x => x !== t); tripOpen = null; tripSave(); renderTrips(); };
+}
+function openTripPicker(t, pid0){
+  let pid = pid0 || "", q = "";
+  const draw = () => {
+    const sel = new Set((t.items || []).map(i => i.p + "|" + i.n));
+    let inner;
+    if (!pid) { const L = SUMMER.R.filter(r => !q || norm(r.n + " " + (r.c || "")).includes(norm(q))).slice(0, 40);
+      inner = `<div class="fld"><input id="tpq" class="lin" type="search" placeholder="Szukaj miejsca (np. Interlaken)…" value="${esc(q)}"></div>` + L.map(r => `<div class="frow tpp" data-id="${esc(r.id)}" style="cursor:pointer"><span>${flag((r.c || "").split(",")[0])} ${esc(r.n)} <span class="small">${(r.hikes || []).filter(h => !h.del).length} szlaków</span></span><span>›</span></div>`).join(""); }
+    else { const r = byIdS[pid]; inner = `<button class="btn sm" id="tpback" style="margin-bottom:8px">← Inne miejsce</button><div class="small" style="font-weight:700;margin:0 0 6px">${esc(r.n)}</div>` + (r.hikes || []).filter(h => !h.del).map(h => { const on = sel.has(pid + "|" + h.n); return `<div class="frow"><span style="min-width:0"><b>${esc(h.n)}</b><div class="small"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span> · ⏱ ${esc(h.t)}</div></span><button class="btn sm tpa ${on ? "" : "pri"}" data-n="${esc(h.n)}">${on ? "✓ dodany" : "＋ Dodaj"}</button></div>`; }).join(""); }
+    ovBox().innerHTML = `<div class="card" style="max-height:85vh;overflow:auto;width:min(560px,94vw)"><h3>Dodaj szlaki do: ${esc(t.name || "wyjazdu")}</h3>${inner}<button class="btn" id="lclose" style="width:100%;margin-top:10px">Gotowe</button></div>`;
+    $("lclose").onclick = () => { closeAccount(); renderTrips(); };
+    const qi = $("tpq"); if (qi) { qi.oninput = () => { q = qi.value; const pos = qi.selectionStart; draw(); const n = $("tpq"); n.focus(); n.setSelectionRange(pos, pos); }; }
+    document.querySelectorAll(".tpp").forEach(el => el.onclick = () => { pid = el.dataset.id; draw(); });
+    const bk = $("tpback"); if (bk) bk.onclick = () => { pid = ""; draw(); };
+    document.querySelectorAll(".tpa").forEach(b => b.onclick = () => { const k = pid + "|" + b.dataset.n; t.items = t.items || []; if (t.items.some(i => i.p + "|" + i.n === k)) { t.items = t.items.filter(i => i.p + "|" + i.n !== k); } else t.items.push({p: pid, n: b.dataset.n, day: 0}); tripSave(); draw(); });
+  };
+  draw();
+}
+function pickTripFor(pid, hn){
+  const add = t => { t.items = t.items || []; if (!t.items.some(i => i.p === pid && i.n === hn)) t.items.push({p: pid, n: hn, day: 0}); tripSave(); renderTrips(); };
+  ovBox().innerHTML = `<div class="card" style="width:min(460px,94vw)"><h3>Dodaj do wyjazdu</h3><div class="sub">${esc(hn)}</div>${TRIPS.map(x => `<div class="frow tpk" data-id="${esc(x.id)}" style="cursor:pointer"><span>${esc(x.name || "Wyjazd")} <span class="small">${esc(tripRange(x))}</span></span><span>＋</span></div>`).join("")}<button class="btn pri" id="tpnew" style="width:100%;margin-top:10px">＋ Nowy wyjazd z tym szlakiem</button><button class="btn" id="lclose" style="width:100%;margin-top:8px">Anuluj</button></div>`;
+  $("lclose").onclick = closeAccount;
+  document.querySelectorAll(".tpk").forEach(el => el.onclick = () => { add(TRIPS.find(x => x.id === el.dataset.id)); closeAccount(); alert("Dodano do wyjazdu ✓"); });
+  $("tpnew").onclick = () => { const x = {id: newTripId(), name: "Nowy wyjazd", from: "", to: "", note: "", items: []}; TRIPS.unshift(x); add(x); closeAccount(); tripOpen = x.id; show("wyjazdy"); };
+}
+
+function renderAll(){ renderHeader(); renderList(); renderGroups(); renderTiers(); renderStats(); renderTrips(); mapRefresh(); }
 
 document.addEventListener("click", e => { if (e.target && e.target.id === "sgbtn") openSuggest(fQ ? ($("q").value || "") : ""); });
 /* instalacja jako aplikacja (PWA) */
