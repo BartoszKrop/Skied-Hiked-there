@@ -422,6 +422,16 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
 .fld label{text-transform:lowercase;font-family:var(--fb);font-weight:600;font-size:12.5px;letter-spacing:0;color:var(--mute)}
 .fld label::first-letter{text-transform:uppercase}
 .tform .tft{font-family:var(--fb)}
+
+.toolbar{padding:10px 14px 8px}
+.frowm{display:grid;grid-template-columns:.95fr 1.4fr 1fr;gap:6px;margin-top:6px}
+.toolbar .frowm select{padding:9px 6px;font-size:12.5px;border-radius:10px;min-width:0;text-overflow:ellipsis}
+.toolbar input[type=search]{padding:10px 13px;border-radius:10px}
+.fmore{margin-top:6px;background:none;border:0;color:var(--mute);font:inherit;font-size:12.5px;font-weight:600;padding:4px 2px;cursor:pointer}
+.fmore::after{content:"";display:inline-block;width:6px;height:6px;margin-left:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+.fmore.open::after{transform:rotate(-135deg) translateY(-1px)}
+.fmore.act{color:var(--accent)}
+#fextra .row2{margin-top:6px}#fextra select{padding:9px 10px;font-size:13px;border-radius:10px}
 </style>
 </head>
 <body>
@@ -449,12 +459,13 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
   </section>
   <section class="view" id="v-lista">
     <div class="toolbar">
-      <button class="btn sm" id="lback" style="align-self:flex-start;margin-bottom:6px">← Mapa</button>
       <input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off">
-      <div class="row2"><div class="seg" id="fstat"><button data-v="all" class="on">Wszystkie</button><button data-v="yes">Byłem</button><button data-v="plan">Planuję</button><button data-v="no">Nie byłem</button></div></div>
-      <div class="row2"><select id="fcountry"></select><select id="fsort"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="p">Priorytet planów</option></select></div>
+      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="p">Priorytet planów</option></select></div>
+      <button class="fmore" id="fmore" type="button">Więcej filtrów <span id="fmorec"></span></button>
+      <div id="fextra" style="display:none">
       <div class="row2" id="frow3"><select id="fgroup"></select></div>
       <div class="row2" id="frow2"><select id="fminkm"><option value="0">Wielkość: dowolna</option><option value="30">od 30 km tras</option><option value="50">od 50 km</option><option value="100">od 100 km</option><option value="150">od 150 km</option><option value="200">od 200 km</option><option value="300">od 300 km</option></select><select id="fminel"><option value="0">Wysokość: dowolna</option><option value="1000">powyżej 1000 m</option><option value="1500">powyżej 1500 m</option><option value="2000">powyżej 2000 m</option><option value="2500">powyżej 2500 m</option><option value="3000">powyżej 3000 m</option></select></div>
+      </div>
     </div>
     <div class="small" id="fcount" style="margin:8px 4px 2px"></div>
     <div class="list" id="list"></div>
@@ -819,7 +830,8 @@ function buildCountrySelect(){
     Object.keys(cs).sort((a,b)=>cname(a).localeCompare(cname(b),"pl")).map(c => `<option value="${c}">${flag(c)} ${esc(cname(c))} (${cs[c]})</option>`).join("");
 }
 function buildGroupSelect(){ $("fgroup").innerHTML = `<option value="">Wszystkie grupy / domeny</option>` + G.map((g, i) => g.m.length >= 2 ? `<option value="${i}">${esc(g.n)}</option>` : "").join(""); $("fgroup").value = fGroup; $("frow3").style.display = MODE === "w" && G.length ? "" : "none"; }
-function setFStat(v){ fStat = v; [...$("fstat").children].forEach(x => x.classList.toggle("on", x.dataset.v === v)); }
+function setFStat(v){ fStat = v; $("fstat").value = v; }
+function updMore(){ const n = (fGroup ? 1 : 0) + (fMinKm ? 1 : 0) + (fMinEl ? 1 : 0); $("fmorec").textContent = n ? "· " + n : ""; $("fmore").classList.toggle("act", n > 0); }
 function initListControls(){
   buildCountrySelect(); buildGroupSelect();
   $("fgroup").addEventListener("change", e => { fGroup = e.target.value; renderList(); mapRefresh(); });
@@ -828,11 +840,11 @@ function initListControls(){
   $("fsort").addEventListener("change", e => { fSort = e.target.value; renderList(); });
   $("fminkm").addEventListener("change", e => { fMinKm = +e.target.value; renderList(); mapRefresh(); });
   $("fminel").addEventListener("change", e => { fMinEl = +e.target.value; renderList(); mapRefresh(); });
-  $("fstat").addEventListener("click", e => {
-    const b = e.target.closest("button"); if (!b) return;
-    setFStat(b.dataset.v);
-    if (b.dataset.v === "plan") { fSort = "p"; $("fsort").value = "p"; } else if (fSort === "p") { fSort = "k"; $("fsort").value = "k"; }
-    renderList();
+  $("fmore").onclick = () => { const x = $("fextra"), o = x.style.display === "none"; x.style.display = o ? "" : "none"; $("fmore").classList.toggle("open", o); };
+  $("fstat").addEventListener("change", e => {
+    setFStat(e.target.value);
+    if (e.target.value === "plan") { fSort = "p"; $("fsort").value = "p"; } else if (fSort === "p") { fSort = "k"; $("fsort").value = "k"; }
+    renderList(); mapRefresh();
   });
   $("list").addEventListener("click", e => {
     const t = e.target.closest(".tick"), it = e.target.closest(".item"); if (!it) return;
@@ -842,6 +854,7 @@ function initListControls(){
   });
 }
 function renderList(){
+  try { updMore(); } catch(e){}
   let a = R.filter(r => passF(r) && (!fQ || r.s.includes(fQ)));
   const pr = id => (visits[id] && visits[id].s === "p") ? visits[id].pr : -1;
   if (fSort==="k") a.sort((x,y)=>y.k-x.k);
@@ -1648,7 +1661,7 @@ function mapInit(){
   $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
   const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
   { const nb = $("znames"); const sync = () => { nb.style.opacity = showNames ? 1 : .45; nb.style.textDecoration = showNames ? "none" : "line-through"; }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
-  $("mfilt").onclick = openMapFilters; $("mlist").onclick = () => show("lista"); $("lback").onclick = () => show("mapa"); $("madd2").onclick = goAdd;
+  $("mfilt").onclick = openMapFilters; $("mlist").onclick = () => show("lista"); $("madd2").onclick = goAdd;
   bindMapGestures();
 }
 let showNames = true; try { showNames = localStorage.getItem("skibeen.names") !== "0"; } catch(e){}
