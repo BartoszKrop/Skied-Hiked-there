@@ -1796,9 +1796,9 @@ function renderPacks(box, segH){
   if (!p) {
     box.innerHTML = segH + `<div class="hint">Listy rzeczy do zabrania ${MODE === "w" ? "na narty" : "w góry"}. Działają osobno od wyjazdów, więc możesz odhaczać to, co już spakowałeś, bez planowania trasy.</div>` +
       (PACKS.filter(x => (x.mode || "s") === MODE).length ? PACKS.filter(x => (x.mode || "s") === MODE).map(x => { const n = (x.items || []).length, k = (x.items || []).filter(i => i.ok).length; return `<div class="card pkc" data-id="${esc(x.id)}" style="cursor:pointer"><h3 style="margin:0 0 4px">${esc(x.name || "Lista")}</h3><div class="small">${k} / ${n} spakowane${n && k === n ? " ✓" : ""}</div><div class="bar" style="margin-top:6px"><i class="${n && k === n ? "full" : ""}" style="width:${n ? 100 * k / n : 0}%"></i></div></div>`; }).join("") : `<div class="empty">Nie masz jeszcze żadnej listy.</div>`) +
-      `<button class="btn pri" id="pknew" style="width:100%;margin-top:6px">＋ Nowa lista z gotowymi rzeczami</button><button class="btn" id="pknew0" style="width:100%;margin-top:8px">＋ Pusta lista</button>`;
+      `<button class="btn pri" id="pknew0" style="width:100%;margin-top:6px">＋ Nowa lista</button>`;
     const mk = seed => { const x = {id: newTripId(), mode: MODE, name: MODE === "w" ? "Pakowanie na narty" : "Pakowanie w góry", items: seed ? packDef(MODE).map(n => ({id: newTripId(), n, ok: false})) : []}; PACKS.unshift(x); packOpen = x.id; save(); renderTrips(); };
-    $("pknew").onclick = () => mk(true); $("pknew0").onclick = () => mk(false);
+    $("pknew0").onclick = () => mk(false);
     box.querySelectorAll(".pkc").forEach(c => c.onclick = () => { packOpen = c.dataset.id; renderTrips(); $("v-wyjazdy").scrollTop = 0; });
     return;
   }
