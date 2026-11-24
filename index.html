@@ -1550,7 +1550,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v72";
+const APPV = "v73";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2047,7 +2047,8 @@ function tileUpd(force){
     const ta = $("tattr"); if (ta) ta.style.display = on ? "" : "none"; });
 }
 /* ---------- kontury gór (grzbiety, szczyty, rzeki, jeziora) – tylko przy mocnym przybliżeniu ---------- */
-const TERR_REG = [{id: "tatry", b: [49.0, 19.6, 49.4, 20.5]}];
+const TERR_ON = false; /* kontury gór wyłączone (obciążały mapę); włącz ustawiając true */
+const TERR_REG = TERR_ON ? [{id: "tatry", b: [49.0, 19.6, 49.4, 20.5]}] : [];
 const TERR = {};
 let gTer = null;
 function dpSimp(pts, tol){
@@ -2087,7 +2088,7 @@ function terrBuild(reg){
   T.pk = d.p.map((q, i) => { const tri = mk("path", {d: "M0 -1.1 L1 .8 L-1 .8Z", style: "fill:var(--ridge);stroke:var(--bg2)", "stroke-width": .25}), tx = mk("text", {"text-anchor": "middle", style: "fill:var(--lblf);stroke:var(--lbls)", "paint-order": "stroke", "stroke-linejoin": "round", "font-family": "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", "font-weight": "600", "letter-spacing": "0.01em"}); tx.textContent = q[3] + (q[2] ? " " + q[2] : ""); g.append(tri, tx); return {tri, tx, x: px(q[0]), y: py(q[1]), i}; });
 }
 function terrUpd(){
-  if (!gTer) return; const lonSpan = vb.w / COS, cx = (vb.x + vb.w / 2) / COS, cy = -(vb.y + vb.h / 2); let any = false;
+  if (!TERR_ON || !gTer) return; const lonSpan = vb.w / COS, cx = (vb.x + vb.w / 2) / COS, cy = -(vb.y + vb.h / 2); let any = false;
   TERR_REG.forEach(reg => { const [s, w, n, e] = reg.b, near = cx > w - .3 && cx < e + .3 && cy > s - .3 && cy < n + .3, on = lonSpan < 1.1 && near, T = TERR[reg.id] || (TERR[reg.id] = {state: 0});
     if (on && !T.state && Date.now() - (T.fail || 0) > 6e4) terrLoad(reg);
     if (T.g) { T.g.style.display = on ? "" : "none"; if (on) { any = true; const sc = scale(), K = lonSpan < .12 ? 999 : lonSpan < .3 ? 45 : 14; T.pk.forEach(p => { const sh = p.i < K; p.tri.setAttribute("transform", `translate(${p.x} ${p.y}) scale(${5 / sc})`); p.tri.style.display = sh ? "" : "none"; p.tx.style.display = sh ? "" : "none"; if (sh) { p.tx.setAttribute("x", p.x); p.tx.setAttribute("y", p.y - 9 / sc); p.tx.setAttribute("font-size", 10 / sc); p.tx.setAttribute("stroke-width", 3 / sc); } }); } } });
