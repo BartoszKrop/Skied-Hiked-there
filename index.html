@@ -536,7 +536,7 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
       <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="r">Najlepiej oceniane</option><option value="p">Priorytet planów</option></select></div>
       <div id="fextra">
       <div class="row2" id="frow3"><select id="fgroup"></select></div>
-      <div class="row2" id="frow4"><select id="fminr" aria-label="Ocena"><option value="0">Ocena</option><option value="3">★ 3,0 i więcej</option><option value="3.5">★ 3,5 i więcej</option><option value="4">★ 4,0 i więcej</option><option value="4.5">★ 4,5 i więcej</option></select><select id="fprice" aria-label="Cena"><option value="0">Cena</option><option value="1">$ budżetowe</option><option value="2">$$ średnie</option><option value="3">$$$ drogie</option><option value="4">$$$$ burżujskie</option></select></div>
+      <div class="row2" id="frow4" style="grid-template-columns:1fr"><select id="fminr" aria-label="Ocena"><option value="0">Ocena</option><option value="3">★ 3,0 i więcej</option><option value="3.5">★ 3,5 i więcej</option><option value="4">★ 4,0 i więcej</option><option value="4.5">★ 4,5 i więcej</option></select></div>
       <div class="row2" id="frow2"><select id="fminkm"><option value="0">Wielkość</option><option value="30">od 30 km tras</option><option value="50">od 50 km</option><option value="100">od 100 km</option><option value="150">od 150 km</option><option value="200">od 200 km</option><option value="300">od 300 km</option></select><select id="fminel"><option value="0">Wysokość</option><option value="1000">powyżej 1000 m</option><option value="1500">powyżej 1500 m</option><option value="2000">powyżej 2000 m</option><option value="2500">powyżej 2500 m</option><option value="3000">powyżej 3000 m</option></select></div>
       </div>
     </div>
@@ -942,7 +942,7 @@ function priceTier(r){
   if (PT_TOP.test(r.n + " " + (r.l || ""))) t = 4;
   return (r._pt = t);
 }
-const pbadge = r => { if (MODE !== "w") return ""; const t = priceTier(r); return `<span class="pbadge p${t}" title="Szacunkowa kategoria cen: ${PT_NAMES[t]}"><b>${"$".repeat(t)}</b><i>${"$".repeat(4 - t)}</i></span>`; };
+const pbadge = r => { return ""; const t = priceTier(r); return `<span class="pbadge p${t}" title="Szacunkowa kategoria cen: ${PT_NAMES[t]}"><b>${"$".repeat(t)}</b><i>${"$".repeat(4 - t)}</i></span>`; };
 const passF = r => (fStat==="all" || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id])) && (!fCountry || r.c.split(",").includes(fCountry)) && (!fMinKm || r.k >= fMinKm) && (!fMinEl || (r.e || 0) >= fMinEl) && (!fGroup || !G[+fGroup] || G[+fGroup].m.includes(r.id)) && (!fMinR || (((rateOf(r.id) || {}).n || 0) > 0 && rateOf(r.id).a >= fMinR)) && (!fPrice || (MODE === "w" && priceTier(r) === fPrice));
 const filtN = () => (fStat !== "all") + !!fCountry + !!fGroup + !!fMinKm + !!fMinEl + !!fMinR + !!fPrice;
 function buildCountrySelect(){
@@ -960,7 +960,6 @@ function initListControls(){
   $("fcountry").addEventListener("change", e => { fCountry = e.target.value; renderList(); mapRefresh(); });
   $("fsort").addEventListener("change", e => { fSort = e.target.value; renderList(); });
   $("fminr").addEventListener("change", e => { fMinR = +e.target.value; renderList(); mapRefresh(); });
-  $("fprice").addEventListener("change", e => { fPrice = +e.target.value; renderList(); mapRefresh(); });
   $("fminkm").addEventListener("change", e => { fMinKm = +e.target.value; renderList(); mapRefresh(); });
   $("fminel").addEventListener("change", e => { fMinEl = +e.target.value; renderList(); mapRefresh(); });
   $("fstat").addEventListener("change", e => {
@@ -1461,7 +1460,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v37";
+const APPV = "v38";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2148,7 +2147,7 @@ function setMode(m){
   document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
   if (tripOpen) { const tt = allTrips().find(x => x.id === tripOpen); if (!tt || (tt.mode || "s") !== m) tripOpen = null; } packOpen = null; if ($("v-wyjazdy").classList.contains("on")) renderTrips();
   try { localStorage.setItem(LSM, m); } catch(e){}
-  fCountry = ""; fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; fMinR = 0; fPrice = 0; $("fminr").value = "0"; $("fprice").value = "0"; $("fprice").style.display = m === "w" ? "" : "none"; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
+  fCountry = ""; fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; fMinR = 0; fPrice = 0; $("fminr").value = "0"; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
   $("fsort").options[0].textContent = m === "w" ? "Najwięksi" : "Najwięcej szlaków";
   buildCountrySelect(); buildGroupSelect(); showAll = false; buildDots(); renderAll();
   const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
