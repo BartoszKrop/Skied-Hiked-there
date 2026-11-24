@@ -506,7 +506,7 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
 #fextra{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:6px;margin-top:6px}#fextra[style*="none"]{display:none!important}
 #fextra .row2,#frow6{display:contents}
 #fextra select{margin:0;padding:7px 5px;font-size:12px;border-radius:9px;min-width:0;text-overflow:ellipsis;height:34px}
-#fextra{gap:5px}#frow5{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;border:1px solid var(--line);border-radius:11px;padding:6px}#frow5 .wxh{grid-column:1/-1;margin:0 2px;font-size:11.5px;font-weight:700;color:var(--mute)}#frow5 select{width:100%}
+#fextra{gap:5px}#frow5{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;border:1px solid var(--line);border-radius:11px;padding:6px}#frow5 .wxh{grid-column:1/-1;margin:0 2px;font-size:11.5px;font-weight:700;color:var(--mute)}#frow5 select{width:100%}#frow5 .ddb,#fextra .ddb{font-size:12px;padding:6px 8px;min-height:34px;gap:4px}
 svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spacing:normal}
 </style>
 </head>
@@ -1058,7 +1058,7 @@ function renderList(){
     if (!(v && v.s === "v")) { const fa = friendsAt(r.id); if (fa.length) extra += " · 👥 " + fa.slice(0, 3).map(x => "@" + esc(x.u)).join(", ") + (fa.length > 3 ? " +" + (fa.length - 3) : ""); }
     return `<div class="item ${v ? (v.s==="v"?"v":"p") : ""}" data-id="${esc(r.id)}">
       <div class="flg">${flag(r.c.split(",")[0])}</div>
-      <div class="t"><b>${esc(r.n)}</b><small>${pbadge(r)}${esc(r.c.split(",").map(cname).join(", "))}${r.g.length ? " · " + esc(r.g[r.g.length-1]) : ""}${W && r.e ? " · do " + r.e + " m" : ""}${extra}</small></div>
+      <div class="t"><b>${esc(r.n)}</b><small>${(() => { const hd = W ? (r.e ? "do " + r.e + " m" : "") : esc(r.r || ""); const ex = extra || ""; return hd + (hd ? ex : ex.replace(/^ · /, "")); })()}</small></div>
       <div class="kmb"><b>${W ? Math.round(r.k) : liveN(r)}</b>${W ? "km" : plur(liveN(r),"szlak","szlaki","szlaków")}</div>
       <button class="tick ${isVis(r.id)?"on":isPlan(r.id)?"plan":""}" aria-label="Byłem">${isPlan(r.id)?"📅":"✓"}</button>
     </div>`; }).join("") : `<div class="empty">Nic nie pasuje do filtrów.</div>`;
@@ -1550,7 +1550,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v74";
+const APPV = "v75";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
