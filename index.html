@@ -356,14 +356,14 @@ body.spl #splash{display:flex}#splash.out{opacity:0;pointer-events:none}
 
 /* wyjazdy: porządki */
 .tfold .tdel{opacity:.85!important;font-size:15px;padding:4px 6px;cursor:pointer}
-.tctl{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
-.tctl .tdaysel{width:auto;max-width:44%;min-width:96px;padding:5px 8px;font-size:12px;flex:1 1 auto}.tctl .tvg,.tctl button{flex:none}
-.tctl .tdx{margin-left:auto}
+.tctl{display:flex;gap:5px;align-items:center;margin-top:8px;flex-wrap:nowrap}
+.tctl .tdaysel{width:auto;max-width:none;min-width:84px;padding:5px 4px;font-size:12px;flex:1 1 0;text-overflow:ellipsis}.tctl .tvg,.tctl button{flex:none}
+.tctl .tdx{margin-left:0}.tctl button.tdx{padding:5px 0;width:30px;justify-content:center}
 .tvg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .tvg .tvote{border:0;border-radius:0}.tvg .tvote+.tvote{border-left:1px solid var(--line)}
 .tctl button.tvote,.tctl button.tcmb,.tctl button.tdx{background:var(--glass);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:5px 9px;font-size:13px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;gap:4px;min-height:30px}
 .tctl .tvg .tvote{border:0;border-radius:0}.tctl .tvg .tvote+.tvote{border-left:1px solid var(--line)}
-.tctl button .ic{width:16px;height:16px}.tctl .tvg{background:var(--glass);border-radius:999px}.tctl .tvg .tvote{background:transparent;padding:5px 11px;min-height:30px}.tctl .tvg .tvote[data-v="1"].on{color:#2fb96a;background:rgba(47,185,106,.16);box-shadow:none}.tctl .tvg .tvote[data-v="-1"].on{color:#e5484d;background:rgba(229,72,77,.15);box-shadow:none}.tctl button.tcmb{border-radius:999px;padding:5px 11px}.tctl button.tcmb.has{color:var(--accent)}.tctl button.tdx{border-radius:999px}
+.tctl button .ic{width:16px;height:16px}.tctl .tvg{background:var(--glass);border-radius:999px}.tctl .tvg .tvote{background:transparent;padding:5px 7px;min-height:30px}.tctl .tvg .tvote[data-v="1"].on{color:#2fb96a;background:rgba(47,185,106,.16);box-shadow:none}.tctl .tvg .tvote[data-v="-1"].on{color:#e5484d;background:rgba(229,72,77,.15);box-shadow:none}.tctl button.tcmb{border-radius:999px;padding:5px 8px}.tctl button.tcmb.has{color:var(--accent)}.tctl button.tdx{border-radius:999px}
 .tctl button i{font-style:normal;font-size:12px;font-weight:700;opacity:.85}
 .tctl button.on{background:var(--accentbg);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .tctl button.tdx{color:#ff8a8a;opacity:.9;padding:5px 10px;font-size:12px;opacity:1}
