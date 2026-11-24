@@ -229,6 +229,9 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
 #robar .sp{flex:1}
 .hnote{margin:6px 0 4px;min-height:48px;font-size:13px}.hnro{margin:6px 0 4px;font-size:13px;color:var(--text);opacity:.9;white-space:pre-wrap}
 .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0;color:var(--text)}.chk input{width:18px;height:18px}
+.pbadge{position:relative;display:inline-block;vertical-align:middle;margin:0 6px 0 0;white-space:nowrap;padding:1px 8px 0;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.5px;line-height:15px;background:var(--pb,rgba(120,140,170,.18));color:var(--pc,var(--text))}
+.pbadge::before,.pbadge::after{content:"";position:absolute;border-radius:50%;background:inherit}.pbadge::before{width:9px;height:9px;top:-3px;left:7px}.pbadge::after{width:7px;height:7px;top:-2px;left:17px}
+.pbadge b,.pbadge i{display:inline!important;font-size:inherit!important;font-weight:800!important;margin:0!important;color:inherit!important}.pbadge i{font-style:normal;opacity:.3}.pbadge.p1{--pb:rgba(56,200,140,.2);--pc:#1f9d68}.pbadge.p2{--pb:rgba(80,150,255,.2);--pc:#3b82e6}.pbadge.p3{--pb:rgba(255,160,60,.22);--pc:#d9822b}.pbadge.p4{--pb:rgba(190,110,255,.22);--pc:#a855f7}
 .sech{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--mute);margin:14px 0 2px;text-transform:uppercase}
 #bell{position:relative;overflow:visible!important}.bdg{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#ff5a6a;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;pointer-events:none;box-shadow:0 0 0 2px var(--bg)}
 .nrow{display:flex;gap:9px;align-items:flex-start;padding:9px 2px;border-bottom:1px solid var(--line);font-size:13.5px}.nrow:last-child{border-bottom:0}.nrow.go{cursor:pointer}
@@ -474,9 +477,10 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
   <section class="view" id="v-lista">
     <div class="toolbar">
       <input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off">
-      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="p">Priorytet planów</option></select></div>
+      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="r">Najlepiej oceniane</option><option value="p">Priorytet planów</option></select></div>
       <div id="fextra">
       <div class="row2" id="frow3"><select id="fgroup"></select></div>
+      <div class="row2" id="frow4"><select id="fminr" aria-label="Ocena"><option value="0">Ocena</option><option value="3">★ 3,0 i więcej</option><option value="3.5">★ 3,5 i więcej</option><option value="4">★ 4,0 i więcej</option><option value="4.5">★ 4,5 i więcej</option></select><select id="fprice" aria-label="Cena"><option value="0">Cena</option><option value="1">$ budżetowe</option><option value="2">$$ średnie</option><option value="3">$$$ drogie</option><option value="4">$$$$ burżujskie</option></select></div>
       <div class="row2" id="frow2"><select id="fminkm"><option value="0">Wielkość</option><option value="30">od 30 km tras</option><option value="50">od 50 km</option><option value="100">od 100 km</option><option value="150">od 150 km</option><option value="200">od 200 km</option><option value="300">od 300 km</option></select><select id="fminel"><option value="0">Wysokość</option><option value="1000">powyżej 1000 m</option><option value="1500">powyżej 1500 m</option><option value="2000">powyżej 2000 m</option><option value="2500">powyżej 2500 m</option><option value="3000">powyżej 3000 m</option></select></div>
       </div>
     </div>
@@ -591,7 +595,7 @@ function applyExtra(rows){
     const d = x.data || {}, w = x.mode !== "s", map = w ? byIdW : byIdS;
     if (String(x.id).startsWith("ovr:")) { const r = map[String(x.id).slice(4)]; if (!r) return;
       if (d.hidden) { const T = w ? WINTER : SUMMER, ix = T.R.indexOf(r); if (ix >= 0) T.R.splice(ix, 1); delete map[r.id]; (T.G || []).forEach(g => { if (g.m) g.m = g.m.filter(i => map[i]); }); n++; return; }
-      if (d.n) { r.n = d.n; r.full = d.n; } if (w) { if (d.k != null && d.k !== "") r.k = +d.k; if (d.e != null && d.e !== "") r.e = +d.e; if (d.w) r.w = d.w; r.auto = false; }
+      if (d.n) { r.n = d.n; r.full = d.n; } if (w && "pt" in d) r.pt = +d.pt || 0; if (w) { if (d.k != null && d.k !== "") r.k = +d.k; if (d.e != null && d.e !== "") r.e = +d.e; if (d.w) r.w = d.w; r.auto = false; }
       if (!w && Array.isArray(d.addHikes)) { r.hikes = r.hikes || []; d.addHikes.forEach(h => { if (h && h.n && !r.hikes.some(z => z.n === h.n)) r.hikes.push(Object.assign({}, h, {added: true})); }); r.k = r.hikes.length; }
       if (!w && Array.isArray(d.delHikes) && r.hikes) { r.hikes.forEach(h => { if (d.delHikes.includes(h.n)) h.del = true; }); r.k = r.hikes.filter(h => !h.del).length; }
       r.s = norm([r.full, r.n, r.l, r.r, String(r.c).split(",").map(cname).join(" ")].join(" ")); n++; return; }
@@ -835,9 +839,19 @@ function renderHeader(){
 }
 
 /* ---------- lista ---------- */
-let statRank = {w:"visits", s:"hikerate"}, fStat = "all", fCountry = "", fSort = "k", fQ = "", fMinKm = 0, fMinEl = 0, fGroup = "";
-const passF = r => (fStat==="all" || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id])) && (!fCountry || r.c.split(",").includes(fCountry)) && (!fMinKm || r.k >= fMinKm) && (!fMinEl || (r.e || 0) >= fMinEl) && (!fGroup || !G[+fGroup] || G[+fGroup].m.includes(r.id));
-const filtN = () => (fStat !== "all") + !!fCountry + !!fGroup + !!fMinKm + !!fMinEl;
+let statRank = {w:"visits", s:"hikerate"}, fStat = "all", fCountry = "", fSort = "k", fQ = "", fMinKm = 0, fMinEl = 0, fGroup = "", fMinR = 0, fPrice = 0;
+const PT_NAMES = ["", "budżetowy", "średni", "drogi", "burżujski"];
+const PT_TOP = /zermatt|st\.? moritz|courchevel|tignes|val d.is[eè]re|4 vall[eé]es|verbier|lech|z[uü]rs|cortina|kitz|gstaad|meg[eè]ve|m[eé]ribel|val thorens|davos|klosters|parsenn|crans-montana|st\. anton/i;
+function priceTier(r){
+  if (r.pt) return +r.pt; if (r._pt) return r._pt;
+  const cs = String(r.c).split(","), c = cs[0], big = r.k >= 100; let t;
+  if (cs.includes("CH")) t = r.k < 40 ? 2 : 3; else if (["PL", "SK", "CZ", "SI"].includes(c)) t = 1; else if (["AT", "IT", "FR"].includes(c)) t = r.k < 30 ? 1 : big ? 3 : 2; else t = 2;
+  if (PT_TOP.test(r.n + " " + (r.l || ""))) t = 4;
+  return (r._pt = t);
+}
+const pbadge = r => { if (MODE !== "w") return ""; const t = priceTier(r); return `<span class="pbadge p${t}" title="Szacunkowa kategoria cen: ${PT_NAMES[t]}"><b>${"$".repeat(t)}</b><i>${"$".repeat(4 - t)}</i></span>`; };
+const passF = r => (fStat==="all" || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id])) && (!fCountry || r.c.split(",").includes(fCountry)) && (!fMinKm || r.k >= fMinKm) && (!fMinEl || (r.e || 0) >= fMinEl) && (!fGroup || !G[+fGroup] || G[+fGroup].m.includes(r.id)) && (!fMinR || (((rateOf(r.id) || {}).n || 0) > 0 && rateOf(r.id).a >= fMinR)) && (!fPrice || (MODE === "w" && priceTier(r) === fPrice));
+const filtN = () => (fStat !== "all") + !!fCountry + !!fGroup + !!fMinKm + !!fMinEl + !!fMinR + !!fPrice;
 function buildCountrySelect(){
   const cs = {}; R.forEach(r => r.c.split(",").forEach(c => cs[c] = (cs[c]||0) + 1));
   $("fcountry").innerHTML = `<option value="">Wszystkie kraje</option>` +
@@ -852,6 +866,8 @@ function initListControls(){
   $("q").addEventListener("input", e => { fQ = norm(e.target.value.trim()); renderList(); });
   $("fcountry").addEventListener("change", e => { fCountry = e.target.value; renderList(); mapRefresh(); });
   $("fsort").addEventListener("change", e => { fSort = e.target.value; renderList(); });
+  $("fminr").addEventListener("change", e => { fMinR = +e.target.value; renderList(); mapRefresh(); });
+  $("fprice").addEventListener("change", e => { fPrice = +e.target.value; renderList(); mapRefresh(); });
   $("fminkm").addEventListener("change", e => { fMinKm = +e.target.value; renderList(); mapRefresh(); });
   $("fminel").addEventListener("change", e => { fMinEl = +e.target.value; renderList(); mapRefresh(); });
   $("fstat").addEventListener("change", e => {
@@ -872,6 +888,7 @@ function renderList(){
   const pr = id => (visits[id] && visits[id].s === "p") ? visits[id].pr : -1;
   if (fSort==="k") a.sort((x,y)=>y.k-x.k);
   else if (fSort==="n") a.sort((x,y)=>x.n.localeCompare(y.n,"pl"));
+  else if (fSort==="r") { const sc = r => { const q = rateOf(r.id); return q && q.n ? q.a : -1; }; a.sort((x,y)=>sc(y)-sc(x) || ((rateOf(y.id)||{}).n||0)-((rateOf(x.id)||{}).n||0) || y.k-x.k); }
   else if (fSort==="p") a.sort((x,y)=>pr(y.id)-pr(x.id) || y.k-x.k);
   else a.sort((x,y)=>cname(x.c.split(",")[0]).localeCompare(cname(y.c.split(",")[0]),"pl") || y.k-x.k);
   const W = MODE === "w";
@@ -886,7 +903,7 @@ function renderList(){
     if (!(v && v.s === "v")) { const fa = friendsAt(r.id); if (fa.length) extra += " · 👥 " + fa.slice(0, 3).map(x => "@" + esc(x.u)).join(", ") + (fa.length > 3 ? " +" + (fa.length - 3) : ""); }
     return `<div class="item ${v ? (v.s==="v"?"v":"p") : ""}" data-id="${esc(r.id)}">
       <div class="flg">${flag(r.c.split(",")[0])}</div>
-      <div class="t"><b>${esc(r.n)}</b><small>${esc(r.c.split(",").map(cname).join(", "))}${r.g.length ? " · " + esc(r.g[r.g.length-1]) : ""}${W && r.e ? " · do " + r.e + " m" : ""}${extra}</small></div>
+      <div class="t"><b>${esc(r.n)}</b><small>${pbadge(r)}${esc(r.c.split(",").map(cname).join(", "))}${r.g.length ? " · " + esc(r.g[r.g.length-1]) : ""}${W && r.e ? " · do " + r.e + " m" : ""}${extra}</small></div>
       <div class="kmb"><b>${W ? Math.round(r.k) : liveN(r)}</b>${W ? "km" : plur(liveN(r),"szlak","szlaki","szlaków")}</div>
       <button class="tick ${isVis(r.id)?"on":isPlan(r.id)?"plan":""}" aria-label="Byłem">${isPlan(r.id)?"📅":"✓"}</button>
     </div>`; }).join("") : `<div class="empty">Nic nie pasuje do filtrów.</div>`;
@@ -1424,7 +1441,7 @@ function openEditPlace(r, pre){
   const W = MODE === "w", p = pre || {};
   ovBox().innerHTML = `<div class="card"><h3>Edytuj: ${esc(r.n)}</h3><div class="sub">Zmiana jest widoczna u wszystkich użytkowników.</div>
     <div class="fld"><label>NAZWA</label><input id="epn" class="lin" value="${esc(p.n || r.n)}"></div>
-    ${W ? `<div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS</label><input id="epk" class="lin" inputmode="decimal" value="${p.k !== "" && p.k != null ? p.k : Math.round(r.k * 10) / 10}"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ M</label><input id="epe" class="lin" inputmode="numeric" value="${p.e !== "" && p.e != null ? p.e : (r.e || "")}"></div></div><div class="fld"><label>STRONA OŚRODKA (URL)</label><input id="epw" class="lin" value="${esc(r.w || "")}" placeholder="https://…"></div>` : ""}
+    ${W ? `<div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>KM TRAS</label><input id="epk" class="lin" inputmode="decimal" value="${p.k !== "" && p.k != null ? p.k : Math.round(r.k * 10) / 10}"></div><div class="fld" style="flex:1"><label>MAX WYSOKOŚĆ M</label><input id="epe" class="lin" inputmode="numeric" value="${p.e !== "" && p.e != null ? p.e : (r.e || "")}"></div></div><div class="fld"><label>STRONA OŚRODKA (URL)</label><input id="epw" class="lin" value="${esc(r.w || "")}" placeholder="https://…"></div><div class="fld"><label>KATEGORIA CEN</label><select id="ept" class="sel"><option value="0">Automatyczna (szacunek)</option>${[1,2,3,4].map(i => `<option value="${i}" ${r.pt === i ? "selected" : ""}>${"$".repeat(i)} ${PT_NAMES[i]}</option>`).join("")}</select></div>` : ""}
     <div class="small" id="epm" style="min-height:16px"></div>
     <div style="display:flex;gap:8px"><button class="btn pri" id="epsave" style="flex:1">Zapisz</button><button class="btn" id="lclose" style="flex:1">Anuluj</button></div>
     <button class="btn sm" id="eprev" style="margin-top:8px;width:100%">Przywróć oryginalne dane</button></div>`;
@@ -1432,7 +1449,7 @@ function openEditPlace(r, pre){
   const done = async () => { try { localStorage.removeItem("skibeen.extra"); } catch(e){} buildCountrySelect(); buildDots(); renderAll(); };
   $("epsave").onclick = async () => {
     const m = $("epm"), n = $("epn").value.trim().slice(0, 120); if (n.length < 2) { m.textContent = "Wpisz nazwę."; return; }
-    const data = {n}; if (W) { const k = parseFloat($("epk").value.replace(",", ".")), e = parseInt($("epe").value), w = $("epw").value.trim(); if (k >= 0) data.k = k; if (e >= 0) data.e = e; if (/^https?:\/\//i.test(w)) data.w = w; }
+    const data = {n}; if (W) { const k = parseFloat($("epk").value.replace(",", ".")), e = parseInt($("epe").value), w = $("epw").value.trim(); if (k >= 0) data.k = k; if (e >= 0) data.e = e; if (/^https?:\/\//i.test(w)) data.w = w; data.pt = +($("ept") && $("ept").value) || 0; }
     $("epsave").disabled = true; m.textContent = "Zapisuję…";
     try { const oid = "ovr:" + r.id; let prevOv = null; try { const pv = await store.sb.from("extra_places").select("data").eq("id", oid).maybeSingle(); prevOv = pv && pv.data && pv.data.data; } catch(e){} const d = await store.sb.from("extra_places").delete().eq("id", oid); if (d && d.error) throw d.error;
       const ins = await store.sb.from("extra_places").insert({id: oid, mode: W ? "w" : "s", data: Object.assign({}, prevOv || {}, data)}); if (ins && ins.error) throw ins.error;
@@ -1715,7 +1732,7 @@ function renderSheet(){
   const t1 = W ? `<div class="tile"><b>${Math.round(r.k*10)/10}</b><span>km tras zjazdowych</span></div>` : `<div class="tile"><b>${liveN(r)}</b><span>szlaków poniżej</span></div>`;
   const gpill = (W && r.g.length) ? `<span class="gpill">${esc(r.g[r.g.length-1])}</span>` : "", t2 = W ? "" : `<div class="tile"><b>${v ? Object.keys(v.done).length : 0}/${liveN(r)}</b><span>zrobionych</span></div>`;
   $("sheet").innerHTML = `<div class="grab"></div>
-    <div class="hero hsil"><svg class="hsv" viewBox="0 0 200 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><path d="M0 80 L50 24 L74 52 L104 8 L150 62 L170 40 L200 80 Z"/></svg><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}${gpill}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}${(SBC && ratingLine(r.id)) ? " · " + ratingLine(r.id) : ""}</div></div><button class="hgear" id="hgear" title="Opcje">⚙</button></div>
+    <div class="hero hsil"><svg class="hsv" viewBox="0 0 200 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><path d="M0 80 L50 24 L74 52 L104 8 L150 62 L170 40 L200 80 Z"/></svg><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}${gpill}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}${W ? " " + pbadge(r) : ""}${(SBC && ratingLine(r.id)) ? " · " + ratingLine(r.id) : ""}</div></div><button class="hgear" id="hgear" title="Opcje">⚙</button></div>
     <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : W ? "" : (() => { const L = r.hikes.filter(x => !x.del), c = [0,1,2].map(i => L.filter(x => x.d === DIFF[i]).length); return `<div class="tile"><b>${c[0]}·${c[1]}·${c[2]}</b><span>łatwe · średnie · trudne</span></div>`; })()}</div>
     <a class="offl" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Oficjalna strona ośrodka" : "Ceny karnetów i informacje") : "Szlaki, mapy i informacje"} <span>↗</span></a>
     ${(W && r.auto && !RO && SBC) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy. <button class="btn sm" id="sgfix" style="margin-left:4px">Zaproponuj poprawę</button></div>` : (W && r.auto) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy.</div>` : ""}${top}${opblock}${hikes}${szsec}${body}
@@ -1983,7 +2000,7 @@ function setMode(m){
   document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
   if (tripOpen) { const tt = allTrips().find(x => x.id === tripOpen); if (!tt || (tt.mode || "s") !== m) tripOpen = null; } packOpen = null; if ($("v-wyjazdy").classList.contains("on")) renderTrips();
   try { localStorage.setItem(LSM, m); } catch(e){}
-  fCountry = ""; fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
+  fCountry = ""; fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; fMinR = 0; fPrice = 0; $("fminr").value = "0"; $("fprice").value = "0"; $("fprice").style.display = m === "w" ? "" : "none"; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; $("fsort").value = "k"; setFStat("all");
   $("fsort").options[0].textContent = m === "w" ? "Najwięksi" : "Najwięcej szlaków";
   buildCountrySelect(); buildGroupSelect(); showAll = false; buildDots(); renderAll();
   const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
@@ -1996,8 +2013,8 @@ let SHT = [], shTimer = 0, shBusy = false;
 const meName = () => String((store.prof && store.prof.username) || "").toLowerCase();
 const newTripId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const allTrips = () => [...SHT, ...TRIPS];
-const shData = t => ({name: t.name || "", from: t.from || "", to: t.to || "", note: t.note || "", items: t.items || [], dn: t.dn || {}, dnb: t.dnb || {}, costs: t.costs || [], pack: t.pack || [], cur: t.cur || "zł", mode: t.mode === "w" ? "w" : "s", base: t.base || ""});
-const shNorm = r => { const d = r.data || {}, t = {id: r.id, shared: true, owner: r.owner, owner_name: r.owner_name || "", members: r.members || [], invite: r.invite || "", ed: d.ed || "", _upd: r.updated_at || "", name: d.name || "Wyjazd", from: d.from || "", to: d.to || "", note: d.note || "", items: d.items || [], dn: d.dn || {}, dnb: d.dnb || {}, costs: d.costs || [], pack: d.pack || [], cur: d.cur || "zł", mode: d.mode === "w" ? "w" : "s", base: d.base || ""}; t._snap = JSON.stringify(shData(t)); return t; };
+const shData = t => ({name: t.name || "", from: t.from || "", to: t.to || "", note: t.note || "", items: t.items || [], dn: t.dn || {}, dnb: t.dnb || {}, costs: t.costs || [], pack: t.pack || [], settle: t.settle || [], shop: t.shop || [], dest: t.dest || "", cur: t.cur || "zł", mode: t.mode === "w" ? "w" : "s", base: t.base || ""});
+const shNorm = r => { const d = r.data || {}, t = {id: r.id, shared: true, owner: r.owner, owner_name: r.owner_name || "", members: r.members || [], invite: r.invite || "", ed: d.ed || "", _upd: r.updated_at || "", name: d.name || "Wyjazd", from: d.from || "", to: d.to || "", note: d.note || "", items: d.items || [], dn: d.dn || {}, dnb: d.dnb || {}, costs: d.costs || [], pack: d.pack || [], settle: d.settle || [], shop: d.shop || [], dest: d.dest || "", cur: d.cur || "zł", mode: d.mode === "w" ? "w" : "s", base: d.base || ""}; t._snap = JSON.stringify(shData(t)); return t; };
 async function loadShared(force){
   if (!SBC || !store.sb || !store.authed || RO || shBusy) return;
   if (!force && SHT.some(t => JSON.stringify(shData(t)) !== t._snap)) return;
@@ -2063,7 +2080,7 @@ async function wxFor(lat, lon, iso){
 const PACK_DEF_W = ["Buty narciarskie", "Kask", "Gogle", "Rękawice", "Kurtka narciarska", "Spodnie narciarskie", "Bielizna termoaktywna", "Skarpety narciarskie", "Komin / kominiarka", "Karnet / ski pass", "Krem z filtrem", "Okulary przeciwsłoneczne", "Ciepłe buty na po nartach", "Powerbank", "Ładowarka", "Apteczka", "Dowód / EKUZ", "Gotówka / karta", "Strój na basen / saunę"];
 const PACK_DEF = ["Buty trekkingowe", "Kurtka przeciwdeszczowa", "Polar / warstwa ocieplająca", "Czapka i rękawiczki", "Czapka z daszkiem + okulary", "Krem z filtrem", "Bidon / woda", "Powerbank", "Apteczka + plastry", "Czołówka", "Kijki trekkingowe", "Przekąski / batony", "Mapa offline", "Dowód / EKUZ", "Gotówka / karta", "Zapasowe skarpety", "Pokrowiec na plecak", "Ładowarka"];
 function applyTheme(){ let v = "auto"; try { v = localStorage.getItem("skibeen.theme") || "auto"; } catch(e){} const light = v === "light" || (v === "auto" && matchMedia("(prefers-color-scheme: light)").matches); document.body.classList.toggle("light", light); try { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = light ? "#f2f6fc" : "#08111f"; } catch(e){} }
-let costEditId = null, cmOpen = new Set(), pkOpen = new Set(), tripPrev = 0;
+let shopEd = null, costEditId = null, cmOpen = new Set(), pkOpen = new Set(), tripPrev = 0;
 const PCOL = ["#ff7b8a", "#5ad1ff", "#ffd35a", "#38e0a0", "#c792ff", "#ff9f5a", "#7ab8ff", "#b6e35a"]; let PCM = {};
 const pcHash = n => { let h = 0; for (const ch of String(n || "")) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % PCOL.length; };
 const pc = n => PCM[n] || PCOL[pcHash(n)];
@@ -2087,7 +2104,7 @@ function renderTrips(){
     box.querySelectorAll(".tripc").forEach(c => c.onclick = () => openTrip(c.dataset.id));
     bindSeg(); return;
   }
-  t.items = t.items || []; t.costs = t.costs || []; t.pack = t.pack || []; t.dn = t.dn || {}; t.dnb = t.dnb || {};
+  t.items = t.items || []; t.costs = t.costs || []; t.pack = t.pack || []; t.settle = t.settle || []; t.shop = t.shop || []; t.dn = t.dn || {}; t.dnb = t.dnb || {};
   const base = t.mode === "w" && t.base ? byIdW[t.base] : null;
   const D = tripDays(t), total = t.items.reduce((s, i) => s + hrs(tripHike(i).h && tripHike(i).h.t), 0), ppl = tripPeople(t), shared = t.shared && ppl.length > 1; pcAssign(ppl);
   const row = (it, idx) => { const {r, h} = tripHike(it), v = votes(it), cm = it.cm || [], isNew = t.shared && it.by && it.by !== me && it.at && it.at > tripPrev;
@@ -2106,14 +2123,15 @@ function renderTrips(){
   /* koszty */
   const cur = t.cur || "zł", paid = {}, owe = {}; ppl.forEach(p => { paid[p] = 0; owe[p] = 0; });
   t.costs.forEach(c => { const sp = (c.sp && c.sp.length ? c.sp : ppl).filter(p => p in owe); paid[c.by] = (paid[c.by] || 0) + c.a; sp.forEach(p => { owe[p] = (owe[p] || 0) + c.a / sp.length; }); });
+  t.settle.forEach(z => { paid[z.from] = (paid[z.from] || 0) + z.a; paid[z.to] = (paid[z.to] || 0) - z.a; if (!(z.from in owe)) owe[z.from] = 0; if (!(z.to in owe)) owe[z.to] = 0; });
   const bal = ppl.map(p => [p, (paid[p] || 0) - (owe[p] || 0)]), cr = bal.filter(b => b[1] > 0.005).map(b => [...b]).sort((a, b) => b[1] - a[1]), db = bal.filter(b => b[1] < -0.005).map(b => [b[0], -b[1]]).sort((a, b) => b[1] - a[1]), tr = [];
   { let i = 0, j = 0; while (i < db.length && j < cr.length) { const x = Math.min(db[i][1], cr[j][1]); tr.push([db[i][0], cr[j][0], x]); db[i][1] -= x; cr[j][1] -= x; if (db[i][1] < 0.005) i++; if (cr[j][1] < 0.005) j++; } }
   const totalC = t.costs.reduce((s, c) => s + c.a, 0);
   const sgn = x => (x > 0.005 ? "+" : x < -0.005 ? "−" : "") + money(Math.abs(x), cur);
   const costsHtml = `<details class="tcd tfold" ${t.costs.length ? "open" : ""}><summary>Koszty${totalC ? `<span class="sbadge">${money(totalC, cur)}</span>` : ""}</summary>
     ${shared && totalC ? `<div class="card" style="margin:6px 0 8px;padding:9px 11px;border:1px solid var(--acc,#4aa3ff)"><div style="font-weight:700;font-size:13px;margin-bottom:4px">Rozliczenie</div>
-      ${tr.length ? tr.map(x => `<div style="font-size:14px;padding:5px 0;border-top:1px solid rgba(128,128,128,.25)"><b>${pn(x[0])}</b> oddaje <b>${pn(x[1])}</b><span style="float:right;font-weight:700;font-size:15px">${money(x[2], cur)}</span></div>`).join("") : `<div style="font-size:14px;padding:4px 0">Wszyscy rozliczeni ✓</div>`}
-      <div style="margin-top:6px;display:grid;gap:2px">${bal.map(b => `<div class="small" style="display:flex;justify-content:space-between;font-size:12px"><span>${pn(b[0])} · zapłacił ${money(paid[b[0]] || 0, cur)}, jego część ${money(owe[b[0]] || 0, cur)}</span><b style="color:${b[1] > 0.005 ? "#2fb96a" : b[1] < -0.005 ? "#e5484d" : "inherit"}">${sgn(b[1])}</b></div>`).join("")}</div></div>` : ""}
+      ${tr.length ? tr.map(x => `<div style="font-size:14px;padding:5px 0;border-top:1px solid rgba(128,128,128,.25)"><b>${pn(x[0])}</b> oddaje <b>${pn(x[1])}</b><span style="float:right;font-weight:700;font-size:15px">${money(x[2], cur)}</span><div style="margin-top:4px"><button class="btn sm tset" data-f="${esc(x[0])}" data-t="${esc(x[1])}" data-a="${Math.round(x[2] * 100) / 100}">✓ Rozliczone</button></div></div>`).join("") : `<div style="font-size:14px;padding:4px 0">Wszyscy rozliczeni ✓</div>`}
+      <div style="margin-top:6px;display:grid;gap:2px">${bal.map(b => `<div class="small" style="display:flex;justify-content:space-between;font-size:12px"><span>${pn(b[0])} · zapłacił ${money(paid[b[0]] || 0, cur)}, jego część ${money(owe[b[0]] || 0, cur)}</span><b style="color:${b[1] > 0.005 ? "#2fb96a" : b[1] < -0.005 ? "#e5484d" : "inherit"}">${sgn(b[1])}</b></div>`).join("")}</div>${t.settle.length ? `<details style="margin-top:8px"><summary class="small" style="cursor:pointer;font-weight:700">Rozliczone (${t.settle.length})</summary>${t.settle.slice().reverse().map(z => `<div class="frow" style="font-size:13px"><span>${pn(z.from)} oddał(a) ${pn(z.to)} <b>${money(z.a, cur)}</b> <span class="small">· ${esc(new Date(z.at).toLocaleDateString("pl-PL", {day: "numeric", month: "short"}))}</span></span><button class="btn sm tsundo" data-id="${esc(z.id)}">Cofnij</button></div>`).join("")}</details>` : ""}</div>` : ""}
     ${t.costs.map(c => { const adder = c.ad || c.by, mine = adder === (me || "ja"); if (costEditId === c.id && mine) { const spx = (c.sp && c.sp.length ? c.sp : ppl); return `<div class="card" style="margin:5px 0;padding:9px 10px;border:1px solid var(--acc,#4aa3ff)"><div class="small" style="font-weight:700;margin-bottom:6px">✎ Edytuj wydatek</div><div style="display:flex;gap:6px"><input class="lin" id="cew" value="${esc(c.w)}" style="flex:2" placeholder="Co"><input class="lin" id="cea" inputmode="decimal" value="${esc(String(c.a).replace(".", ","))}" style="flex:1" placeholder="Kwota"></div>${shared ? `<div class="fld" style="margin-top:8px"><label>KTO ZAPŁACIŁ</label><select id="ceby" class="sel">${ppl.map(p => `<option value="${esc(p)}" ${p === c.by ? "selected" : ""}>@${esc(p)}</option>`).join("")}</select></div><div class="tflab">Dzielimy na:</div><div class="tspl">${ppl.map(p => `<label><input type="checkbox" class="cesp" value="${esc(p)}" ${spx.includes(p) ? "checked" : ""}> ${pn(p)}</label>`).join("")}</div>` : ""}<div style="display:flex;gap:6px;margin-top:8px"><button class="btn sm pri" id="cesave" data-c="${esc(c.id)}">Zapisz</button><button class="btn sm" id="cecancel">Anuluj</button></div></div>`; } return `<div class="card" style="margin:5px 0;padding:7px 10px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div style="min-width:0"><div style="font-weight:600;font-size:14px">${esc(c.w)}</div><div style="font-size:12.5px;margin-top:1px">Zapłacił: <b>${pn(c.by)}</b></div>${shared ? `<div class="small" style="margin-top:2px">Dla: ${(c.sp && c.sp.length && c.sp.length < ppl.length) ? c.sp.map(x => pn(x)).join(", ") : "wszystkich"}</div>` : ""}</div><div style="text-align:right;flex:none"><div style="font-weight:700;font-size:15px">${money(c.a, cur)}</div>${mine ? `<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:4px"><button class="tdel tced" data-c="${esc(c.id)}" title="Edytuj wydatek" style="background:none">${IC.edit}</button><button class="tdel tcdl" data-c="${esc(c.id)}" title="Usuń wydatek">${IC.trash}</button></div>` : ""}</div></div></div>`; }).join("") || `<div class="small">Brak wydatków.</div>`}
     <div class="tform"><div class="tft">Dodaj wydatek <span class="tfs">(edytować i usunąć go może tylko ten, kto go wpisał)</span></div><div style="display:flex;gap:6px"><input id="tcw" class="lin" placeholder="Co (np. nocleg)" style="flex:2"><input id="tca" class="lin" inputmode="decimal" placeholder="Kwota" style="flex:1"><input id="tccur" class="lin" value="${esc(cur)}" style="width:54px" aria-label="Waluta"></div>
     ${shared ? `<div class="fld" style="margin-top:8px"><label>KTO ZAPŁACIŁ</label><select id="tcby" class="sel">${ppl.map(p => `<option value="${esc(p)}" ${p === me ? "selected" : ""}>@${esc(p)}${p === me ? " (ja)" : ""}</option>`).join("")}</select></div>
@@ -2124,6 +2142,11 @@ function renderTrips(){
   const pkDone = x => !!x.ok;
   const whoSel = (cls, id, cur, ph) => `<select class="sel ${cls}" ${id ? `data-id="${esc(id)}"` : 'id="tpwho"'} style="width:auto;padding:4px 6px;font-size:12px"><option value="">${ph}</option>${ppl.map(p => `<option value="${esc(p)}" ${cur === p ? "selected" : ""}>@${esc(p)}${p === me ? " (ja)" : ""}</option>`).join("")}</select>`;
   const byWho = ppl.map(p => [p, t.pack.filter(x => pkWho(x) === p)]).filter(z => z[1].length);
+  const shopHtml = `<details class="tsd tfold" ${t.shop.length ? "open" : ""}><summary>Lista zakupów${t.shop.length ? `<span class="sbadge">${t.shop.filter(x => x.ok).length}/${t.shop.length}</span>` : ""}</summary>
+    ${t.shop.map(x => { const c = x.cid && t.costs.find(z => z.id === x.cid); return `<div class="frow" style="flex-wrap:wrap"><label style="display:flex;gap:8px;align-items:center;min-width:0;flex:1"><input type="checkbox" class="tsk" data-id="${esc(x.id)}" ${x.ok ? "checked" : ""}> <span style="${x.ok ? "text-decoration:line-through;opacity:.6" : ""}">${esc(x.n)}</span>${x.ok && x.okby && shared ? ` <span class="small">· kupił(a) ${pn(x.okby)}</span>` : ""}${c ? ` <span class="small">· ${money(c.a, cur)} w kosztach</span>` : ""}</label>${x.ok && !c && shopEd !== x.id ? `<button class="btn sm tshc" data-id="${esc(x.id)}">+ do kosztów</button>` : ""}<button class="tdel tskdl" data-id="${esc(x.id)}" title="Usuń">${IC.trash}</button>
+      ${shopEd === x.id ? `<div style="display:flex;gap:6px;width:100%;margin:2px 0 4px"><input class="lin tshin" inputmode="decimal" placeholder="Ile zapłaciłeś?" style="flex:1;padding:6px 10px;min-height:0;font-size:13px"><button class="btn sm pri tskc" data-id="${esc(x.id)}">Dodaj do kosztów</button><button class="btn sm tsks">Pomiń</button></div>` : ""}</div>`; }).join("") || `<div class="small">Nic tu jeszcze nie ma. Dodaj, co trzeba kupić.</div>`}
+    <div style="display:flex;gap:6px;margin:8px 0;align-items:center"><input id="tsn" class="lin" placeholder="+ do kupienia (np. makaron)" style="flex:1;padding:6px 10px;font-size:13px;min-height:0"><button class="btn sm" id="tsadd" style="padding:4px 10px;font-size:12px">Dodaj</button></div>
+    <div class="small" style="opacity:.75">Po odhaczeniu możesz dopisać, ile to kosztowało. Wydatek trafi do kosztów i do rozliczenia.</div></details>`;
   const packHtml = `<details class="tpd tfold" ${t.pack.length ? "open" : ""}><summary>Do ogarnięcia przed wyjazdem${t.pack.length ? `<span class="sbadge">${t.pack.filter(pkDone).length}/${t.pack.length}</span>` : ""}</summary>
     ${shared ? `<div class="small" style="margin:0 0 6px;opacity:.8">Tu tylko wspólne sprawy do ogarnięcia, za które odpowiada konkretna osoba. Własne rzeczy do zabrania odhaczysz w zakładce „Pakowanie".</div>` : ""}
     ${t.pack.map(x => { if (!shared) return `<div class="frow"><label style="display:flex;gap:8px;align-items:center;min-width:0"><input type="checkbox" class="tpk2" data-id="${esc(x.id)}" ${x.ok ? "checked" : ""}> <span style="${x.ok ? "text-decoration:line-through;opacity:.6" : ""}">${esc(x.n)}</span></label><button class="tdel tpdl" data-id="${esc(x.id)}" title="Usuń">${IC.trash}</button></div>`;
@@ -2135,17 +2158,20 @@ function renderTrips(){
     <div class="card"><div class="fld"><label>NAZWA WYJAZDU</label><input id="tname" class="lin" value="${esc(t.name || "")}"></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>OD</label><input id="tfrom" type="date" class="lin" value="${esc(t.from || "")}"></div><div class="fld" style="flex:1"><label>DO</label><input id="tto" type="date" class="lin" value="${esc(t.to || "")}"></div></div>
     ${t.mode === "w" ? `<div class="fld"><label>OŚRODEK (DOMYŚLNY DLA WYJAZDU)</label><button class="btn" id="tbase" style="width:100%;text-align:left">${base ? "⛷ " + esc(base.n) + " ›" : "＋ Wybierz ośrodek"}</button></div>` : ""}
+    <div class="fld"><label>DOKĄD JEDZIEMY</label><div style="display:flex;gap:6px"><input id="tdest" class="lin" value="${esc(t.dest || "")}" placeholder="Link z map, współrzędne albo adres" style="flex:1" autocapitalize="off" autocomplete="off"><button class="btn pri" id="tnav" style="flex:none">Nawiguj</button></div><div class="small" id="tdesth" style="margin-top:4px;min-height:16px"></div></div>
     <div class="fld"><label>NOTATKI</label><textarea id="tnote" class="lin" rows="2" placeholder="Nocleg, dojazd, kto co bierze…">${esc(t.note || "")}</textarea></div>
     ${t.from ? "" : `<div class="small" style="margin:-4px 0 8px;opacity:.7">Ustaw datę „OD", żeby zobaczyć pogodę przy ${t.mode === "w" ? "ośrodkach" : "szlakach"}.</div>`}
     <div class="tsum"><span>${t.items.length} ${unitT(t, t.items.length)}${total ? " · " + fmtH(total) : ""}</span>${t.shared ? `<span class="tppl">${ppl.map(p => pn(p)).join(" ")}</span>` : ""}</div>
     <div class="tact"><button class="btn sm" id="tics">${IC.cal} Kalendarz</button><button class="btn sm" id="tmap">${IC.map} Mapa</button>${(SBC && store.authed) ? `<button class="btn sm" id="tshare">${IC.users} ${t.shared ? "Uczestnicy i zaproszenie (" + ppl.length + ")" : "Współdziel ze znajomymi"}</button>` : ""}</div></div>
     <button class="btn pri" id="tadd" style="width:100%;margin:0 0 12px">＋ Dodaj cel</button>
     ${body || `<div class="empty">Dodaj pierwsze szlaki do wyjazdu.</div>`}
-    ${costsHtml}${packHtml}
+    ${costsHtml}${shopHtml}${packHtml}
     <button class="tdelall" id="tdelall"></button>`;
   const rr = () => { const st = $("v-wyjazdy").scrollTop, open = [...box.querySelectorAll("details")].map(x => x.open); renderTrips(); box.querySelectorAll("details").forEach((x, i) => { if (open[i] !== undefined) x.open = open[i]; }); $("v-wyjazdy").scrollTop = st; };
   $("tback").onclick = () => { tripOpen = null; renderTrips(); };
   $("tname").onchange = e => { t.name = e.target.value.trim().slice(0, 80); tripSave(); };
+  { const inp = $("tdest"), nb = $("tnav"), hint = $("tdesth"), upd = () => { const d = parseDest(inp.value); nb.disabled = !d; hint.innerHTML = !d ? "Wklej z Google Maps lub Apple Maps link do miejsca (Udostępnij → Kopiuj link) albo wpisz adres." : d.lat != null ? `Współrzędne: ${d.lat.toFixed(4)}, ${d.lon.toFixed(4)} · <a href="${esc(navUrl(d, !isIOS()))}" target="_blank" rel="noopener">${isIOS() ? "Otwórz w Google Maps" : "Otwórz w Apple Maps"}</a>` : d.url ? "Link do map. Otworzy się w aplikacji map." : "Adres: mapy poszukają go po nazwie."; };
+    inp.oninput = upd; inp.onchange = () => { t.dest = inp.value.trim().slice(0, 300); tripSave(); upd(); }; nb.onclick = () => { const d = parseDest(inp.value); if (!d) return; t.dest = inp.value.trim().slice(0, 300); tripSave(); window.open(navUrl(d, isIOS()), "_blank", "noopener"); }; upd(); }
   $("tnote").onchange = e => { t.note = e.target.value.slice(0, 1000); tripSave(); };
   $("tfrom").onchange = e => { t.from = e.target.value; if (t.to && t.to < t.from) t.to = t.from; tripSave(); rr(); };
   $("tto").onchange = e => { t.to = e.target.value; if (t.from && t.to < t.from) t.from = t.to; tripSave(); rr(); };
@@ -2160,6 +2186,15 @@ function renderTrips(){
   /* koszty */
   $("tcadd").onclick = () => { const w = $("tcw").value.trim().slice(0, 80), a = parseFloat(String($("tca").value).replace(",", ".")); if (!w || !(a > 0)) { alert("Wpisz, co to było, i kwotę."); return; } t.cur = ($("tccur").value.trim() || "zł").slice(0, 6);
     const sp = [...box.querySelectorAll(".tcsp")].filter(x => x.checked).map(x => x.value); t.costs.push({id: newTripId(), w, a, by: ($("tcby") && $("tcby").value) || me || "ja", ad: me || "ja", sp: shared && sp.length && sp.length < ppl.length ? sp : null, at: Date.now()}); tripSave(); rr(); box.querySelector(".tcd").open = true; };
+  { const addShop = () => { const n = ($("tsn").value || "").trim().slice(0, 60); if (!n || t.shop.some(x => x.n.toLowerCase() === n.toLowerCase())) return; t.shop.push({id: newTripId(), n, by: me || "ja", ok: false}); tripSave(); rr(); box.querySelector(".tsd").open = true; };
+    $("tsadd").onclick = addShop; $("tsn").onkeydown = e => { if (e.key === "Enter") addShop(); }; }
+  box.querySelectorAll(".tsk").forEach(b => b.onchange = () => { const x = t.shop.find(z => z.id === b.dataset.id); if (!x) return; x.ok = b.checked; x.okby = b.checked ? (me || "ja") : undefined; shopEd = b.checked && !x.cid ? x.id : null; tripSave(); rr(); box.querySelector(".tsd").open = true; });
+  box.querySelectorAll(".tshc").forEach(b => b.onclick = () => { shopEd = b.dataset.id; rr(); box.querySelector(".tsd").open = true; });
+  box.querySelectorAll(".tsks").forEach(b => b.onclick = () => { shopEd = null; rr(); box.querySelector(".tsd").open = true; });
+  box.querySelectorAll(".tskdl").forEach(b => b.onclick = () => { t.shop = t.shop.filter(z => z.id !== b.dataset.id); if (shopEd === b.dataset.id) shopEd = null; tripSave(); rr(); box.querySelector(".tsd").open = true; });
+  box.querySelectorAll(".tskc").forEach(b => b.onclick = () => { const x = t.shop.find(z => z.id === b.dataset.id), inp = box.querySelector(".tshin"), a = parseFloat(String(inp.value).replace(",", ".")); if (!x || !(a > 0)) { inp.focus(); return; } const cid = newTripId(); t.costs.push({id: cid, w: x.n, a, by: me || "ja", ad: me || "ja", sp: null, at: Date.now(), shop: x.id}); x.cid = cid; shopEd = null; tripSave(); rr(); box.querySelector(".tcd").open = true; });
+  box.querySelectorAll(".tset").forEach(b => b.onclick = () => { const a = parseFloat(b.dataset.a); if (!(a > 0)) return; t.settle.push({id: newTripId(), from: b.dataset.f, to: b.dataset.t, a, by: me || "ja", at: Date.now()}); tripSave(); rr(); box.querySelector(".tcd").open = true; });
+  box.querySelectorAll(".tsundo").forEach(b => b.onclick = () => { t.settle = t.settle.filter(z => z.id !== b.dataset.id); tripSave(); rr(); box.querySelector(".tcd").open = true; });
   box.querySelectorAll(".tced").forEach(b => b.onclick = () => { costEditId = b.dataset.c; rr(); });
   { const cc = $("cecancel"); if (cc) cc.onclick = () => { costEditId = null; rr(); };
     const cs = $("cesave"); if (cs) cs.onclick = () => { const c = t.costs.find(x => x.id === cs.dataset.c); if (!c || (c.ad || c.by) !== (me || "ja")) return;
@@ -2297,6 +2332,22 @@ function pickTripBase(t){
     document.querySelectorAll(".bpk").forEach(el => el.onclick = () => { t.base = el.dataset.id; const r = byIdW[t.base]; if (r && (!t.name || t.name === "Nowy wyjazd")) t.name = r.n; tripSave(); closeAccount(); renderTrips(); });
     $("bclr").onclick = () => { t.base = ""; tripSave(); closeAccount(); renderTrips(); }; $("bcl").onclick = closeAccount; };
   draw();
+}
+function parseDest(txt){
+  const s = String(txt || "").trim(); if (!s) return null; let m;
+  const ok = (a, b) => { a = +a; b = +b; return Math.abs(a) <= 90 && Math.abs(b) <= 180 ? {lat: a, lon: b} : null; };
+  if ((m = /^\s*(-?\d{1,2}(?:\.\d+)?)\s*[,; ]\s*(-?\d{1,3}(?:\.\d+)?)\s*$/.exec(s))) { const r = ok(m[1], m[2]); if (r) return r; }
+  if (/^https?:\/\//i.test(s)) {
+    let dec = s; try { dec = decodeURIComponent(s); } catch(e){}
+    if ((m = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(dec)) || (m = /@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(dec)) || (m = /[?&](?:q|ll|query|destination|daddr|sll)=(-?\d+\.\d+)[, ]\s*(-?\d+\.\d+)/.exec(dec))) { const r = ok(m[1], m[2]); if (r) return r; }
+    return {url: s};
+  }
+  return {q: s};
+}
+function navUrl(d, apple){
+  if (d.url) return d.url;
+  const dest = d.lat != null ? d.lat + "," + d.lon : d.q;
+  return apple ? "https://maps.apple.com/?dirflg=d&daddr=" + encodeURIComponent(dest) : "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + encodeURIComponent(dest);
 }
 function openTripAdd(t, day0){
   const W = t.mode === "w";
