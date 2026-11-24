@@ -1550,7 +1550,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v77";
+const APPV = "v78";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1924,7 +1924,7 @@ function renderSheet(){
   const tags = W ? r.g.map(g => `<span>${esc(g)}</span>`).join("") : "";
   const href = (W && r.w) ? esc(r.w) : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze");
   const mapHref = W ? `https://openskimap.org/#13/${r.y}/${r.x}` : `https://hiking.waymarkedtrails.org/#?map=13!${r.y}!${r.x}`;
-  const link = `<a class="lnk" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Strona ośrodka ↗" : "Szukaj cen karnetów ↗") : "Szukaj szlaków i informacji ↗"}</a> <a class="lnk" target="_blank" rel="noopener" href="${mapHref}">${W ? "Mapa tras ↗" : "Mapa szlaków ↗"}</a>`;
+  const link = `<a class="lnk" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Strona ośrodka ↗" : "Szukaj cen karnetów ↗") : "Szukaj szlaków i informacji ↗"}</a>`;
   const showOp = !RO && SBC && store.sb && !(v && v.s === "v");
   const fa = [];
   const opblock = !showOp ? "" : `<div class="sect"><div class="sh" style="justify-content:flex-start;gap:10px"><b>Opinie</b>${ratingLine(r.id)}</div><div id="opfr">${friendsHtml(r.id)}</div><div id="opsec">${opinionsHtml(r.id)}</div></div>`;
@@ -1973,7 +1973,6 @@ function renderSheet(){
     <div class="hero hsil"><svg class="hsv" viewBox="0 0 200 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><path d="M0 80 L50 24 L74 52 L104 8 L150 62 L170 40 L200 80 Z"/></svg><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}${gpill}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}${W ? " " + pbadge(r) : ""}${(SBC && ratingLine(r.id)) ? " · " + ratingLine(r.id) : ""}</div></div><button class="hgear" id="hgear" title="Opcje">⚙</button></div>
     <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : W ? "" : (() => { const L = r.hikes.filter(x => !x.del), c = [0,1,2].map(i => L.filter(x => x.d === DIFF[i]).length); return `<div class="tile"><b>${c[0]}·${c[1]}·${c[2]}</b><span>łatwe · średnie · trudne</span></div>`; })()}</div><div class="small wxn" id="wxn" style="margin:8px 2px 0;min-height:16px"></div>
     <a class="offl" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Oficjalna strona ośrodka" : "Ceny karnetów i informacje") : "Szlaki, mapy i informacje"} <span>↗</span></a>
-    <a class="offl" target="_blank" rel="noopener" href="${mapHref}">${W ? "Mapa tras narciarskich" : "Mapa szlaków"} <span>↗</span></a>
     ${(W && r.auto && !RO && SBC) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy. <button class="btn sm" id="sgfix" style="margin-left:4px">Zaproponuj poprawę</button></div>` : (W && r.auto) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy.</div>` : ""}${top}${opblock}${hikes}${szsec}${body}
     <div style="margin-top:12px"><button class="btn" id="sclose" style="width:100%">Zamknij</button></div>`;
   $("sclose").onclick = closeSheet;
