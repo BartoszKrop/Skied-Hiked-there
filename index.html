@@ -24,7 +24,7 @@
   --line:rgba(255,255,255,.09); --text:#eaf1ff; --mute:#8ea2c4; --faint:#5d7096;
   --accent:#5ad1ff; --accent2:#8b7bff; --ok:#38e0a0; --warn:#ffc65c; --bad:#ff6f7d;
   --grad:linear-gradient(135deg,#5ad1ff,#8b7bff); --halo:#14305a; --maphalo:#102949; --mapend:#091526; --accentbg:rgba(90,209,255,.09);
-  --pn:13,27,48; --pn2:10,20,36; --land:#12294a; --landline:#2b4c7c; --grat:#17304f; --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --pn:13,27,48; --pn2:10,20,36; --land:#12294a; --landline:#2b4c7c; --grat:#17304f; --ridge:rgba(226,214,190,.55); --water:rgba(110,175,255,.65); --waterf:rgba(110,175,255,.16); --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Barlow,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
@@ -331,7 +331,7 @@ nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.
 /* ===== motyw jasny, cząsteczki, powitanie, przejścia ===== */
 :root{--lblf:#dbe8ff;--lbls:#07101e}
 body.summer{--lblf:#f6efe4;--lbls:#120d08}
-body.light{--bg:#f2f6fc;--bg2:#ffffff;--glass:rgba(10,30,70,.045);--glass2:rgba(10,30,70,.08);--line:rgba(10,30,70,.14);--text:#0e1b2e;--mute:#4d5f7c;--faint:#7686a3;--accent:#1e7fe0;--accent2:#6c5ce7;--grad:linear-gradient(135deg,#2f9bf0,#6c5ce7);--halo:#dbe8fa;--maphalo:#e8f1fc;--mapend:#cfe0f5;--accentbg:rgba(30,127,224,.11);--pn:255,255,255;--pn2:244,248,253;--land:#dde8f5;--landline:#9fb6d5;--grat:#d3e0f0;--ok:#0f9e72;--warn:#b87400;--bad:#d1384a;--lblf:#12253f;--lbls:#f4f8fd;color-scheme:light}
+body.light{--ridge:rgba(90,70,40,.6);--water:rgba(30,110,200,.7);--waterf:rgba(30,110,200,.14);--bg:#f2f6fc;--bg2:#ffffff;--glass:rgba(10,30,70,.045);--glass2:rgba(10,30,70,.08);--line:rgba(10,30,70,.14);--text:#0e1b2e;--mute:#4d5f7c;--faint:#7686a3;--accent:#1e7fe0;--accent2:#6c5ce7;--grad:linear-gradient(135deg,#2f9bf0,#6c5ce7);--halo:#dbe8fa;--maphalo:#e8f1fc;--mapend:#cfe0f5;--accentbg:rgba(30,127,224,.11);--pn:255,255,255;--pn2:244,248,253;--land:#dde8f5;--landline:#9fb6d5;--grat:#d3e0f0;--ok:#0f9e72;--warn:#b87400;--bad:#d1384a;--lblf:#12253f;--lbls:#f4f8fd;color-scheme:light}
 body.summer.light{--bg:#faf5ec;--bg2:#fffdf8;--glass:rgba(80,50,10,.05);--glass2:rgba(80,50,10,.09);--line:rgba(80,50,10,.15);--text:#2a2014;--mute:#6a5842;--faint:#9a8870;--accent:#d2601a;--accent2:#b23b2a;--grad:linear-gradient(135deg,#f0a04b,#d2601a);--halo:#f3e4cc;--maphalo:#f6ecda;--mapend:#e6d5b8;--accentbg:rgba(210,96,26,.1);--pn:255,252,245;--pn2:248,241,229;--land:#eadfc8;--landline:#b79f77;--grat:#e2d5ba;--ok:#4c8a1f;--lblf:#3a2a17;--lbls:#fbf5ea}
 body.light::before{background-image:radial-gradient(rgba(30,60,110,.07) 1.2px,transparent 1.8px),radial-gradient(rgba(30,60,110,.05) 1px,transparent 1.6px)}
 body.summer.light::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120' viewBox='0 0 220 120' fill='none' stroke='%23a0783c' stroke-opacity='.12' stroke-width='1.2'%3E%3Cpath d='M0 20c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 46c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 72c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3Cpath d='M0 98c30-14 55 14 85 0s55-14 85 0 35 10 50 4'/%3E%3C/svg%3E")}
@@ -1495,7 +1495,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v51";
+const APPV = "v52";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1991,10 +1991,57 @@ function tileUpd(force){
     if (force || str !== gTile._s) { gTile.innerHTML = str; gTile._s = str; }
     const ta = $("tattr"); if (ta) ta.style.display = on ? "" : "none"; });
 }
+/* ---------- kontury gór (grzbiety, szczyty, rzeki, jeziora) – tylko przy mocnym przybliżeniu ---------- */
+const TERR_REG = [{id: "tatry", b: [49.0, 19.6, 49.4, 20.5]}];
+const TERR = {};
+let gTer = null;
+function dpSimp(pts, tol){
+  if (pts.length < 3) return pts;
+  const d2 = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy; let t = l ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l : 0; t = Math.max(0, Math.min(1, t)); const x = a[0] + t * dx - p[0], y = a[1] + t * dy - p[1]; return x * x + y * y; };
+  const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1; const st = [[0, pts.length - 1]];
+  while (st.length) { const [a, b] = st.pop(); let m = -1, mi = 0; for (let i = a + 1; i < b; i++) { const d = d2(pts[i], pts[a], pts[b]); if (d > m) { m = d; mi = i; } } if (m > tol * tol) { keep[mi] = 1; st.push([a, mi], [mi, b]); } }
+  return pts.filter((_, i) => keep[i]);
+}
+function terrParse(j){
+  const out = {r: [], l: [], g: [], p: [], t: Date.now()}, rd = v => Math.round(v * 1e4) / 1e4;
+  const geo = e => dpSimp((e.geometry || []).map(q => [rd(q.lon), rd(q.lat)]), 0.00018);
+  (j.elements || []).forEach(e => { const tg = e.tags || {};
+    if (e.type === "node" && tg.natural === "peak" && tg.name) out.p.push([rd(e.lon), rd(e.lat), parseInt(tg.ele) || 0, tg.name]);
+    else if (e.type === "way" && e.geometry) { const g = geo(e); if (g.length < 2) return;
+      if (tg.natural === "water") out.l.push(g); else if (tg.natural === "ridge" || tg.natural === "arete") out.g.push(g); else if (tg.waterway) out.r.push([tg.waterway === "river" ? 1 : 0, g]); } });
+  out.p.sort((a, b) => b[2] - a[2]); return out;
+}
+async function terrLoad(reg){
+  const T = TERR[reg.id] || (TERR[reg.id] = {state: 0}); if (T.state) return; T.state = 1;
+  const key = "sht-terr-" + reg.id + "-1";
+  try { const c = JSON.parse(localStorage.getItem(key) || "null"); if (c && Date.now() - c.t < 90 * 864e5) { T.d = c; T.state = 2; terrBuild(reg); terrUpd(); return; } } catch (e) {}
+  const [s, w, n, e] = reg.b, bb = `${s},${w},${n},${e}`;
+  const q = `[out:json][timeout:60];(way["waterway"~"^(river|stream)$"]["name"](${bb});way["natural"="water"](${bb});way["natural"~"^(ridge|arete)$"](${bb});node["natural"="peak"]["name"](${bb}););out geom qt;`;
+  for (const u of ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]) {
+    try { const r = await fetch(u, {method: "POST", body: "data=" + encodeURIComponent(q), headers: {"Content-Type": "application/x-www-form-urlencoded"}}); if (!r.ok) continue; T.d = terrParse(await r.json()); T.state = 2; try { localStorage.setItem(key, JSON.stringify(T.d)); } catch (e2) {} terrBuild(reg); terrUpd(); return; } catch (e3) {}
+  }
+  T.state = 0; T.fail = Date.now();
+}
+function terrBuild(reg){
+  const T = TERR[reg.id]; if (!T || !T.d || T.g) return; const d = T.d, g = mk("g", {"pointer-events": "none"}); T.g = g; gTer.append(g);
+  const path = (pts, close) => "M" + pts.map(q => px(q[0]).toFixed(3) + " " + py(q[1]).toFixed(3)).join("L") + (close ? "Z" : "");
+  const mkp = (dd, st, w, extra) => mk("path", Object.assign({d: dd, style: st, "stroke-width": w, "vector-effect": "non-scaling-stroke", fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round"}, extra || {}));
+  d.g.forEach(l => g.append(mkp(path(l), "stroke:var(--ridge)", 1.6, {"stroke-dasharray": "5 3"})));
+  d.r.forEach(([k, l]) => g.append(mkp(path(l), "stroke:var(--water)", k ? 1.4 : .9)));
+  d.l.forEach(l => { const e = mkp(path(l, 1), "stroke:var(--water);fill:var(--waterf)", 1); g.append(e); });
+  T.pk = d.p.map((q, i) => { const tri = mk("path", {d: "M0 -1.1 L1 .8 L-1 .8Z", style: "fill:var(--ridge);stroke:var(--bg2)", "stroke-width": .25}), tx = mk("text", {"text-anchor": "middle", style: "fill:var(--lblf);stroke:var(--lbls)", "paint-order": "stroke", "stroke-linejoin": "round", "font-family": "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", "font-weight": "600", "letter-spacing": "0.01em"}); tx.textContent = q[3] + (q[2] ? " " + q[2] : ""); g.append(tri, tx); return {tri, tx, x: px(q[0]), y: py(q[1]), i}; });
+}
+function terrUpd(){
+  if (!gTer) return; const lonSpan = vb.w / COS, cx = (vb.x + vb.w / 2) / COS, cy = -(vb.y + vb.h / 2); let any = false;
+  TERR_REG.forEach(reg => { const [s, w, n, e] = reg.b, near = cx > w - .3 && cx < e + .3 && cy > s - .3 && cy < n + .3, on = lonSpan < 1.1 && near, T = TERR[reg.id] || (TERR[reg.id] = {state: 0});
+    if (on && !T.state && Date.now() - (T.fail || 0) > 6e4) terrLoad(reg);
+    if (T.g) { T.g.style.display = on ? "" : "none"; if (on) { any = true; const sc = scale(), K = lonSpan < .12 ? 999 : lonSpan < .3 ? 45 : 14; T.pk.forEach(p => { const sh = p.i < K; p.tri.setAttribute("transform", `translate(${p.x} ${p.y}) scale(${5 / sc})`); p.tri.style.display = sh ? "" : "none"; p.tx.style.display = sh ? "" : "none"; if (sh) { p.tx.setAttribute("x", p.x); p.tx.setAttribute("y", p.y - 9 / sc); p.tx.setAttribute("font-size", 10 / sc); p.tx.setAttribute("stroke-width", 3 / sc); } }); } } });
+  svg.classList.toggle("terr", any);
+}
 let showAll = false;
 function mapInit(){
-  gGrat = mk("g", {}); gLand = mk("g", {}); gTile = mk("g", {"pointer-events":"none"}); gDots = mk("g", {}); gLbl = mk("g", {"pointer-events":"none"});
-  svg.append(gGrat, gLand, gTile, gDots, gLbl);
+  gGrat = mk("g", {}); gLand = mk("g", {}); gTile = mk("g", {"pointer-events":"none"}); gTer = mk("g", {"pointer-events":"none"}); gDots = mk("g", {}); gLbl = mk("g", {"pointer-events":"none"});
+  svg.append(gGrat, gLand, gTile, gTer, gDots, gLbl);
   for (let lon = -25; lon <= 30; lon += 5) gGrat.append(mk("line", {x1:px(lon), y1:py(30), x2:px(lon), y2:py(68), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
   for (let lat = 32; lat <= 68; lat += 4) gGrat.append(mk("line", {x1:px(-26), y1:py(lat), x2:px(30), y2:py(lat), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
   buildDots(); fit(); loadLand();
@@ -2037,7 +2084,7 @@ function fit(){ mapFitted = true;
 }
 function scale(){ const rc = svg.getBoundingClientRect(); return (rc.width || 360) / vb.w; }
 function applyVB(){
-  svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); try { terrUpd(); } catch (e) {}
   const s = scale(), z = s / ((svg.getBoundingClientRect().width || 360) / (base.x1 - base.x0));
   dots.forEach(d => {
     const id = d.r.id, v = isVis(id), pl = isPlan(id), sel = id === curId, on = v || pl, show = filtN() ? (passF(d.r) || sel) : (showAll || on || sel);
