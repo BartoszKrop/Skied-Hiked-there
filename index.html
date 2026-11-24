@@ -1350,7 +1350,7 @@ function ddEnh(sel) {
 { let pend = 0; const run = () => { pend = 0; document.querySelectorAll("select.sel:not([data-dd])").forEach(ddEnh); };
   new MutationObserver(() => { if (!pend) pend = requestAnimationFrame(run); }).observe(document.body, {childList: true, subtree: true}); run();
   document.addEventListener("click", ddClose); addEventListener("resize", ddClose); document.addEventListener("scroll", e => { if (!(e.target.closest && e.target.closest(".ddm"))) ddClose(); }, true); }
-const APPV = "v25";
+const APPV = "v26";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2163,7 +2163,7 @@ function renderTrips(){
     const pl = []; its.forEach(z => { const r = tripHike(z.it).r; if (r && !pl.includes(r)) pl.push(r); }); let far = 0; for (let i = 1; i < pl.length; i++) far = Math.max(far, km2(pl[i - 1], pl[i]));
     const warn = (hh > 8 ? `<div class="small" style="color:var(--warn);margin:0 0 6px">⚠ Długi dzień (${fmtH(hh)} marszu)</div>` : "") + (far > 40 ? `<div class="small" style="color:var(--warn);margin:0 0 6px">⚠ Miejsca oddalone o ok. ${Math.round(far)} km</div>` : "");
     const c0 = pl[0] && pl[0].y != null ? pl[0] : null;
-    const dd = d ? dayDate(t.from, d) : ""; return `<div class="sect tday t${d ? 1 : 0}" data-d="${d}"><div class="sh">${d ? `<span class="dttl"><span class="dnum"><small>DZIEŃ</small><b>${d}</b></span><span class="dd">${esc(dd || "Dzień " + d)}</span></span>` : `<b>${esc(lab)}</b>`}<span class="small" style="display:flex;gap:8px;align-items:center">${d ? `<button class="btn sm tdaddb" data-d="${d}" style="padding:2px 9px">＋</button>` : ""}${its.length ? its.length + " " + unitT(t, its.length) + (hh ? " · " + fmtH(hh) : "") : ""}</span></div>${warn}${d && base ? `<div class="small" style="margin:0 0 4px">⛷ ${esc(base.n)}</div><div class="twx small" data-d="${d}" style="margin:0 0 6px"></div>` : ""}${d ? `<textarea class="lin tdn" data-d="${d}" rows="1" placeholder="Notatka">${esc(t.dn[d] || "")}</textarea>${t.shared && t.dn[d] && t.dnb[d] ? `<div class="small" style="margin:-6px 0 8px">✎ ${pn(t.dnb[d])}</div>` : ""}` : ""}${its.length ? (d ? `<div class="dsep">${t.mode === "w" ? "OŚRODKI" : "SZLAKI"}</div>` : "") + its.map(z => row(z.it, z.idx)).join("") : (d ? `<div class="small tempty" style="margin:0 0 8px;opacity:.6">Przeciągnij tu ${t.mode === "w" ? "ośrodek" : "szlak"}</div>` : "")}</div>`; }).join("");
+    const dd = d ? dayDate(t.from, d) : ""; return `<div class="sect tday t${d ? 1 : 0}" data-d="${d}"><div class="sh">${d ? `<span class="dttl"><span class="dnum"><small>DZIEŃ</small><b>${d}</b></span><span class="dd">${esc(dd || "Dzień " + d)}</span></span>` : `<b>${esc(lab)}</b>`}<span class="small" style="display:flex;gap:8px;align-items:center">${d && dayDests(t, d).length ? `<button class="btn sm tdnav" data-d="${d}" title="Nawiguj do miejsca na ten dzień" aria-label="Nawiguj" style="padding:2px 8px;display:inline-flex;align-items:center">${IC.map}</button>` : ""}${d ? `<button class="btn sm tdaddb" data-d="${d}" style="padding:2px 9px">＋</button>` : ""}${its.length ? its.length + " " + unitT(t, its.length) + (hh ? " · " + fmtH(hh) : "") : ""}</span></div>${warn}${d && base ? `<div class="small" style="margin:0 0 4px">⛷ ${esc(base.n)}</div><div class="twx small" data-d="${d}" style="margin:0 0 6px"></div>` : ""}${d ? `<textarea class="lin tdn" data-d="${d}" rows="1" placeholder="Notatka">${esc(t.dn[d] || "")}</textarea>${t.shared && t.dn[d] && t.dnb[d] ? `<div class="small" style="margin:-6px 0 8px">✎ ${pn(t.dnb[d])}</div>` : ""}` : ""}${its.length ? (d ? `<div class="dsep">${t.mode === "w" ? "OŚRODKI" : "SZLAKI"}</div>` : "") + its.map(z => row(z.it, z.idx)).join("") : (d ? `<div class="small tempty" style="margin:0 0 8px;opacity:.6">Przeciągnij tu ${t.mode === "w" ? "ośrodek" : "szlak"}</div>` : "")}</div>`; }).join("");
   /* koszty */
   const cur = baseC(t), paid = {}, owe = {}, cvm = []; t.costs.forEach(c => { if (!c.cu) c.cu = cur; }); const cv = c => { const v = convC(t, c); if (v == null) { if (!cvm.includes(cNorm(c.cu))) cvm.push(cNorm(c.cu)); return 0; } return v; }; ppl.forEach(p => { paid[p] = 0; owe[p] = 0; });
   t.costs.forEach(c => { const a = cv(c), sp = (c.sp && c.sp.length ? c.sp : ppl).filter(p => p in owe); paid[c.by] = (paid[c.by] || 0) + a; sp.forEach(p => { owe[p] = (owe[p] || 0) + a / sp.length; }); });
@@ -2218,7 +2218,6 @@ function renderTrips(){
     <div class="card"><div class="fld"><label>NAZWA WYJAZDU</label><input id="tname" class="lin" value="${esc(t.name || "")}"></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>OD</label><input id="tfrom" type="date" class="lin" value="${esc(t.from || "")}"></div><div class="fld" style="flex:1"><label>DO</label><input id="tto" type="date" class="lin" value="${esc(t.to || "")}"></div></div>
     ${t.mode === "w" ? `<div class="fld"><label>OŚRODEK (DOMYŚLNY DLA WYJAZDU)</label><button class="btn" id="tbase" style="width:100%;text-align:left">${base ? "⛷ " + esc(base.n) + " ›" : "＋ Wybierz ośrodek"}</button></div>` : ""}
-    <div class="fld"><label>DOKĄD JEDZIEMY</label><div style="display:flex;gap:6px"><input id="tdest" class="lin" value="${esc(t.dest || "")}" placeholder="Link z map, współrzędne albo adres" style="flex:1" autocapitalize="off" autocomplete="off"><button class="btn pri" id="tnav" style="flex:none">Nawiguj</button></div><div class="small" id="tdesth" style="margin-top:4px;min-height:16px"></div></div>
     <div class="fld"><label>NOTATKI</label><textarea id="tnote" class="lin" rows="2" placeholder="Nocleg, dojazd, kto co bierze…">${esc(t.note || "")}</textarea></div>
     ${t.from ? "" : `<div class="small" style="margin:-4px 0 8px;opacity:.7">Ustaw datę „OD", żeby zobaczyć pogodę przy ${t.mode === "w" ? "ośrodkach" : "szlakach"}.</div>`}
     <div class="tsum"><span>${t.items.length} ${unitT(t, t.items.length)}${total ? " · " + fmtH(total) : ""}</span>${t.shared ? `<span class="tppl">${ppl.map(p => pn(p)).join(" ")}</span>` : ""}</div>
@@ -2230,8 +2229,6 @@ function renderTrips(){
   const rr = () => { const st = $("v-wyjazdy").scrollTop, open = [...box.querySelectorAll("details")].map(x => x.open); renderTrips(); box.querySelectorAll("details").forEach((x, i) => { if (open[i] !== undefined) x.open = open[i]; }); $("v-wyjazdy").scrollTop = st; };
   $("tback").onclick = () => { tripOpen = null; renderTrips(); };
   $("tname").onchange = e => { t.name = e.target.value.trim().slice(0, 80); tripSave(); };
-  { const inp = $("tdest"), nb = $("tnav"), hint = $("tdesth"), upd = () => { const d = parseDest(inp.value); nb.disabled = !d; hint.innerHTML = !d ? "Wklej z Google Maps lub Apple Maps link do miejsca (Udostępnij → Kopiuj link) albo wpisz adres." : d.lat != null ? `Współrzędne: ${d.lat.toFixed(4)}, ${d.lon.toFixed(4)} · <a href="${esc(navUrl(d, !isIOS()))}" target="_blank" rel="noopener">${isIOS() ? "Otwórz w Google Maps" : "Otwórz w Apple Maps"}</a>` : d.url ? "Link do map. Otworzy się w aplikacji map." : "Adres: mapy poszukają go po nazwie."; };
-    inp.oninput = upd; inp.onchange = () => { t.dest = inp.value.trim().slice(0, 300); tripSave(); upd(); }; nb.onclick = () => { const d = parseDest(inp.value); if (!d) return; t.dest = inp.value.trim().slice(0, 300); tripSave(); window.open(navUrl(d, isIOS()), "_blank", "noopener"); }; upd(); }
   $("tnote").onchange = e => { t.note = e.target.value.slice(0, 1000); tripSave(); };
   $("tfrom").onchange = e => { t.from = e.target.value; if (t.to && t.to < t.from) t.to = t.from; tripSave(); rr(); };
   $("tto").onchange = e => { t.to = e.target.value; if (t.from && t.to < t.from) t.from = t.to; tripSave(); rr(); };
@@ -2286,6 +2283,7 @@ function renderTrips(){
   /* akcje */
   $("tadd").onclick = () => openTripAdd(t);
   box.querySelectorAll(".tdaddb").forEach(b => b.onclick = () => openTripAdd(t, +b.dataset.d));
+  box.querySelectorAll(".tdnav").forEach(b => b.onclick = () => openDayNav(t, +b.dataset.d));
   $("tics").onclick = () => tripICS(t);
   $("tmap").onclick = () => tripMap(t);
   { const sb = $("tshare"); if (sb) sb.onclick = () => openTripShare(t); }
@@ -2422,6 +2420,20 @@ function navUrl(d, apple){
   if (d.url) return d.url;
   const dest = d.lat != null ? d.lat + "," + d.lon : d.q;
   return apple ? "https://maps.apple.com/?dirflg=d&daddr=" + encodeURIComponent(dest) : "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + encodeURIComponent(dest);
+}
+function dayDests(t, d) {
+  const seen = new Set(), out = [];
+  (t.items || []).forEach(it => { if (it.day !== d || it.custom) return; const r = tripHike(it).r; if (!r || r.x == null || r.y == null || seen.has(r.id)) return; seen.add(r.id); out.push({n: t.mode === "w" ? (r.l || r.n) : r.n, sub: t.mode === "w" ? r.n : "", lat: r.y, lon: r.x}); });
+  if (!out.length) { const b = t.mode === "w" && t.base ? byIdW[t.base] : null; if (b && b.x != null) out.push({n: b.l || b.n, sub: b.n, lat: b.y, lon: b.x}); }
+  if (!out.length && t.dest) { const q = parseDest(t.dest); if (q) out.push({n: "Cel wyjazdu", q}); }
+  return out;
+}
+const dnavUrl = x => navUrl(x.q || {lat: x.lat, lon: x.lon}, false);
+function openDayNav(t, d) {
+  const L = dayDests(t, d); if (!L.length) return;
+  if (L.length === 1) { window.open(dnavUrl(L[0]), "_blank", "noopener"); return; }
+  ovBox().innerHTML = `<div class="card" style="width:min(420px,94vw)"><h3>Dokąd jedziemy?</h3><div class="sub">Dzień ${d}: wybierz miejscowość, do której ma prowadzić nawigacja.</div>${L.map((x, i) => `<a class="btn pri" href="${esc(dnavUrl(x))}" target="_blank" rel="noopener" style="display:block;text-align:left;margin-bottom:8px;text-decoration:none">${IC.map} ${esc(x.n)}${x.sub ? ` <span class="small" style="opacity:.8">· ${esc(x.sub)}</span>` : ""}</a>`).join("")}<button class="btn" id="lclose" style="width:100%;margin-top:4px">Zamknij</button></div>`;
+  $("lclose").onclick = closeAccount; document.querySelectorAll("#acctov a.btn").forEach(a => a.addEventListener("click", () => setTimeout(closeAccount, 50)));
 }
 function openTripAdd(t, day0){
   const W = t.mode === "w";
