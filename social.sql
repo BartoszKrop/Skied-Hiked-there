@@ -230,3 +230,11 @@ begin
 end $$;
 drop trigger if exists trips_notify_trg on public.shared_trips;
 create trigger trips_notify_trg after update on public.shared_trips for each row execute function public.trips_notify();
+
+---------------------------------------------------------------- uprawnienia (nowsze projekty Supabase nie nadają ich automatycznie)
+grant usage on schema public to authenticated, anon;
+grant select on public.friend_requests to authenticated;
+grant select on public.trip_invites to authenticated;
+grant select, delete on public.notifications to authenticated;
+grant update (read) on public.notifications to authenticated;
+grant execute on function public.my_username() to authenticated, anon;
