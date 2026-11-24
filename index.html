@@ -369,6 +369,7 @@ header>*:not(#fx){position:relative;z-index:1}header{position:relative;overflow:
 @media(prefers-reduced-motion:reduce){.view.sl-r,.view.sl-l{animation:none}#fx i,#fx b{display:none}#fx.sun::before{animation:none}}
 .welcome h3{line-height:1.05}
 body.light .hike .bd .d0{background:rgba(15,158,114,.14);color:#0a7a56}body.light .hike .bd .d1{background:rgba(184,116,0,.14);color:#8a5600}body.light .hike .bd .d2{background:rgba(209,56,74,.12);color:#b02a3b}
+.rsvb{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--glass2);color:var(--text);font-size:16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
 .rsvc{display:inline-flex;gap:5px;align-items:center;padding:3px 10px;border:1px solid;border-radius:999px;font-size:13px;font-weight:700}
 span.d0,span.d1,span.d2{display:inline-block;padding:1px 9px;border-radius:999px;font-size:11.5px;font-weight:700;line-height:1.55;vertical-align:1px;letter-spacing:.2px}
 span.d0{background:rgba(56,224,160,.22)!important;color:#7bf2c4!important;box-shadow:inset 0 0 0 1px rgba(56,224,160,.45)}
@@ -1402,7 +1403,7 @@ function dpEnh(inp) {
   b.onkeydown = e => { if (e.key === "Escape") ddClose(); };
   lab();
 }
-const APPV = "v29";
+const APPV = "v30";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2204,9 +2205,10 @@ function renderTrips(){
   const base = t.mode === "w" && t.base ? byIdW[t.base] : null;
   const D = tripDays(t), total = t.items.reduce((s, i) => s + hrs(tripHike(i).h && tripHike(i).h.t), 0), ppl = tripPeople(t), shared = t.shared && ppl.length > 1; pcAssign(ppl);
   const rsv = t.rsvp || {}, RS = {y: ["Jadę", "✓", "#2fb96a"], m: ["Może", "?", "#e0a526"], n: ["Nie jadę", "✕", "#e5484d"]};
-  const rsvHtml = t.shared && me ? (() => { const my = rsv[me], cnt = k => ppl.filter(q => rsv[q] === k).length, nn = ppl.filter(q => !rsv[q]).length, pd = (SOC.outInv || []).filter(i => i.trip_id === t.id).length;
-    return `<div class="fld" style="margin-top:10px"><label>KTO JEDZIE</label><div class="seg big" id="rsvseg">${["y", "m", "n"].map(k => `<button data-v="${k}" class="${my === k ? "on" : ""}" style="${my === k ? "color:" + RS[k][2] : ""}">${RS[k][1]} ${RS[k][0]}</button>`).join("")}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${ppl.map(q => { const v = rsv[q], c = v ? RS[v][2] : "var(--faint)"; return `<span class="rsvc" style="border-color:${c}"><b style="color:${c}">${v ? RS[v][1] : "·"}</b> ${pn(q)}</span>`; }).join("")}</div>
+  const rsvMy = t.shared && me ? rsv[me] : "";
+  const rsvTop = t.shared && me ? `<span class="small" style="font-weight:700;margin-right:2px">Chęci:</span><span id="rsvseg" style="display:inline-flex;gap:5px">${["y", "m", "n"].map(k => `<button class="rsvb ${rsvMy === k ? "on" : ""}" data-v="${k}" aria-label="${RS[k][0]}" title="${RS[k][0]}" style="${rsvMy === k ? "background:" + RS[k][2] + ";border-color:" + RS[k][2] + ";color:#fff" : ""}">${RS[k][1]}</button>`).join("")}</span>` : "";
+  const rsvHtml = t.shared && me ? (() => { const cnt = k => ppl.filter(q => rsv[q] === k).length, nn = ppl.filter(q => !rsv[q]).length, pd = (SOC.outInv || []).filter(i => i.trip_id === t.id).length;
+    return `<div style="margin-top:10px"><div style="display:flex;flex-wrap:wrap;gap:6px">${ppl.map(q => { const v = rsv[q], c = v ? RS[v][2] : "var(--faint)"; return `<span class="rsvc" style="border-color:${c}"><b style="color:${c}">${v ? RS[v][1] : "·"}</b> ${pn(q)}</span>`; }).join("")}</div>
       <div class="small" style="margin-top:6px">${cnt("y")} jedzie · ${cnt("m")} może · ${cnt("n")} nie jedzie${nn ? " · " + nn + " bez odpowiedzi" : ""}${pd ? " · " + pd + " zaproszonych czeka" : ""}</div></div>`; })() : "";
   const row = (it, idx) => { const {r, h} = tripHike(it), v = votes(it), cm = it.cm || [], isNew = t.shared && it.by && it.by !== me && it.at && it.at > tripPrev;
     return `<div class="hike tit ${it.ok ? "done" : ""}" data-ti="${idx}" style="margin-bottom:8px${isNew ? ";border-color:var(--accent)" : ""}"><div class="tk2"><button class="tick ${it.ok ? "on" : ""}" data-ti="${idx}" aria-label="Zrobione">✓</button></div><div class="hb" style="padding-right:26px"><a class="hlnk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(it.custom ? it.n : it.m === "w" ? it.n + " ośrodek narciarski" : it.n + " " + (r ? r.n : "") + " szlak")}" style="color:inherit;text-decoration:underline dotted;text-underline-offset:3px"><b>${esc(it.n)}</b> <span class="small">↗</span></a> <span class="small">${it.custom ? (it.other ? "inne" : "własne miejsce") : it.m === "w" ? (r ? esc((r.c || "").split(",")[0]) : "(miejsce usunięte)") : r ? esc(r.n) : "(miejsce usunięte)"}${!it.custom && it.m !== "w" && h ? ` · <span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span>` : ""}${it.by ? " · dodał " + pn(it.by) : ""}</span>${isNew ? ` <span class="small" style="color:var(--accent)">● nowe</span>` : ""}${it.custom ? "" : it.m === "w" ? (r ? `<div class="bd"><span>⛷ ${r.k} km tras</span>${r.e ? `<span>▲ ${r.e} m</span>` : ""}</div>` : "") : h ? "" : `<div class="small">szlak nie jest już dostępny</div>`}${it.day && t.from && r && r.y != null ? `<div class="hwx small" data-ti="${idx}" style="margin-top:4px;opacity:.9"></div>` : ""}
@@ -2271,7 +2273,7 @@ function renderTrips(){
     ${shared && byWho.length ? `<div class="small" style="margin:6px 0;display:flex;gap:10px;flex-wrap:wrap">${byWho.map(([p, a]) => `<span>${pn(p)}: <b>${a.filter(x => x.ok).length}/${a.length}</b></span>`).join("")}</div>` : ""}
     <div style="display:flex;gap:6px;margin:8px 0;align-items:center"><input id="tpn" class="lin" placeholder="${shared ? "+ wspólna sprawa" : "+ sprawa do ogarnięcia"}" style="flex:1;padding:6px 10px;font-size:13px;min-height:0">${shared ? whoSel("", "", me, "kto bierze?") : ""}<button class="btn sm" id="tpadd" style="padding:4px 10px;font-size:12px">Dodaj</button></div>
   </details>`;
-  box.innerHTML = `<button class="btn sm" id="tback" style="margin-bottom:10px">← Wszystkie wyjazdy</button>
+  box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button class="btn sm" id="tback">← Wszystkie wyjazdy</button><span style="flex:1"></span>${rsvTop}</div>
     <div class="card"><div class="fld"><label>NAZWA WYJAZDU</label><input id="tname" class="lin" value="${esc(t.name || "")}"></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>OD</label><input id="tfrom" type="date" class="lin" value="${esc(t.from || "")}"></div><div class="fld" style="flex:1"><label>DO</label><input id="tto" type="date" class="lin" value="${esc(t.to || "")}"></div></div>
     ${t.mode === "w" ? `<div class="fld"><label>OŚRODEK (DOMYŚLNY DLA WYJAZDU)</label><button class="btn" id="tbase" style="width:100%;text-align:left">${base ? "⛷ " + esc(base.n) + " ›" : "＋ Wybierz ośrodek"}</button></div>` : ""}
