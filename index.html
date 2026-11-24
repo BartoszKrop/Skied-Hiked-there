@@ -2085,7 +2085,7 @@ function renderTrips(){
   const base = t.mode === "w" && t.base ? byIdW[t.base] : null;
   const D = tripDays(t), total = t.items.reduce((s, i) => s + hrs(tripHike(i).h && tripHike(i).h.t), 0), ppl = tripPeople(t), shared = t.shared && ppl.length > 1; pcAssign(ppl);
   const row = (it, idx) => { const {r, h} = tripHike(it), v = votes(it), cm = it.cm || [], isNew = t.shared && it.by && it.by !== me && it.at && it.at > tripPrev;
-    return `<div class="hike tit ${it.ok ? "done" : ""}" data-ti="${idx}" style="margin-bottom:8px${isNew ? ";border-color:var(--accent)" : ""}${t.shared && it.by ? ";border-left:4px solid " + pc(it.by) : ""}"><div class="tk2"><button class="tick ${it.ok ? "on" : ""}" data-ti="${idx}" aria-label="Zrobione">✓</button></div><div class="hb" style="padding-right:26px"><a class="hlnk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(it.custom ? it.n : it.m === "w" ? it.n + " ośrodek narciarski" : it.n + " " + (r ? r.n : "") + " szlak")}" style="color:inherit;text-decoration:underline dotted;text-underline-offset:3px"><b>${esc(it.n)}</b> <span class="small">↗</span></a> <span class="small">${it.custom ? "własne miejsce" : it.m === "w" ? (r ? esc((r.c || "").split(",")[0]) : "(miejsce usunięte)") : r ? esc(r.n) : "(miejsce usunięte)"}${it.by ? " · dodał " + pn(it.by) : ""}</span>${isNew ? ` <span class="small" style="color:var(--accent)">● nowe</span>` : ""}${it.custom ? "" : it.m === "w" ? (r ? `<div class="bd"><span>⛷ ${r.k} km tras</span>${r.e ? `<span>▲ ${r.e} m</span>` : ""}</div>` : "") : h ? `<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div>` : `<div class="small">szlak nie jest już dostępny</div>`}${it.day && t.from && r && r.y != null ? `<div class="hwx small" data-ti="${idx}" style="margin-top:4px;opacity:.9"></div>` : ""}
+    return `<div class="hike tit ${it.ok ? "done" : ""}" data-ti="${idx}" style="margin-bottom:8px${isNew ? ";border-color:var(--accent)" : ""}${t.shared && it.by ? ";border-left:4px solid " + pc(it.by) : ""}"><div class="tk2"><button class="tick ${it.ok ? "on" : ""}" data-ti="${idx}" aria-label="Zrobione">✓</button></div><div class="hb" style="padding-right:26px"><a class="hlnk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(it.custom ? it.n : it.m === "w" ? it.n + " ośrodek narciarski" : it.n + " " + (r ? r.n : "") + " szlak")}" style="color:inherit;text-decoration:underline dotted;text-underline-offset:3px"><b>${esc(it.n)}</b> <span class="small">↗</span></a> <span class="small">${it.custom ? (it.other ? "inne" : "własne miejsce") : it.m === "w" ? (r ? esc((r.c || "").split(",")[0]) : "(miejsce usunięte)") : r ? esc(r.n) : "(miejsce usunięte)"}${it.by ? " · dodał " + pn(it.by) : ""}</span>${isNew ? ` <span class="small" style="color:var(--accent)">● nowe</span>` : ""}${it.custom ? "" : it.m === "w" ? (r ? `<div class="bd"><span>⛷ ${r.k} km tras</span>${r.e ? `<span>▲ ${r.e} m</span>` : ""}</div>` : "") : h ? `<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span><span>⏱ ${esc(h.t)}</span></div>` : `<div class="small">szlak nie jest już dostępny</div>`}${it.day && t.from && r && r.y != null ? `<div class="hwx small" data-ti="${idx}" style="margin-top:4px;opacity:.9"></div>` : ""}
       <div class="tctl"><select class="sel tdaysel" data-ti="${idx}"><option value="0">Bez dnia</option>${Array.from({length: D}, (_, k) => `<option value="${k + 1}" ${it.day === k + 1 ? "selected" : ""}>Dzień ${k + 1}${dayDate(t.from, k + 1) ? " · " + dayDate(t.from, k + 1) : ""}</option>`).join("")}</select>
       ${shared ? `<span class="tvg"><button class="tvote ${(it.v || {})[me] > 0 ? "on" : ""}" data-ti="${idx}" data-v="1" aria-label="Za">👍️${v.up ? `<i>${v.up}</i>` : ""}</button><button class="tvote ${(it.v || {})[me] < 0 ? "on" : ""}" data-ti="${idx}" data-v="-1" aria-label="Przeciw">👎️${v.dn ? `<i>${v.dn}</i>` : ""}</button></span>` : ""}${shared || cm.length ? `<button class="tcmb ${cm.length ? "has" : ""}" data-ti="${idx}" aria-label="Komentarze">💬${cm.length ? `<i>${cm.length}</i>` : ""}</button>` : ""}<button class="tdel tdx" data-ti="${idx}" title="Usuń z wyjazdu" aria-label="Usuń z wyjazdu">✕</button></div>
       ${cmOpen.has(idx) ? `<div style="margin-top:8px">${cm.map((c, ci) => `<div class="small" style="margin:3px 0"><b>${pn(c.u)}</b> ${esc(c.t)}${c.u === (me || "ja") ? ` <button class="tcdel" data-ti="${idx}" data-c="${ci}" style="background:none;border:0;color:#ff8a8a;cursor:pointer">✕</button>` : ""}</div>`).join("")}<div style="display:flex;gap:6px"><input class="lin tcin" data-ti="${idx}" placeholder="Napisz komentarz…" style="flex:1"><button class="btn sm pri tcsend" data-ti="${idx}">Wyślij</button></div></div>` : ""}</div><button class="thandle" title="Przeciągnij na inny dzień" aria-label="Przeciągnij">⠿</button></div>`; };
@@ -2133,7 +2133,7 @@ function renderTrips(){
     ${t.from ? "" : `<div class="small" style="margin:-4px 0 8px;opacity:.7">Ustaw datę „OD", żeby zobaczyć pogodę przy ${t.mode === "w" ? "ośrodkach" : "szlakach"}.</div>`}
     <div class="tsum"><span>${t.items.length} ${unitT(t, t.items.length)}${total ? " · " + fmtH(total) : ""}</span>${t.shared ? `<span class="tppl">${ppl.map(p => pn(p)).join(" ")}</span>` : ""}</div>
     <div class="tact"><button class="btn sm" id="tics">${IC.cal} Kalendarz</button><button class="btn sm" id="tmap">${IC.map} Mapa</button>${(SBC && store.authed) ? `<button class="btn sm" id="tshare">${IC.users} ${t.shared ? "Uczestnicy i zaproszenie (" + ppl.length + ")" : "Współdziel ze znajomymi"}</button>` : ""}</div></div>
-    <button class="btn pri" id="tadd" style="width:100%;margin:0 0 12px">＋ Dodaj ${t.mode === "w" ? "ośrodki" : "szlaki"}</button>
+    <button class="btn pri" id="tadd" style="width:100%;margin:0 0 12px">＋ Dodaj cel</button>
     ${body || `<div class="empty">Dodaj pierwsze szlaki do wyjazdu.</div>`}
     ${costsHtml}${packHtml}
     <button class="tdelall" id="tdelall"></button>`;
@@ -2169,8 +2169,8 @@ function renderTrips(){
   box.querySelectorAll("select.tpw").forEach(b => b.onchange = () => { const x = t.pack.find(z => z.id === b.dataset.id); if (x) { x.who = b.value; x.for = null; tripSave(); rr(); } });
   box.querySelectorAll(".tpdl").forEach(b => b.onclick = () => { t.pack = t.pack.filter(z => z.id !== b.dataset.id); tripSave(); rr(); box.querySelector(".tpd").open = true; });
   /* akcje */
-  $("tadd").onclick = () => openTripPicker(t);
-  box.querySelectorAll(".tdaddb").forEach(b => b.onclick = () => openTripPicker(t, "", +b.dataset.d));
+  $("tadd").onclick = () => openTripAdd(t);
+  box.querySelectorAll(".tdaddb").forEach(b => b.onclick = () => openTripAdd(t, +b.dataset.d));
   $("tics").onclick = () => tripICS(t);
   $("tmap").onclick = () => tripMap(t);
   { const sb = $("tshare"); if (sb) sb.onclick = () => openTripShare(t); }
@@ -2291,6 +2291,25 @@ function pickTripBase(t){
     document.querySelectorAll(".bpk").forEach(el => el.onclick = () => { t.base = el.dataset.id; const r = byIdW[t.base]; if (r && (!t.name || t.name === "Nowy wyjazd")) t.name = r.n; tripSave(); closeAccount(); renderTrips(); });
     $("bclr").onclick = () => { t.base = ""; tripSave(); closeAccount(); renderTrips(); }; $("bcl").onclick = closeAccount; };
   draw();
+}
+function openTripAdd(t, day0){
+  const W = t.mode === "w";
+  ovBox().innerHTML = `<div class="card" style="width:min(420px,94vw)"><h3>Dodaj cel</h3><div class="sub">${esc(t.name || "Wyjazd")}</div>
+    <button class="btn pri" id="tapk" style="width:100%;margin-bottom:8px">${W ? "⛷ Dodaj ośrodki" : "🥾 Dodaj szlaki"}</button>
+    <button class="btn" id="taot" style="width:100%">＋ Dodaj inne</button><div class="small" style="margin-top:6px">„Inne” to wszystko, co nie jest ${W ? "ośrodkiem" : "szlakiem"}: zwiedzanie miasta, termy, restauracja, dojazd.</div>
+    <button class="btn" id="lclose" style="width:100%;margin-top:12px">Zamknij</button></div>`;
+  $("lclose").onclick = closeAccount; $("tapk").onclick = () => openTripPicker(t, "", day0); $("taot").onclick = () => openTripOther(t, day0);
+}
+function openTripOther(t, day0){
+  let day = day0 || 0;
+  ovBox().innerHTML = `<div class="card" style="width:min(460px,94vw)"><h3>Dodaj inne</h3><div class="sub">${esc(t.name || "Wyjazd")}</div>
+    <div class="fld"><label>NAZWA</label><input id="toi" class="lin" placeholder="np. Zwiedzanie starego miasta" maxlength="80"></div>
+    <div class="fld"><label>DODAJ DO</label><select id="tod" class="sel"><option value="0">Do rozplanowania (bez dnia)</option>${Array.from({length: tripDays(t)}, (_, k) => `<option value="${k + 1}" ${day === k + 1 ? "selected" : ""}>Dzień ${k + 1}${dayDate(t.from, k + 1) ? " · " + dayDate(t.from, k + 1) : ""}</option>`).join("")}</select></div>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="tob" style="flex:1">← Wróć</button><button class="btn pri" id="toa" style="flex:1">Dodaj</button></div></div>`;
+  const inp = $("toi"); inp.focus();
+  $("tod").onchange = e => { day = +e.target.value; }; $("tob").onclick = () => openTripAdd(t, day);
+  const go = () => { const n = inp.value.trim().slice(0, 80); if (!n) { inp.focus(); return; } t.items = t.items || []; t.items.push(Object.assign({p: "", n, day, custom: 1, other: 1, at: Date.now()}, t.shared ? {by: meName()} : {})); tripSave(); closeAccount(); renderTrips(); toast("Dodano: " + n); };
+  $("toa").onclick = go; inp.onkeydown = e => { if (e.key === "Enter") go(); };
 }
 function openTripPicker(t, pid0, day0){
   let pid = pid0 || "", q = "", day = day0 || 0;
