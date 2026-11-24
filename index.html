@@ -507,6 +507,7 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
 #fextra .row2,#frow6{display:contents}
 #fextra select{margin:0;padding:7px 5px;font-size:12px;border-radius:9px;min-width:0;text-overflow:ellipsis;height:34px}
 #fextra{gap:5px}#frow5{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;border:1px solid var(--line);border-radius:11px;padding:6px}#frow5 .wxh{grid-column:1/-1;margin:0 2px;font-size:11.5px;font-weight:700;color:var(--mute)}#frow5 select{width:100%}
+svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spacing:normal}
 </style>
 </head>
 <body>
@@ -1549,7 +1550,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v71";
+const APPV = "v72";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
