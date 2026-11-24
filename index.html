@@ -1294,19 +1294,24 @@ async function openInbox(){
 function friendsCard(){
   if (!(SBC && window.supabase && store.sb)) return `<div class="card"><h3>Obserwowani</h3><div class="small">Obserwowanie działa po zalogowaniu na stronie z kontami.</div><div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
   const F = SOC.friends, fr = (u, btns, sub) => `<div class="frow"><span>@${esc(u)}${sub ? ` <span class="small">· ${sub}</span>` : ""}</span><span style="display:flex;gap:6px;flex:none">${btns}</span></div>`;
-  return `<div class="card" style="width:min(480px,94vw);max-height:88vh;overflow:auto"><h3>Obserwowani</h3><div class="sub">Wyszukaj kogoś po nazwie użytkownika. Publiczne konto obserwujesz od razu, a prywatne dopiero po akceptacji właściciela. Na karcie miejsca zobaczysz, kto z obserwowanych tam był.</div>
+  const tab = SOC.ftab === "ers" ? "ers" : "ing", nIn = SOC.inReq.length;
+  const ing = `<div class="sub">Wyszukaj kogoś po nazwie użytkownika. Publiczne konto obserwujesz od razu, a prywatne dopiero po akceptacji właściciela. Na karcie miejsca zobaczysz, kto z obserwowanych tam był.</div>
     ${store.authed ? "" : `<div class="small">Zaloguj się, żeby obserwować.</div>`}
     ${SOC.err && store.authed ? `<div class="small" style="color:#ff8a8a;margin-bottom:6px">Obserwowanie nie działa: ${esc(SOC.err.slice(0, 90))}. Uruchom w Supabase pliki social.sql i social2.sql.</div>` : ""}
     <div style="display:flex;gap:8px"><input id="fsq" class="lin" placeholder="nazwa użytkownika" autocapitalize="none" style="flex:1"><button class="btn pri" id="fsgo">Szukaj</button></div><div id="fsres" class="small" style="margin:8px 0"></div>
-    ${SOC.inReq.length ? `<div class="sech">Prośby o obserwowanie Ciebie</div>${SOC.inReq.map(r => fr(r.from_name, `<button class="btn sm pri fra" data-id="${esc(r.id)}">Akceptuj</button><button class="btn sm frd" data-id="${esc(r.id)}">Odrzuć</button>`)).join("")}` : ""}
-    <div class="sech">Obserwujesz (${F.length})</div>
     ${F.length ? F.map(u => fr(u, `<button class="btn sm pri fgo" data-u="${esc(u)}">Zobacz</button><button class="btn sm bad ffr" data-u="${esc(u)}">Przestań</button>`)).join("") : `<div class="small">Jeszcze nikogo. Wyszukaj kogoś powyżej.</div>`}
-    ${SOC.outReq.length ? `<div class="sech">Wysłane prośby</div>${SOC.outReq.map(r => fr(r.to_name, `<button class="btn sm ffr" data-u="${esc(r.to_name)}">Anuluj</button>`, "czeka na akceptację")).join("")}` : ""}
-    ${SOC.followers.length ? `<div class="sech">Obserwują Ciebie (${SOC.followers.length})</div>${SOC.followers.map(u => fr(u, `<button class="btn sm fgo" data-u="${esc(u)}">Zobacz</button><button class="btn sm bad ffl" data-u="${esc(u)}">Usuń</button>`)).join("")}` : ""}
+    ${SOC.outReq.length ? `<div class="sech">Wysłane prośby</div>${SOC.outReq.map(r => fr(r.to_name, `<button class="btn sm ffr" data-u="${esc(r.to_name)}">Anuluj</button>`, "czeka na akceptację")).join("")}` : ""}`;
+  const ers = `<div class="sub">Osoby, które Cię obserwują. Możesz usunąć kogoś z obserwujących.</div>
+    ${nIn ? `<div class="sech">Prośby o obserwowanie Ciebie</div>${SOC.inReq.map(r => fr(r.from_name, `<button class="btn sm pri fra" data-id="${esc(r.id)}">Akceptuj</button><button class="btn sm frd" data-id="${esc(r.id)}">Odrzuć</button>`)).join("")}<div class="sech">Obserwujący</div>` : ""}
+    ${SOC.followers.length ? SOC.followers.map(u => fr(u, `<button class="btn sm fgo" data-u="${esc(u)}">Zobacz</button><button class="btn sm bad ffl" data-u="${esc(u)}">Usuń</button>`)).join("") : `<div class="small">Nikt Cię jeszcze nie obserwuje.</div>`}`;
+  return `<div class="card" style="width:min(480px,94vw);max-height:88vh;overflow:auto"><h3>Obserwowani</h3>
+    <div class="seg big" id="ftabs" style="margin:6px 0 10px"><button data-t="ing" class="${tab === "ing" ? "on" : ""}">Obserwujesz · ${F.length}</button><button data-t="ers" class="${tab === "ers" ? "on" : ""}">Obserwujący · ${SOC.followers.length}${nIn ? ` <span class="bdg" style="position:static;display:inline-block;margin-left:3px">${nIn}</span>` : ""}</button></div>
+    ${tab === "ing" ? ing : ers}
     <div style="margin-top:12px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div></div>`;
 }
 function bindFriends(){
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
+  document.querySelectorAll("#ftabs button").forEach(b => b.onclick = () => { SOC.ftab = b.dataset.t; openFriends(); });
   document.querySelectorAll("#acctov .fgo").forEach(b => b.onclick = () => openProfile(b.dataset.u));
   const reopen = q => { openFriends(); if (q) { $("fsq").value = q; $("fsgo").click(); } }, curq = () => ($("fsq") && $("fsq").value) || "";
   document.querySelectorAll("#acctov .ffl").forEach(b => b.onclick = async () => { const q = curq(); b.disabled = true; await socAct("remove_follower", {uname: b.dataset.u}); await socLoad(); reopen(q); });
@@ -1345,7 +1350,7 @@ function ddEnh(sel) {
 { let pend = 0; const run = () => { pend = 0; document.querySelectorAll("select.sel:not([data-dd])").forEach(ddEnh); };
   new MutationObserver(() => { if (!pend) pend = requestAnimationFrame(run); }).observe(document.body, {childList: true, subtree: true}); run();
   document.addEventListener("click", ddClose); addEventListener("resize", ddClose); document.addEventListener("scroll", e => { if (!(e.target.closest && e.target.closest(".ddm"))) ddClose(); }, true); }
-const APPV = "v23";
+const APPV = "v24";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
