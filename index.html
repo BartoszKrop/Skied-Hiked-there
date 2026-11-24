@@ -533,7 +533,7 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
   </section>
   <section class="view" id="v-lista">
     <div class="toolbar">
-      <div style="display:flex;gap:8px;align-items:center"><input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off" style="flex:1;min-width:0"><button id="qvadd" class="btn pri" aria-label="Dodaj miejsce" title="Dodaj miejsce i czas" style="flex:none;width:44px;height:44px;padding:0;font-size:22px;line-height:1;border-radius:12px">＋</button></div>
+      <div style="display:flex;gap:8px;align-items:center"><input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off" style="flex:1;min-width:0"><button id="qvadd" class="btn pri" aria-label="Zgłoś brakujące miejsce" title="Zgłoś brakujące miejsce" style="display:none;flex:none;width:44px;height:44px;padding:0;font-size:22px;line-height:1;border-radius:12px">＋</button></div>
       <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="_w" style="display:none">Wg pogody</option></select></div>
       <button class="fmore" id="fmore" type="button">Więcej filtrów<span id="fmoren"></span></button>
       <div id="fextra" style="display:none">
@@ -1058,6 +1058,7 @@ function renderList(){
     </div>`; }).join("") : `<div class="empty">Nic nie pasuje do filtrów.</div>`;
   if (!RO && SBC) $("list").insertAdjacentHTML("beforeend", `<div class="sugg"><button class="btn sm" id="sgbtn">+ Brakuje miejsca? Zgłoś</button></div>`);
   { let n = 0; document.querySelectorAll("#list .lwx").forEach(el => { if (n++ >= 25) return; const r = R.find(x => x.id === el.dataset.r); wxNow(r).then(w => { if (w && el.isConnected) el.innerHTML = " · " + wxNowHtml(r, w); }); }); }
+  { const qb = $("qvadd"); if (qb) qb.style.display = (fQ && !a.length) ? "" : "none"; }
   const fc = $("fcount"); if (fc) fc.textContent = a.length + " " + (MODE === "w" ? plur(a.length, "ośrodek", "ośrodki", "ośrodków") : plur(a.length, "miejsce", "miejsca", "miejsc"));
 }
 
@@ -1077,6 +1078,7 @@ function renderHikeList(){
       <div class="t"><b>${esc(e.h.n)}</b><small>${esc(e.r.n)}${wxOn() ? wxChip(e.r) : ""} · <span class="d${DIFF.indexOf(e.h.d)}">${esc(e.h.d)}</span>${e.h.t ? " · " + esc(e.h.t) : ""}${e.done ? " · <span>zrobiony</span> ✓" : ""}${e.my ? ` · <span>moja</span> <span style="color:var(--warn)">★ ${e.my}</span>` : ""}${e.g ? ` · <span>wszyscy</span> <span style="color:var(--warn)">★ ${fmtAvg(e.g.a)}</span> <span>(${e.g.n})</span>` : ""}</small></div>
       <div class="kmb"><b>${e.my ? "★ " + e.my : "–"}</b>moja</div>
     </div>`).join("") : `<div class="empty">Nic nie pasuje do filtrów.</div>`;
+  { const qb = $("qvadd"); if (qb) qb.style.display = (fQ && !E.length) ? "" : "none"; }
   const fc = $("fcount"); if (fc) fc.textContent = E.length + " " + plur(E.length, "szlak", "szlaki", "szlaków");
 }
 
@@ -1542,7 +1544,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v59";
+const APPV = "v60";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2098,7 +2100,7 @@ function mapInit(){
   $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
   const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
   { const nb = $("znames"); const sync = () => { nb.style.opacity = showNames ? 1 : .45; nb.style.textDecoration = showNames ? "none" : "line-through"; }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
-  $("mfilt").onclick = openMapFilters; $("mlist").onclick = () => show("lista"); $("madd2").onclick = () => openQuickVisit(); $("qvadd").onclick = () => openQuickVisit();
+  $("mfilt").onclick = openMapFilters; $("mlist").onclick = () => show("lista"); $("madd2").onclick = () => openQuickVisit(); $("qvadd").onclick = () => { if (!RO && SBC) openSuggest($("q").value || ""); else openQuickVisit(); };
   bindMapGestures();
 }
 let showNames = true; try { showNames = localStorage.getItem("skibeen.names") !== "0"; } catch(e){}
