@@ -523,10 +523,11 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
   <section class="view on" id="v-mapa">
     <div id="mapwrap">
       <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
-      <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button><button id="zcost" aria-label="Dodaj wydatek" title="Dodaj wydatek" style="font-size:13px;font-weight:800;display:none">+$</button></div>
+      <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="zter" aria-label="Mapa terenu" title="Mapa terenu" style="font-size:15px">🏔️</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button><button id="zcost" aria-label="Dodaj wydatek" title="Dodaj wydatek" style="font-size:13px;font-weight:800;display:none">+$</button></div>
       <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
       <div class="legend"><span><i style="background:var(--ok)"></i>byłem</span><span><i style="background:var(--warn)"></i>planuję</span><span><i style="background:#7aa8ff"></i>jeszcze nie</span></div>
+      <div id="tattr" style="display:none;position:absolute;right:8px;bottom:4px;font-size:9px;color:#222;background:rgba(255,255,255,.75);padding:1px 5px;border-radius:6px;pointer-events:none;z-index:3">© OpenStreetMap · OpenTopoMap</div>
       <div class="note" id="mapnote"></div>
     </div>
   </section>
@@ -1495,7 +1496,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v49";
+const APPV = "v50";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1973,18 +1974,33 @@ function renderSheet(){
 const svg = $("map"), NS = "http://www.w3.org/2000/svg";
 const COS = Math.cos(47 * Math.PI / 180);
 const px = lon => lon * COS, py = lat => -lat;
-let vb = {x:0, y:0, w:10, h:10}, base = null, dots = [], gGrat, gLand, gDots, gLbl;
+let vb = {x:0, y:0, w:10, h:10}, base = null, dots = [], gGrat, gLand, gTile, gDots, gLbl;
 const mk = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
 
+function tileG(vb, wpx){
+    const lon0 = vb.x / COS, lon1 = (vb.x + vb.w) / COS, lat0 = -vb.y, lat1 = -(vb.y + vb.h), mer = la => { const r = la * Math.PI / 180; return Math.log(Math.tan(r) + 1 / Math.cos(r)); };
+    let z = Math.max(3, Math.min(16, Math.round(Math.log2(wpx * 360 / (256 * (lon1 - lon0)))))), tx0, tx1, ty0, ty1;
+    for (;;) { const n = Math.pow(2, z); tx0 = Math.floor((lon0 + 180) / 360 * n); tx1 = Math.floor((lon1 + 180) / 360 * n); ty0 = Math.floor((1 - mer(Math.min(85, lat0)) / Math.PI) / 2 * n); ty1 = Math.floor((1 - mer(Math.max(-85, lat1)) / Math.PI) / 2 * n); if ((tx1 - tx0 + 1) * (ty1 - ty0 + 1) <= 30 || z <= 3) break; z--; }
+    const n = Math.pow(2, z), la = ty => Math.atan(Math.sinh(Math.PI * (1 - 2 * ty / n))) * 180 / Math.PI; let o = "";
+    for (let x = tx0; x <= tx1; x++) for (let y = ty0; y <= ty1; y++) { if (x < 0 || x >= n || y < 0 || y >= n) continue; const a = x / n * 360 - 180, b = (x + 1) / n * 360 - 180, t0 = la(y), t1 = la(y + 1); o += `<image href="https://${"abc"[(x + y) % 3]}.tile.opentopomap.org/${z}/${x}/${y}.png" x="${px(a)}" y="${py(t0)}" width="${px(b) - px(a)}" height="${t0 - t1}" preserveAspectRatio="none" opacity=".92"/>`; }
+    return o;
+}
+let TER = true, tileRaf = 0;
+function tileUpd(force){
+  if (tileRaf) return; tileRaf = requestAnimationFrame(() => { tileRaf = 0; if (!gTile) return;
+    const on = TER && vb.w / COS < 28, str = on ? tileG(vb, svg.getBoundingClientRect().width || 360) : "";
+    if (force || str !== gTile._s) { gTile.innerHTML = str; gTile._s = str; }
+    const ta = $("tattr"); if (ta) ta.style.display = on ? "" : "none"; });
+}
 let showAll = false;
 function mapInit(){
-  gGrat = mk("g", {}); gLand = mk("g", {}); gDots = mk("g", {}); gLbl = mk("g", {"pointer-events":"none"});
-  svg.append(gGrat, gLand, gDots, gLbl);
+  gGrat = mk("g", {}); gLand = mk("g", {}); gTile = mk("g", {"pointer-events":"none"}); gDots = mk("g", {}); gLbl = mk("g", {"pointer-events":"none"});
+  svg.append(gGrat, gLand, gTile, gDots, gLbl);
   for (let lon = -25; lon <= 30; lon += 5) gGrat.append(mk("line", {x1:px(lon), y1:py(30), x2:px(lon), y2:py(68), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
   for (let lat = 32; lat <= 68; lat += 4) gGrat.append(mk("line", {x1:px(-26), y1:py(lat), x2:px(30), y2:py(lat), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
   buildDots(); fit(); loadLand();
   new ResizeObserver(() => { const rc = svg.getBoundingClientRect(); if (rc.width) { vb.h = vb.w * rc.height / rc.width; applyVB(); } }).observe(svg);
-  $("zin").onclick = () => zoomAt(0.6, null); $("zout").onclick = () => zoomAt(1 / 0.6, null); $("zcost").onclick = () => openQuickCost();
+  $("zter").onclick = () => { TER = !TER; $("zter").style.opacity = TER ? "" : ".5"; tileUpd(true); }; $("zin").onclick = () => zoomAt(0.6, null); $("zout").onclick = () => zoomAt(1 / 0.6, null); $("zcost").onclick = () => openQuickCost();
   const toggleAll = () => { showAll = !showAll; mapRefresh(); };
   $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
   const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
@@ -2022,7 +2038,7 @@ function fit(){ mapFitted = true;
 }
 function scale(){ const rc = svg.getBoundingClientRect(); return (rc.width || 360) / vb.w; }
 function applyVB(){
-  svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); tileUpd();
   const s = scale(), z = s / ((svg.getBoundingClientRect().width || 360) / (base.x1 - base.x0));
   dots.forEach(d => {
     const id = d.r.id, v = isVis(id), pl = isPlan(id), sel = id === curId, on = v || pl, show = filtN() ? (passF(d.r) || sel) : (showAll || on || sel);
@@ -2750,14 +2766,7 @@ function openTripPicker(t, pid0, day0){
   const mapPts = W => { const nq = norm(q); return (W ? WINTER.R : SUMMER.R).filter(r => inC(r) && (!nq || norm(r.n + " " + (r.c || "")).includes(nq) || (!W && sm === "h" && (r.hikes || []).some(h => !h.del && norm(h.n).includes(nq))))); };
   let mvb = null, mkey = "", MC = null;
   const RW = 520, RH = 300;
-  const mapTiles = vb => {
-    const lon0 = vb.x / COS, lon1 = (vb.x + vb.w) / COS, lat0 = -vb.y, lat1 = -(vb.y + vb.h), mer = la => { const r = la * Math.PI / 180; return Math.log(Math.tan(r) + 1 / Math.cos(r)); };
-    let z = Math.max(3, Math.min(16, Math.round(Math.log2(340 * 360 / (256 * (lon1 - lon0)))))), tx0, tx1, ty0, ty1;
-    for (;;) { const n = Math.pow(2, z); tx0 = Math.floor((lon0 + 180) / 360 * n); tx1 = Math.floor((lon1 + 180) / 360 * n); ty0 = Math.floor((1 - mer(Math.min(85, lat0)) / Math.PI) / 2 * n); ty1 = Math.floor((1 - mer(Math.max(-85, lat1)) / Math.PI) / 2 * n); if ((tx1 - tx0 + 1) * (ty1 - ty0 + 1) <= 30 || z <= 3) break; z--; }
-    const n = Math.pow(2, z), la = ty => Math.atan(Math.sinh(Math.PI * (1 - 2 * ty / n))) * 180 / Math.PI; let o = "";
-    for (let x = tx0; x <= tx1; x++) for (let y = ty0; y <= ty1; y++) { if (x < 0 || x >= n || y < 0 || y >= n) continue; const a = x / n * 360 - 180, b = (x + 1) / n * 360 - 180, t0 = la(y), t1 = la(y + 1); o += `<image href="https://${"abc"[(x + y) % 3]}.tile.opentopomap.org/${z}/${x}/${y}.png" x="${px(a)}" y="${py(t0)}" width="${px(b) - px(a)}" height="${t0 - t1}" preserveAspectRatio="none" opacity=".92"/>`; }
-    return `<g>${o}</g>`;
-  };
+  const mapTiles = vb => tileG(vb, 340);
   const mapInner = () => {
     const {P, W, sel, full} = MC, vb = mvb, u = vb.w / RW, z = full.w / vb.w, inV = r => px(r.x) > vb.x - 8 * u && px(r.x) < vb.x + vb.w + 8 * u && py(r.y) > vb.y - 8 * u && py(r.y) < vb.y + vb.h + 8 * u;
     const V = P.filter(inV);
