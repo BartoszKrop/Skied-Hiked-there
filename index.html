@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Skied &amp; Hiked There – gdzie byłem na nartach i w górach</title>
+<title>Mountained there – gdzie byłem na nartach i w górach</title>
 <meta name="description" content="Zaznacz ośrodki narciarskie i górskie szlaki, w których byłeś. Mapa, tier lista, plany i podsumowanie sezonu.">
-<meta property="og:title" content="Skied &amp; Hiked There">
+<meta property="og:title" content="Mountained there">
 <meta property="og:description" content="Gdzie byłeś na nartach i w górach? Zaznacz na mapie, ułóż tier listę i pochwal się podsumowaniem sezonu.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#08111f">
@@ -15,7 +15,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Skied Hiked">
+<meta name="apple-mobile-web-app-title" content="Mountained">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -370,6 +370,26 @@ header>*:not(#fx){position:relative;z-index:1}header{position:relative;overflow:
 .welcome h3{line-height:1.05}
 body.light .hike .bd .d0{background:rgba(15,158,114,.14);color:#0a7a56}body.light .hike .bd .d1{background:rgba(184,116,0,.14);color:#8a5600}body.light .hike .bd .d2{background:rgba(209,56,74,.12);color:#b02a3b}
 .rsvb{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--glass2);color:var(--text);font-size:16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.lin,textarea{background:var(--bg2)!important;border:1px solid var(--line)!important;box-shadow:none}
+.lin:focus,textarea:focus,input[type=date]:focus{border-color:var(--accent)!important}
+.lin::placeholder,textarea::placeholder{color:var(--faint)}
+/* subtelne animacje */
+@keyframes dfade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes vfade{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes dpop{from{opacity:0;transform:scale(.96) translateY(6px)}to{opacity:1;transform:none}}
+details.anim>*:not(summary){animation:dfade .22s ease both}
+.dlgc{animation:dpop .18s ease both}.ddm,.dpm{animation:dpop .14s ease both}
+.btn,.tick,.rsvb,.seg button{transition:background .15s,transform .12s,border-color .15s,color .15s}
+.btn:active,.rsvb:active{transform:scale(.96)}
+details>summary svg,details>summary .chev{transition:transform .2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.tcv{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+.tcover{position:relative;height:84px;border-radius:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}.tce{font-size:40px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
+.tcb{position:absolute;right:8px;bottom:6px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.3);padding:2px 9px;border-radius:999px}
+.cvg{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}.cvg button{width:44px;height:44px;border-radius:12px;border:2px solid transparent;cursor:pointer}.cvg button.on{border-color:var(--text)}
+.cve{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:6px 0 12px}.cve button{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);font-size:20px;cursor:pointer;padding:0}.cve button.on{border-color:var(--accent);background:var(--accentbg)}
+#fabx{position:fixed;right:16px;bottom:calc(84px + var(--safe-b,0px));z-index:60;border:0;border-radius:999px;padding:12px 18px;font:inherit;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,#f4a259,#d95f14);box-shadow:0 8px 22px rgba(0,0,0,.35);cursor:pointer;display:none}
+#fabx:active{transform:scale(.96)}
 .rsvc{display:inline-flex;gap:5px;align-items:center;padding:3px 10px;border:1px solid;border-radius:999px;font-size:13px;font-weight:700}
 span.d0,span.d1,span.d2{display:inline-block;padding:1px 9px;border-radius:999px;font-size:11.5px;font-weight:700;line-height:1.55;vertical-align:1px;letter-spacing:.2px}
 span.d0{background:rgba(56,224,160,.22)!important;color:#7bf2c4!important;box-shadow:inset 0 0 0 1px rgba(56,224,160,.45)}
@@ -865,13 +885,15 @@ const lastYear = id => { const y = visits[id].stays.map(x => x.y).filter(Boolean
 /* ---------- nagłówek ---------- */
 function renderHeader(){
   const s = stats(), W = MODE === "w";
-  document.title = (W ? "Skied there" : "Hiked there") + (typeof SBC !== "undefined" && SBC ? " · Skied & Hiked There" : "");
+  document.title = (W ? "Skied there" : "Hiked there") + " · Mountained there";
   $("progBar").style.width = (100 * s.n / R.length) + "%"; countUp();
   $("hstats").innerHTML =
     `<div><b>${s.n}</b><small>z ${R.length} ${W ? "ośrodków" : "miejsc"}</small></div>` +
     `<div><b>${s.countries.size}</b><small>${s.countries.size===1?"kraj":"krajów"}</small></div>` +
     `<div><b>${W ? Math.round(s.km) : s.hikes}</b><small>${W ? "km tras" : plur(s.hikes,"szlak","szlaki","szlaków")}</small></div>` +
     (W ? `<div><b>${s.stays}</b><small>${plur(s.stays,"wizyta","wizyty","wizyt")}</small></div>` : (() => { const pl = R.filter(r => isPlan(r.id)).length; return `<div><b>${pl}</b><small>${pl===1?"w planach":"w planach"}</small></div>`; })());
+  { const bs = [...document.querySelectorAll("#hstats b")], prev = window.__hs || [], key = MODE; window.__hs = bs.map(b => +b.textContent); if (window.__hsk !== key) { window.__hsk = key; return; }
+    bs.forEach((b, i) => { const to = +b.textContent, from = prev[i]; if (from === undefined || from === to || Math.abs(to - from) > 400) return; const t0 = performance.now(); const step = t => { const k = Math.min(1, (t - t0) / 550), e = 1 - Math.pow(1 - k, 3); b.textContent = Math.round(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }); }
 }
 
 /* ---------- lista ---------- */
@@ -1039,12 +1061,12 @@ function noteFor(r, v){
 }
 function exportGPX(){
   const w = markedList().map(({r, v}) => `<wpt lat="${r.y}" lon="${r.x}"><name>${xmlEsc(r.n)}</name><desc>${xmlEsc(noteFor(r, v))}</desc><type>${v.s === "v" ? "visited" : "planned"}</type></wpt>`).join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Skied there / Hiked there" xmlns="http://www.topografix.com/GPX/1/1">\n${w}\n</gpx>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Mountained there" xmlns="http://www.topografix.com/GPX/1/1">\n${w}\n</gpx>`;
 }
 function exportKML(){
   const pm = markedList().map(({r, v}) => `<Placemark><name>${xmlEsc(r.n)}</name><description>${xmlEsc(noteFor(r, v))}</description><styleUrl>#${v.s}</styleUrl><Point><coordinates>${r.x},${r.y},0</coordinates></Point></Placemark>`).join("\n");
   const st = (id, col) => `<Style id="${id}"><IconStyle><color>${col}</color><scale>1.1</scale></IconStyle></Style>`;
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Skied there / Hiked there</name>${st("v","ff8ae038")}${st("p","ff5cc6ff")}\n${pm}\n</Document></kml>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Mountained there</name>${st("v","ff8ae038")}${st("p","ff5cc6ff")}\n${pm}\n</Document></kml>`;
 }
 function periodOptions(){
   const ys = new Set(); R.forEach(r => { if (isVis(r.id)) visits[r.id].stays.forEach(x => { if (+x.y) ys.add(+x.y); }); });
@@ -1403,7 +1425,8 @@ function dpEnh(inp) {
   b.onkeydown = e => { if (e.key === "Escape") ddClose(); };
   lab();
 }
-const APPV = "v30";
+document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
+const APPV = "v31";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2056,7 +2079,7 @@ function show(t){
   if (!["mapa","lista","ranking","grupy","statystyki","wyjazdy"].includes(t) || (t === "ranking" && MODE !== "w") || (t === "wyjazdy" && RO)) t = "mapa";
   { const ord = ["mapa", "lista", "ranking", "wyjazdy", "statystyki"], np = ord.indexOf(t), pp = ord.indexOf(show._t);
     if (show._t && show._t !== t && np >= 0 && pp >= 0) show._dir = np > pp ? "sl-r" : "sl-l"; else show._dir = ""; show._t = t; }
-  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t)); updateFab();
   if (show._dir) { const vw = $("v-" + t); if (vw) { vw.classList.remove("sl-l", "sl-r"); void vw.offsetWidth; vw.classList.add(show._dir); setTimeout(() => vw.classList.remove("sl-l", "sl-r"), 420); } }
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === (t === "lista" ? "mapa" : t)));
   try { if (!RO && location.hash !== "#" + t && !/access_token|error_description/.test(location.hash)) history.replaceState(null, "", "#" + t); } catch(e){}
@@ -2102,8 +2125,8 @@ let SHT = [], shTimer = 0, shBusy = false;
 const meName = () => String((store.prof && store.prof.username) || "").toLowerCase();
 const newTripId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const allTrips = () => [...SHT, ...TRIPS];
-const shData = t => ({name: t.name || "", from: t.from || "", to: t.to || "", note: t.note || "", items: t.items || [], dn: t.dn || {}, dnb: t.dnb || {}, costs: t.costs || [], pack: t.pack || [], settle: t.settle || [], shop: t.shop || [], dest: t.dest || "", cur: t.cur || "PLN", cc: t.cc || [], rt: t.rt || {}, rs: t.rs || {}, rd: t.rd || 0, rsvp: t.rsvp || {}, mode: t.mode === "w" ? "w" : "s", base: t.base || ""});
-const shNorm = r => { const d = r.data || {}, t = {id: r.id, shared: true, owner: r.owner, owner_name: r.owner_name || "", members: r.members || [], invite: r.invite || "", ed: d.ed || "", _upd: r.updated_at || "", name: d.name || "Wyjazd", from: d.from || "", to: d.to || "", note: d.note || "", items: d.items || [], dn: d.dn || {}, dnb: d.dnb || {}, costs: d.costs || [], pack: d.pack || [], settle: d.settle || [], shop: d.shop || [], dest: d.dest || "", cur: d.cur || "PLN", cc: d.cc || [], rt: d.rt || {}, rs: d.rs || {}, rd: d.rd || 0, rsvp: d.rsvp || {}, mode: d.mode === "w" ? "w" : "s", base: d.base || ""}; t._snap = JSON.stringify(shData(t)); return t; };
+const shData = t => ({name: t.name || "", from: t.from || "", to: t.to || "", note: t.note || "", items: t.items || [], dn: t.dn || {}, dnb: t.dnb || {}, costs: t.costs || [], pack: t.pack || [], settle: t.settle || [], shop: t.shop || [], dest: t.dest || "", cur: t.cur || "PLN", cc: t.cc || [], rt: t.rt || {}, rs: t.rs || {}, rd: t.rd || 0, rsvp: t.rsvp || {}, cover: t.cover || null, mode: t.mode === "w" ? "w" : "s", base: t.base || ""});
+const shNorm = r => { const d = r.data || {}, t = {id: r.id, shared: true, owner: r.owner, owner_name: r.owner_name || "", members: r.members || [], invite: r.invite || "", ed: d.ed || "", _upd: r.updated_at || "", name: d.name || "Wyjazd", from: d.from || "", to: d.to || "", note: d.note || "", items: d.items || [], dn: d.dn || {}, dnb: d.dnb || {}, costs: d.costs || [], pack: d.pack || [], settle: d.settle || [], shop: d.shop || [], dest: d.dest || "", cur: d.cur || "PLN", cc: d.cc || [], rt: d.rt || {}, rs: d.rs || {}, rd: d.rd || 0, rsvp: d.rsvp || {}, cover: d.cover || null, mode: d.mode === "w" ? "w" : "s", base: d.base || ""}; t._snap = JSON.stringify(shData(t)); return t; };
 async function loadShared(force){
   if (!SBC || !store.sb || !store.authed || RO || shBusy) return;
   if (!force && SHT.some(t => JSON.stringify(shData(t)) !== t._snap)) return;
@@ -2184,7 +2207,7 @@ const pc = n => PCM[n] || PCOL[pcHash(n)];
 const pn = n => `<b style="color:${pc(n)}">@${esc(n)}</b>`;
 const pcAssign = ppl => { PCM = {}; const used = new Set(); ppl.forEach(p => { let i = pcHash(p), k = 0; while (used.has(i) && k++ < PCOL.length) i = (i + 1) % PCOL.length; used.add(i); PCM[p] = PCOL[i]; }); };
 function renderTrips(){
-  const box = $("trips"); if (!box) return;
+  const box = $("trips"); if (!box) return; updateFab();
   if (RO) { box.innerHTML = ""; return; }
   const t = allTrips().find(x => x.id === tripOpen);
   const me = meName();
@@ -2195,7 +2218,7 @@ function renderTrips(){
     box.innerHTML = segH + `<div class="hint">${MODE === "w" ? "Planer wyjazdów narciarskich: rozłóż ośrodki na dni, dodaj notatki, koszty i pakowanie, a znajomi planują razem z Tobą." : "Planer górskich wyjazdów: zbierz szlaki, rozłóż je na dni, a znajomi mogą planować razem z Tobą."}</div>` +
       (allTrips().filter(x => (x.mode || "s") === MODE).length ? allTrips().filter(x => (x.mode || "s") === MODE).map(x => { const its = x.items || [], hh = its.reduce((s, i) => s + hrs(tripHike(i).h && tripHike(i).h.t), 0), dn = its.filter(i => i.ok).length;
         const places = [...new Set([x.mode === "w" && x.base && byIdW[x.base] ? byIdW[x.base].n : null, ...its.map(i => tripHike(i).r && tripHike(i).r.n)].filter(Boolean))].slice(0, 3).join(", ");
-        return `<div class="card tripc" data-id="${esc(x.id)}" style="cursor:pointer"><h3 style="margin:0 0 2px">${esc(x.name || "Wyjazd")}${x.shared ? ` <span class="small" style="font-weight:600">👥 ${1 + (x.members || []).length}</span>` : ""}${tripIsNew(x) ? ` <span class="small" style="color:var(--accent)">● nowe</span>` : ""}</h3><div class="sub" style="margin:0">${esc(tripRange(x))}${tripRange(x) && places ? " · " : ""}${esc(places)}</div><div class="small" style="margin-top:4px">${x.shared && x.owner !== store.uid ? "od " + pn(x.owner_name) + " · " : ""}${its.length} ${unitT(x, its.length)}${hh ? " · " + fmtH(hh) : ""}${dn ? " · zrobione " + dn + "/" + its.length : ""}</div></div>`; }).join("") : `<div class="empty">Nie masz jeszcze żadnego wyjazdu.</div>`) +
+        return `<div class="card tripc" data-id="${esc(x.id)}" style="cursor:pointer;display:flex;gap:12px;align-items:center"><div class="tcv" style="background:${tripCover(x).bg}">${tripCover(x).e}</div><div style="min-width:0;flex:1"><h3 style="margin:0 0 2px">${esc(x.name || "Wyjazd")}${x.shared ? ` <span class="small" style="font-weight:600">👥 ${1 + (x.members || []).length}</span>` : ""}${tripIsNew(x) ? ` <span class="small" style="color:var(--accent)">● nowe</span>` : ""}</h3><div class="sub" style="margin:0">${esc(tripRange(x))}${tripRange(x) && places ? " · " : ""}${esc(places)}</div><div class="small" style="margin-top:4px">${x.shared && x.owner !== store.uid ? "od " + pn(x.owner_name) + " · " : ""}${its.length} ${unitT(x, its.length)}${hh ? " · " + fmtH(hh) : ""}${dn ? " · zrobione " + dn + "/" + its.length : ""}</div></div></div>`; }).join("") : `<div class="empty">Nie masz jeszcze żadnego wyjazdu.</div>`) +
       `<button class="btn pri" id="tnew" style="width:100%;margin-top:6px">＋ Nowy wyjazd</button>`;
     $("tnew").onclick = () => { const x = {id: newTripId(), name: "Nowy wyjazd", from: "", to: "", note: "", items: [], dn: {}, costs: [], pack: [], cur: "zł", mode: MODE}; TRIPS.unshift(x); tripOpen = x.id; tripSave(); renderTrips(); if (MODE === "w") pickTripBase(x); };
     box.querySelectorAll(".tripc").forEach(c => c.onclick = () => openTrip(c.dataset.id));
@@ -2274,7 +2297,7 @@ function renderTrips(){
     <div style="display:flex;gap:6px;margin:8px 0;align-items:center"><input id="tpn" class="lin" placeholder="${shared ? "+ wspólna sprawa" : "+ sprawa do ogarnięcia"}" style="flex:1;padding:6px 10px;font-size:13px;min-height:0">${shared ? whoSel("", "", me, "kto bierze?") : ""}<button class="btn sm" id="tpadd" style="padding:4px 10px;font-size:12px">Dodaj</button></div>
   </details>`;
   box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button class="btn sm" id="tback">← Wszystkie wyjazdy</button><span style="flex:1"></span>${rsvTop}</div>
-    <div class="card"><div class="fld"><label>NAZWA WYJAZDU</label><input id="tname" class="lin" value="${esc(t.name || "")}"></div>
+    <div class="card"><div class="tcover" id="tcover" style="background:${tripCover(t).bg}"><span class="tce">${tripCover(t).e}</span><span class="tcb">Zmień okładkę</span></div><div class="fld"><label>NAZWA WYJAZDU</label><input id="tname" class="lin" value="${esc(t.name || "")}"></div>
     <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>OD</label><input id="tfrom" type="date" class="lin" value="${esc(t.from || "")}"></div><div class="fld" style="flex:1"><label>DO</label><input id="tto" type="date" class="lin" value="${esc(t.to || "")}"></div></div>
     ${t.mode === "w" ? `<div class="fld"><label>OŚRODEK (DOMYŚLNY DLA WYJAZDU)</label><button class="btn" id="tbase" style="width:100%;text-align:left">${base ? "⛷ " + esc(base.n) + " ›" : "＋ Wybierz ośrodek"}</button></div>` : ""}
     <div class="fld"><label>NOTATKI</label><textarea id="tnote" class="lin" rows="2" placeholder="Nocleg, dojazd, kto co bierze…">${esc(t.note || "")}</textarea></div>
@@ -2286,9 +2309,10 @@ function renderTrips(){
     ${body || `<div class="empty">Dodaj pierwsze szlaki do wyjazdu.</div>`}
     ${costsHtml}${shopHtml}${packHtml}
     <button class="tdelall" id="tdelall"></button>`;
-  const rr = () => { const st = $("v-wyjazdy").scrollTop, open = [...box.querySelectorAll("details")].map(x => x.open); renderTrips(); box.querySelectorAll("details").forEach((x, i) => { if (open[i] !== undefined) x.open = open[i]; }); $("v-wyjazdy").scrollTop = st; };
+  const rr = () => { window.__rrT = Date.now(); const st = $("v-wyjazdy").scrollTop, open = [...box.querySelectorAll("details")].map(x => x.open); renderTrips(); box.querySelectorAll("details").forEach((x, i) => { if (open[i] !== undefined) x.open = open[i]; }); $("v-wyjazdy").scrollTop = st; };
   $("tback").onclick = () => { tripOpen = null; renderTrips(); };
   $("tname").onchange = e => { t.name = e.target.value.trim().slice(0, 80); tripSave(); };
+  $("tcover").onclick = () => openTripCover(t);
   $("tnote").onchange = e => { t.note = e.target.value.slice(0, 1000); tripSave(); };
   $("tfrom").onchange = e => { t.from = e.target.value; if (t.to && t.to < t.from) t.to = t.from; tripSave(); rr(); };
   $("tto").onchange = e => { t.to = e.target.value; if (t.from && t.to < t.from) t.from = t.to; tripSave(); rr(); };
@@ -2426,7 +2450,7 @@ function bindTripDrag(box, t, rr){
 function tripICS(t){
   if (!t.from) { alert("Ustaw daty wyjazdu (Od), żeby wyeksportować do kalendarza."); return; }
   const esc2 = s => String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
-  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""), L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Hiked there//PL", "CALSCALE:GREGORIAN"], D = tripDays(t);
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""), L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mountained there//PL", "CALSCALE:GREGORIAN"], D = tripDays(t);
   for (let d = 1; d <= D; d++) { const its = (t.items || []).filter(i => (i.day || 0) === d); if (!its.length && !(t.dn || {})[d]) continue; const iso = dayISO(t.from, d), nx = dayISO(t.from, d + 1); if (!iso) continue;
     const places = [...new Set(its.map(i => tripHike(i).r && tripHike(i).r.n).filter(Boolean))];
     const desc = its.map(i => { const x = tripHike(i); return "• " + i.n + (x.r && i.m !== "w" ? " (" + x.r.n + (x.h ? ", " + x.h.d : "") + ")" : ""); }).join("\n") + ((t.dn || {})[d] ? "\n\n" + t.dn[d] : "") + (t.note ? "\n\n" + t.note : "");
@@ -2501,6 +2525,50 @@ function openDayNav(t, d) {
   if (L.length === 1) { window.open(dnavUrl(L[0]), "_blank", "noopener"); return; }
   ovBox().innerHTML = `<div class="card" style="width:min(420px,94vw)"><h3>Dokąd jedziemy?</h3><div class="sub">Dzień ${d}: wybierz miejscowość, do której ma prowadzić nawigacja.</div>${L.map((x, i) => `<a class="btn pri" href="${esc(dnavUrl(x))}" target="_blank" rel="noopener" style="display:block;text-align:left;margin-bottom:8px;text-decoration:none">${IC.map} ${esc(x.n)}${x.sub ? ` <span class="small" style="opacity:.8">· ${esc(x.sub)}</span>` : ""}</a>`).join("")}<button class="btn" id="lclose" style="width:100%;margin-top:4px">Zamknij</button></div>`;
   $("lclose").onclick = closeAccount; document.querySelectorAll("#acctov a.btn").forEach(a => a.addEventListener("click", () => setTimeout(closeAccount, 50)));
+}
+const CGR = [["#2f9bf0", "#6c5ce7"], ["#f4a259", "#e5484d"], ["#38e0a0", "#2f9bf0"], ["#ffd27f", "#f4a259"], ["#ff7a90", "#6c5ce7"], ["#5ad1ff", "#2f6fe0"], ["#7bd88f", "#2b8a6e"], ["#9aa8c7", "#3a4a6b"]];
+const CEM = ["🏔️", "⛷️", "🏂", "🥾", "🎿", "🌲", "⛰️", "🗻", "🚠", "❄️", "☀️", "🏕️", "🌄", "🧗", "🍲", "🛷"];
+const tripCover = t => { const c = t.cover || {}, h = [...String(t.id || "")].reduce((a, ch) => a + ch.charCodeAt(0), 0), g = CGR[(c.c != null ? c.c : h) % CGR.length]; return {bg: "linear-gradient(135deg," + g[0] + "," + g[1] + ")", e: c.e || (t.mode === "w" ? "⛷️" : "🥾")}; };
+function openTripCover(t) {
+  const c = t.cover = t.cover || {}, cv = tripCover(t);
+  ovBox().innerHTML = `<div class="card" style="width:min(440px,94vw)"><h3>Okładka wyjazdu</h3><div class="tcover" style="background:${cv.bg};cursor:default"><span class="tce">${cv.e}</span></div>
+    <div class="tflab">Kolor</div><div class="cvg">${CGR.map((g, i) => `<button data-c="${i}" class="${(c.c != null ? c.c : -1) === i ? "on" : ""}" style="background:linear-gradient(135deg,${g[0]},${g[1]})" aria-label="Kolor ${i + 1}"></button>`).join("")}</div>
+    <div class="tflab">Ikona</div><div class="cve">${CEM.map(e => `<button data-e="${e}" class="${c.e === e ? "on" : ""}">${e}</button>`).join("")}</div>
+    <button class="btn pri" id="cvok" style="width:100%">Gotowe</button></div>`;
+  const redo = () => { tripSave(); openTripCover(t); };
+  document.querySelectorAll("#acctov .cvg button").forEach(b => b.onclick = () => { c.c = +b.dataset.c; redo(); });
+  document.querySelectorAll("#acctov .cve button").forEach(b => b.onclick = () => { c.e = b.dataset.e; redo(); });
+  $("cvok").onclick = () => { closeAccount(); renderTrips(); };
+}
+function updateFab() {
+  let f = $("fabx"); if (!f) { f = document.createElement("button"); f.id = "fabx"; f.textContent = "＋ Wydatek"; f.setAttribute("aria-label", "Dodaj wydatek"); f.onclick = openQuickCost; document.body.append(f); }
+  const v = $("v-wyjazdy"); f.style.display = (!RO && v && v.classList.contains("on") && allTrips().length && tripsTab !== "packs") ? "block" : "none";
+}
+function openQuickCost(st) {
+  const L = allTrips(); if (!L.length) return; const me = meName(); st = (st && st.id) ? st : {};
+  let last = ""; try { last = localStorage.getItem("sht_qt") || ""; } catch (e) {}
+  const today = new Date().toISOString().slice(0, 10);
+  const t = L.find(x => x.id === st.tid) || L.find(x => x.id === tripOpen) || L.find(x => x.id === last) || L.find(x => x.from && x.from <= today && (x.to || x.from) >= today) || L[0];
+  t.cc = t.cc || []; t.rt = t.rt || {}; t.rs = t.rs || {}; t.costs = t.costs || []; t.rsvp = t.rsvp || {};
+  const ppl = tripPeople(t), shared = t.shared && ppl.length > 1, cur = baseC(t); let lc = ""; try { lc = localStorage.getItem("sht_lc_" + t.id) || ""; } catch (e) {}
+  const cu0 = st.cu && allC(t).includes(st.cu) ? st.cu : (lc && allC(t).includes(lc) ? lc : cur);
+  const opts = (arr, f) => arr.map(f).join("");
+  ovBox().innerHTML = `<div class="card" style="width:min(440px,94vw);max-height:90vh;overflow:auto"><h3>Dodaj wydatek</h3>
+    <div class="fld"><label>1. CO I ZA ILE</label><input id="qcw" class="lin" placeholder="Co (np. obiad)" value="${esc(st.w || "")}"><div style="display:flex;gap:6px;margin-top:6px"><input id="qca" class="lin" inputmode="decimal" placeholder="Kwota" value="${esc(st.a || "")}" style="flex:1"><select id="qccu" class="sel" style="width:auto;flex:none">${opts(allC(t), k => `<option value="${esc(k)}" ${k === cu0 ? "selected" : ""}>${esc(CSYM[k] && CSYM[k] !== k ? k + " · " + CSYM[k] : k)}</option>`)}</select></div></div>
+    <div class="fld"><label>2. WYJAZD</label><select id="qct" class="sel">${opts(L, x => `<option value="${esc(x.id)}" ${x.id === t.id ? "selected" : ""}>${esc((x.name || "Wyjazd") + (tripRange(x) ? " · " + tripRange(x) : ""))}</option>`)}</select></div>
+    ${shared ? `<div class="fld"><label>3. KTO ZAPŁACIŁ</label><select id="qcby" class="sel">${opts(ppl, p => `<option value="${esc(p)}" ${p === (st.by || me) ? "selected" : ""}>@${esc(p)}${p === me ? " (ja)" : ""}</option>`)}</select></div>
+    <div class="tflab">Dzielimy na:</div><div class="tspl" id="qcsp">${opts(ppl, p => `<label><input type="checkbox" value="${esc(p)}" ${(st.sp ? st.sp.includes(p) : t.rsvp[p] !== "n") ? "checked" : ""}> ${pn(p)}</label>`)}</div>` : ""}
+    <div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="qcx" style="flex:1">Anuluj</button><button class="btn pri" id="qcadd" style="flex:2">Dodaj wydatek</button></div></div>`;
+  const cur_ = () => ({w: $("qcw").value, a: $("qca").value, cu: $("qccu").value, by: $("qcby") && $("qcby").value, sp: shared ? [...document.querySelectorAll("#qcsp input")].filter(x => x.checked).map(x => x.value) : null});
+  $("qcx").onclick = closeAccount;
+  $("qct").onchange = () => { const v = cur_(); openQuickCost({id: 1, tid: $("qct").value, w: v.w, a: v.a}); };
+  $("qcadd").onclick = async () => { const v = cur_(), w = v.w.trim().slice(0, 80), a = parseFloat(String(v.a).replace(",", ".")); if (!w || !(a > 0)) { alert("Wpisz, co to było, i kwotę."); return; }
+    const cu = cNorm(v.cu); if (cu !== cur && cRate(t, cu) == null) { await fxRefresh(t, true); if (cRate(t, cu) == null) { alert("Brak kursu dla " + cu + ". Ustaw go w wyjeździe, w „Waluty i kursy”."); return; } }
+    if (shared && !v.sp.length) { alert("Zaznacz, na kogo dzielimy."); return; }
+    t.costs.push({id: newTripId(), w, a, cu, fr: cu !== cur ? cRate(t, cu) : undefined, by: (shared && v.by) || me || "ja", ad: me || "ja", sp: shared && v.sp.length < ppl.length ? v.sp : null, at: Date.now()});
+    try { localStorage.setItem("sht_qt", t.id); localStorage.setItem("sht_lc_" + t.id, cu); } catch (e) {}
+    tripSave(); closeAccount(); toast("Dodano: " + w + " · " + money(a, cu)); renderTrips(); };
+  setTimeout(() => { const i = $("qcw"); if (i && !i.value) i.focus(); }, 60);
 }
 function openTripAdd(t, day0){
   const W = t.mode === "w";
@@ -2621,5 +2689,5 @@ initStore(); startI18n();
 
 try { applyTheme(); buildFx(); matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); } catch(e){}
 </script>
-<div id="splash"><div class="spi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="sbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14263f"/><stop offset="1" stop-color="#08111f"/></linearGradient><clipPath id="sm"><path d="M40 410 L196 120 L292 268 L350 186 L472 410 Z"/></clipPath><clipPath id="sl"><path d="M0 0H300L252 512H0Z"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#sbg)"/><g transform="translate(256 266) scale(.9) translate(-256 -266)"><g clip-path="url(#sm)"><rect width="512" height="512" fill="#f4a259"/><rect width="512" height="512" fill="#5ad1ff" clip-path="url(#sl)"/><path d="M196 120 L148 230 L190 214 L214 262 L246 196 Z" fill="#fff" opacity=".9" clip-path="url(#sl)"/><path d="M286 20 L330 20 L238 512 L194 512 Z" fill="#fff" opacity=".95"/></g><path d="M40 428H472" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity=".92"/></g></svg></div><div class="spt"><b>Skied</b> <i>&amp;</i> <b>Hiked</b> there</div></div><script>try{ const sp=document.getElementById("splash"); if(sp){ if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){ document.body.classList.add("spl"); setTimeout(()=>{sp.classList.add("out"); setTimeout(()=>sp.remove(),500);},900); } else sp.remove(); } }catch(e){}</script><script>if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) window.addEventListener("load",()=>{const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload();}});navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});});</script></body>
+<div id="splash"><div class="spi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="sbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14263f"/><stop offset="1" stop-color="#08111f"/></linearGradient><clipPath id="sm"><path d="M40 410 L196 120 L292 268 L350 186 L472 410 Z"/></clipPath><clipPath id="sl"><path d="M0 0H300L252 512H0Z"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#sbg)"/><g transform="translate(256 266) scale(.9) translate(-256 -266)"><g clip-path="url(#sm)"><rect width="512" height="512" fill="#f4a259"/><rect width="512" height="512" fill="#5ad1ff" clip-path="url(#sl)"/><path d="M196 120 L148 230 L190 214 L214 262 L246 196 Z" fill="#fff" opacity=".9" clip-path="url(#sl)"/><path d="M286 20 L330 20 L238 512 L194 512 Z" fill="#fff" opacity=".95"/></g><path d="M40 428H472" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity=".92"/></g></svg></div><div class="spt"><b>Mountained</b> there</div></div><script>try{ const sp=document.getElementById("splash"); if(sp){ if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){ document.body.classList.add("spl"); setTimeout(()=>{sp.classList.add("out"); setTimeout(()=>sp.remove(),500);},900); } else sp.remove(); } }catch(e){}</script><script>if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) window.addEventListener("load",()=>{const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload();}});navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});});</script></body>
 </html>
