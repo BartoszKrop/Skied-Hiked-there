@@ -1548,7 +1548,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v63";
+const APPV = "v64";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2196,7 +2196,7 @@ function zoomAt(f, ctr){
   const rc = svg.getBoundingClientRect();
   const cx = ctr ? vb.x + (ctr.x - rc.left) / rc.width * vb.w : vb.x + vb.w / 2;
   const cy2 = ctr ? vb.y + (ctr.y - rc.top) / rc.height * vb.h : vb.y + vb.h / 2;
-  const maxW = (base.x1 - base.x0) * 1.3, minW = (base.x1 - base.x0) / 60;
+  const maxW = (base.x1 - base.x0) * 1.3, minW = Math.min((base.x1 - base.x0) / 60, px(0.4) - px(0));
   let nw = Math.min(maxW, Math.max(minW, vb.w * f)); f = nw / vb.w;
   vb.x = cx - (cx - vb.x) * f; vb.y = cy2 - (cy2 - vb.y) * f; vb.w = nw; vb.h = vb.h * f; applyVB();
 }
