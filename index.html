@@ -732,6 +732,7 @@ let RO = ROU ? {username: ROU.toLowerCase()} : null;
 if (RO) document.body.classList.add("ro");
 let writing = false, dirty = false, saveTimer = null;
 
+function sortStays(a) { return a.map((x, i) => [x, i]).sort((p, q) => { const ky = z => +z[0].y || 9999, km = z => +z[0].m || 0; return ky(p) - ky(q) || km(p) - km(q) || p[1] - q[1]; }).map(z => z[0]); }
 function migrate(o){
   const out = {};
   Object.keys(o || {}).forEach(id => {
@@ -740,7 +741,7 @@ function migrate(o){
     v.s = v.s === "p" ? "p" : "v";
     let st = (Array.isArray(v.stays) ? v.stays : []).map(x => x.y !== undefined ? {y:String(x.y||""), m:String(x.m||"")} : {y:(x.f||x.e||"").slice(0,4), m:(x.f||"").slice(5,7)}).filter(x => x);
     if (v.d !== undefined) { if (v.s === "p") v.pd = v.pd || v.d || ""; else if (v.d && !st.length) st = [{y:v.d.slice(0,4), m:v.d.slice(5,7)}]; delete v.d; }
-    v.stays = st; v.pd = String(v.pd || "").slice(0,7);
+    v.stays = sortStays(st); v.pd = String(v.pd || "").slice(0,7);
     v.pr = +v.pr || 0; v.r = v.r || 0; v.t = v.t || ""; v.n = v.n || "";
     v.done = (v.done && typeof v.done === "object") ? Object.assign({}, v.done) : {};
     v.hp = (v.hp && typeof v.hp === "object") ? Object.assign({}, v.hp) : {};
@@ -1460,7 +1461,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v36";
+const APPV = "v37";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1917,10 +1918,10 @@ function renderSheet(){
   if (v.s === "p") {
     return;
   }
-  $("saddstay").onclick = () => { visits[curId].stays.unshift({y: "", m: ""}); armedStay = -1; scheduleSave(); renderAll(); renderSheet(); };
+  $("saddstay").onclick = () => { visits[curId].stays.push({y: "", m: ""}); armedStay = -1; scheduleSave(); renderAll(); renderSheet(); };
   document.querySelectorAll("#sheet .stay").forEach(row => {
     const i = +row.dataset.i;
-    row.querySelectorAll("select").forEach(inp => inp.onchange = e => { visits[curId].stays[i][inp.dataset.k] = e.target.value; scheduleSave(); renderAll(); });
+    row.querySelectorAll("select").forEach(inp => inp.onchange = e => { visits[curId].stays[i][inp.dataset.k] = e.target.value; visits[curId].stays = sortStays(visits[curId].stays); armedStay = -1; scheduleSave(); renderAll(); renderSheet(); });
     row.querySelector(".x").onclick = () => {
       if (armedStay !== i) { armedStay = i; renderSheet(); setTimeout(() => { if (armedStay === i) { armedStay = -1; if (curId) renderSheet(); } }, 3000); }
       else { visits[curId].stays.splice(i, 1); armedStay = -1; scheduleSave(); renderAll(); renderSheet(); }
