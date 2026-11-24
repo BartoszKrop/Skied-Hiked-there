@@ -724,6 +724,9 @@ const todayISO = () => { const d=new Date(); return d.getFullYear()+"-"+String(d
 const $ = id => document.getElementById(id);
 const useCap = n => (window.claude && claude.use) ? claude.use(n) : Promise.resolve(null);
 const DIFF = ["łatwa","średnia","trudna"];
+let hkDir = 1; try { hkDir = localStorage.getItem("sht-hkdir") === "-1" ? -1 : 1; } catch (e) {}
+function toggleHkDir(){ hkDir = -hkDir; try { localStorage.setItem("sht-hkdir", String(hkDir)); } catch (e) {} renderSheet(); }
+function hikeOrder(r){ const ix = r.hikes.map((h, i) => i); if (r.id === "h-camino") return ix; const dv = h => { const k = DIFF.indexOf(h.d); return k < 0 ? 1 : k; }; return ix.sort((a, b) => (dv(r.hikes[a]) - dv(r.hikes[b])) * hkDir || a - b); }
 const MONTHS = ["styczeń","luty","marzec","kwiecień","maj","czerwiec","lipiec","sierpień","wrzesień","październik","listopad","grudzień"];
 const SHORT = ["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"];
 const cy = new Date().getFullYear();
@@ -1550,7 +1553,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v80";
+const APPV = "v81";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1929,11 +1932,12 @@ function renderSheet(){
   const fa = [];
   const opblock = !showOp ? "" : `<div class="sect"><div class="sh" style="justify-content:flex-start;gap:10px"><b>Opinie</b>${ratingLine(r.id)}</div><div id="opfr">${friendsHtml(r.id)}</div><div id="opsec">${opinionsHtml(r.id)}</div></div>`;
   const secOn = r.id === "h-camino";
-  let lastSec = null;
-  const hikeCards = W ? "" : r.hikes.map((h, i) => { if (h.del) return "";
+  let lastSec = null, lastDf = -2;
+  const hikeCards = W ? "" : hikeOrder(r).map(i => { const h = r.hikes[i]; if (h.del) return "";
     const d = !!(v && v.done[i]), pl = !!(v && v.hp && v.hp[i]); if (RO && !d) return "";
     const onlyPlan = !!(v && v.s === "p");
-    const sh = (secOn && h.s && h.s !== lastSec) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""; if (secOn && h.s) lastSec = h.s;
+    const dfi = DIFF.indexOf(h.d), dfh = (!secOn && dfi !== lastDf && r.hikes.length > 3) ? `<div class="small dfh" style="margin:12px 0 4px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">${["Łatwe", "Średnie", "Trudne"][dfi < 0 ? 1 : dfi]}</div>` : ""; if (!secOn) lastDf = dfi;
+    const sh = dfh + ((secOn && h.s && h.s !== lastSec) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""); if (secOn && h.s) lastSec = h.s;
     const note = (v && v.hn && v.hn[i]) || "";
     const noteUi = RO ? (note ? `<div class="hnro" data-nt>📝 ${esc(note)}</div>` : "") : (d ? `<textarea class="hnote" data-h="${i}" rows="2" placeholder="Notatka do tego szlaku…">${esc(note)}</textarea>` : "");
     return sh + `<div class="hike ${d?"done":""} ${pl?"planned":""}">
@@ -1941,7 +1945,7 @@ function renderSheet(){
       <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span>${(!RO && h.sk && v && v.s === "v") ? `<button class="szc hkpie ${(v.sz && v.sz[h.sk]) ? "on" : ""}" data-sk="${esc(h.sk)}" title="Szarlotka w schronisku" style="padding:1px 8px;font-size:12px">🥧 ${(v.sz && v.sz[h.sk]) ? "✓" : "?"}</button>` : ""}${!RO ? `<button class="hkgear" data-h="${i}" title="Więcej opcji" aria-label="Więcej opcji" style="margin-left:auto;background:none;border:0;color:var(--mute);font-size:14px;cursor:pointer;padding:0 4px">⚙</button>` : ""}</div>${(!RO && h.sk && v && v.s === "v" && szOpenSk === h.sk) ? `<div class="szrow" style="margin:6px 0"><span style="flex:1;min-width:120px">🥧 ${esc(h.sk)}</span><button class="szb ${(v.sz && v.sz[h.sk]) ? "on" : ""}" data-sk="${esc(h.sk)}">${(v.sz && v.sz[h.sk]) ? "Jadłem ✓" : "Jadłem?"}</button>${(v.sz && v.sz[h.sk]) ? `<span class="szs">${[1,2,3,4,5].map(k => `<button data-sk="${esc(h.sk)}" data-i="${k}" class="${((v.sz[h.sk].r||0)>=k)?"on":""}">★</button>`).join("")}</span>` : ""}</div>` : ""}<p>${esc(h.o)}</p><div class="hkmenu" data-h="${i}" style="display:none;margin:2px 0 6px"><button class="btn sm hktrip" data-h="${i}">＋ Do wyjazdu</button></div>${(store.admin && !RO && SBC) ? `<button class="hkdel" data-h="${i}" title="Usuń szlak (admin)" aria-label="Usuń szlak (admin)">🗑</button>` : ""}
       ${(v && v.s === "p") ? "" : `<div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>`}${noteUi}
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
-  const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b></div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
+  const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b>${(secOn || r.hikes.length < 4) ? "" : `<button class="btn sm" id="hkdir" type="button" onclick="toggleHkDir()" style="padding:4px 10px;font-size:12px">${hkDir > 0 ? "Od łatwych ↓" : "Od trudnych ↑"}</button>`}</div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
   const sks0 = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
   const sks = RO ? sks0.filter(sk => v && v.sz && v.sz[sk]) : sks0;
   const szList = () => sks.map(sk => { const z = v.sz && v.sz[sk]; return `<div class="szrow"><span style="flex:1;min-width:140px">${esc(sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; }).join("");
