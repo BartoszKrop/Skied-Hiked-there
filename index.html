@@ -2139,7 +2139,7 @@ function renderTrips(){
     ${body || `<div class="empty">Dodaj pierwsze szlaki do wyjazdu.</div>`}
     ${costsHtml}${packHtml}
     <button class="tdelall" id="tdelall"></button>`;
-  const rr = () => { const st = $("v-wyjazdy").scrollTop, open = [...box.querySelectorAll("details")].map(x => x.open); renderTrips(); $("v-wyjazdy").scrollTop = st; box.querySelectorAll("details").forEach((x, i) => { if (open[i]) x.open = true; }); };
+  const rr = () => { const st = $("v-wyjazdy").scrollTop, open = [...box.querySelectorAll("details")].map(x => x.open); renderTrips(); box.querySelectorAll("details").forEach((x, i) => { if (open[i] !== undefined) x.open = open[i]; }); $("v-wyjazdy").scrollTop = st; };
   $("tback").onclick = () => { tripOpen = null; renderTrips(); };
   $("tname").onchange = e => { t.name = e.target.value.trim().slice(0, 80); tripSave(); };
   $("tnote").onchange = e => { t.note = e.target.value.slice(0, 1000); tripSave(); };
