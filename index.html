@@ -208,6 +208,16 @@ input[type=date]{width:100%;background:var(--glass2);border:1px solid var(--line
 .tbtns button.on{color:#0b1626;border-color:transparent}
 .two{display:flex;gap:10px;margin-top:12px}.two .btn{flex:1;padding:15px}
 select.sel{width:100%;background:var(--glass2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 8px;font:inherit;font-size:14px;min-height:40px;color-scheme:dark;outline:none}
+.dd{position:relative;display:block;min-width:0}
+.ddb{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;background:var(--glass2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 10px;font:inherit;font-size:14px;min-height:40px;cursor:pointer;transition:border-color .15s,background .15s}
+.ddb:hover{border-color:var(--accent)}.dd.open .ddb,.ddb:focus-visible{border-color:var(--accent);outline:none}
+.ddb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ddb svg{width:14px;height:14px;flex:none;opacity:.65;transition:transform .15s}.dd.open .ddb svg{transform:rotate(180deg)}
+.stay .ddb{padding:4px 8px;font-size:13px;min-height:32px}
+.ddm{position:fixed;z-index:9999;display:none;overflow:auto;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:5px;box-shadow:0 12px 32px rgba(0,0,0,.35);min-width:120px}
+.dd.open .ddm{display:block}
+.ddi{padding:9px 11px;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--text);white-space:nowrap}
+.ddi:hover,.ddi.hl{background:var(--glass2)}.ddi.on{color:var(--accent);font-weight:700}.ddi.on::after{content:"✓"}
 .prio{display:flex;gap:7px}.prio button{flex:1;border:1px solid var(--line);background:var(--glass);color:var(--mute);border-radius:12px;padding:11px 0;font-weight:800;font-size:15px;cursor:pointer}.prio button.on{background:linear-gradient(135deg,#ffc65c,#ff9f5c);color:#2b1d03;border-color:transparent}
 .hike{display:flex;gap:10px;align-items:flex-start;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:11px;margin-bottom:8px}
 .hike.done{border-color:rgba(56,224,160,.35);background:linear-gradient(90deg,rgba(56,224,160,.08),var(--glass) 60%)}
@@ -1315,7 +1325,27 @@ function bindFriends(){
     } catch(e){ m.textContent = "Nie udało się wyszukać: " + String((e && e.message) || e).slice(0,70); } };
     fg.onclick = go; $("fsq").onkeydown = e => { if (e.key === "Enter") go(); }; }
 }
-const APPV = "v21";
+const DDC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+function ddClose() { document.querySelectorAll(".dd.open").forEach(w => { w.classList.remove("open"); const m = w.querySelector(".ddm"); if (m) m.style.display = ""; }); }
+function ddEnh(sel) {
+  if (sel.dataset.dd) return; sel.dataset.dd = "1";
+  const w = document.createElement("div"), b = document.createElement("button"), m = document.createElement("div");
+  w.className = "dd"; b.type = "button"; b.className = "ddb"; m.className = "ddm"; b.setAttribute("aria-haspopup", "listbox");
+  ["width", "flex", "minWidth", "maxWidth", "margin", "marginTop"].forEach(k => { if (sel.style[k]) w.style[k] = sel.style[k]; });
+  if (sel.style.padding) b.style.padding = sel.style.padding; if (sel.style.fontSize) b.style.fontSize = sel.style.fontSize; if (sel.style.minHeight) b.style.minHeight = sel.style.minHeight;
+  sel.style.display = "none"; sel.after(w); w.append(b, m);
+  const lab = () => { const o = sel.options[sel.selectedIndex]; b.innerHTML = "<span>" + esc(o ? o.text : "") + "</span>" + DDC; };
+  const items = () => [...m.children];
+  const build = () => { m.innerHTML = ""; [...sel.options].forEach((o, i) => { const it = document.createElement("div"); it.className = "ddi" + (i === sel.selectedIndex ? " on" : ""); it.setAttribute("role", "option"); const sp = document.createElement("span"); sp.textContent = o.text; it.append(sp); it.onclick = e => { e.stopPropagation(); sel.selectedIndex = i; ddClose(); lab(); sel.dispatchEvent(new Event("change", {bubbles: true})); }; m.append(it); }); };
+  const open = () => { ddClose(); build(); w.classList.add("open"); const r = b.getBoundingClientRect(); m.style.display = "block"; const h = Math.min(m.scrollHeight, 280), below = innerHeight - r.bottom - 10, up = below < h && r.top > below; m.style.maxHeight = Math.max(120, Math.min(280, up ? r.top - 10 : below)) + "px"; m.style.minWidth = r.width + "px"; m.style.left = Math.max(8, Math.min(r.left, innerWidth - m.offsetWidth - 8)) + "px"; m.style[up ? "bottom" : "top"] = up ? (innerHeight - r.top + 4) + "px" : (r.bottom + 4) + "px"; m.style[up ? "top" : "bottom"] = "auto"; const on = m.querySelector(".on"); if (on) on.scrollIntoView({block: "nearest"}); };
+  b.onclick = e => { e.stopPropagation(); w.classList.contains("open") ? ddClose() : open(); };
+  b.onkeydown = e => { if (e.key === "Escape") ddClose(); else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (!w.classList.contains("open")) open(); const n = sel.options.length, i = Math.max(0, Math.min(n - 1, sel.selectedIndex + (e.key === "ArrowDown" ? 1 : -1))); sel.selectedIndex = i; build(); lab(); sel.dispatchEvent(new Event("change", {bubbles: true})); } };
+  sel.addEventListener("change", lab); lab();
+}
+{ let pend = 0; const run = () => { pend = 0; document.querySelectorAll("select.sel:not([data-dd])").forEach(ddEnh); };
+  new MutationObserver(() => { if (!pend) pend = requestAnimationFrame(run); }).observe(document.body, {childList: true, subtree: true}); run();
+  document.addEventListener("click", ddClose); addEventListener("resize", ddClose); document.addEventListener("scroll", e => { if (!(e.target.closest && e.target.closest(".ddm"))) ddClose(); }, true); }
+const APPV = "v22";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
