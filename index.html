@@ -1548,7 +1548,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v61";
+const APPV = "v62";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2242,7 +2242,7 @@ function decodePoly(str, off, scl){
 }
 function drawLand(geo){
   const scl = geo.UTF8Scale || 1024, enc = geo.UTF8Encoding; let d = "";
-  const ring = pts => { if (!LANDR) LANDR = []; LANDR.push(pts); let inside = false; for (const p of pts) if (p[0] > -26 && p[0] < 36 && p[1] > 28 && p[1] < 68) { inside = true; break; } return inside ? "M" + pts.map(p => px(p[0]).toFixed(3) + " " + py(p[1]).toFixed(3)).join("L") + "Z" : ""; };
+  const ring = pts => { if (!LANDR) LANDR = []; LANDR.push(pts); return true ? "M" + pts.map(p => px(p[0]).toFixed(3) + " " + py(p[1]).toFixed(3)).join("L") + "Z" : ""; };
   CPATH = {};
   geo.features.forEach(f => {
     const g = f.geometry; if (!g) return; let fd = "";
@@ -2256,7 +2256,7 @@ function drawLand(geo){
   paintCountries();
 }
 let CPATH = {};
-const ECN = {AT:"Austria",CH:"Switzerland",DE:"Germany",FR:"France",IT:"Italy",ES:"Spain",PL:"Poland",SK:"Slovakia",CZ:"Czech Rep.",SI:"Slovenia",LI:"Liechtenstein",AD:"Andorra",IS:"Iceland"};
+const ECN = {AT:"Austria",CH:"Switzerland",DE:"Germany",FR:"France",IT:"Italy",ES:"Spain",PL:"Poland",SK:"Slovakia",CZ:"Czech Rep.",SI:"Slovenia",LI:"Liechtenstein",AD:"Andorra",IS:"Iceland",NO:"Norway",GB:"United Kingdom",PT:"Portugal",HR:"Croatia",ME:"Montenegro",BG:"Bulgaria",RO:"Romania",GE:"Georgia",KZ:"Kazakhstan",KG:"Kyrgyzstan",AM:"Armenia",AZ:"Azerbaijan",TJ:"Tajikistan",UZ:"Uzbekistan",MN:"Mongolia",NP:"Nepal",PK:"Pakistan",IN:"India",PE:"Peru",BO:"Bolivia",AR:"Argentina",CL:"Chile",EC:"Ecuador",NZ:"New Zealand",CA:"Canada",US:"United States",MA:"Morocco",TR:"Turkey",JP:"Japan",TZ:"Tanzania",ID:"Indonesia",VN:"Vietnam",ZA:"South Africa",AL:"Albania",BA:"Bosnia and Herz.",GR:"Greece",MK:"Macedonia",SE:"Sweden",FI:"Finland",IE:"Ireland"};
 function paintCountries(){
   try {
     const on = new Set(); (typeof R !== "undefined" ? R : []).forEach(r => { if (isVis(r.id)) String(r.c || "").split(",").forEach(c => on.add(ECN[c] || c)); });
