@@ -518,11 +518,11 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
 .frl{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
 .fc{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;line-height:1.3;padding:3px 9px;border-radius:999px;background:var(--bg2,rgba(127,127,127,.12));border:1px solid var(--line);color:var(--text);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fc::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--c,#9aa6b2)}
-.fc.pv{--c:#c58bff}.fc.fr{--c:#ff7eb6}.fc.pl{--c:#ffc65c}.fc.nv{--c:#9aa6b2}
-.fc.pl.both{border-color:#ffc65c}
+.fc.pv{--c:#ff7eb6}.fc.fr{--c:#ff7eb6}.fc.pl{--c:#ffc65c}.fc.nv{--c:#9aa6b2}
+.fc.pl.both{border-color:#c58bff}.fc.pl.both::before{background:#c58bff}
 .frcard{background:var(--bg2,rgba(127,127,127,.1));border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0}
 .frh{font-weight:700;margin:0 0 6px!important}
-.frban{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:11px;background:rgba(255,198,92,.12);border-left:3px solid #ffc65c;margin-bottom:6px}
+.frban{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:11px;background:rgba(197,139,255,.13);border-left:3px solid #c58bff;margin-bottom:6px}
 .frban.plain{background:transparent;border-left-color:var(--line)}
 .frban .fi{font-size:18px}
 .frp{display:flex;gap:10px;padding:6px 0;align-items:flex-start}
@@ -551,14 +551,14 @@ svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spa
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button><button id="zcost" aria-label="Dodaj wydatek" title="Dodaj wydatek" style="font-size:13px;font-weight:800;display:none">+$</button></div>
       <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
-      <div class="legend"><span data-c="v"><i style="background:var(--ok)"></i>byłem</span><span data-c="p"><i style="background:var(--warn)"></i>planuję</span><span id="lgpf" data-c="pf" style="display:none"><i style="background:#c58bff"></i>chcę, znajomi byli</span><span data-c="u"><i style="background:#7aa8ff"></i>jeszcze nie</span><span id="lgfr" data-c="fr" style="display:none"><i style="background:#ff7eb6"></i>znajomi byli</span></div>
+      <div class="legend"><span data-c="v"><i style="background:var(--ok)"></i>byłem</span><span data-c="p"><i style="background:var(--warn)"></i>planuję</span><span id="lgpf" data-c="pt" style="display:none"><i style="background:#c58bff"></i>planujemy razem</span><span data-c="u"><i style="background:#7aa8ff"></i>jeszcze nie</span><span id="lgfr" data-c="fr" style="display:none"><i style="background:#ff7eb6"></i>znajomi byli</span></div>
       <div class="note" id="mapnote"></div>
     </div>
   </section>
   <section class="view" id="v-lista">
     <div class="toolbar">
       <div style="display:flex;gap:8px;align-items:center"><input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off" style="flex:1;min-width:0"><button id="qvadd" class="btn pri" aria-label="Zgłoś brakujące miejsce" title="Zgłoś brakujące miejsce" style="display:none;flex:none;width:44px;height:44px;padding:0;font-size:22px;line-height:1;border-radius:12px">＋</button></div>
-      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option><option value="tog">🤝 Planujemy razem</option><option value="fv">👥 Byli znajomi</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
+      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option><option value="tog">🤝 Planujemy razem</option><option value="pfv">📍 Chcę, znajomi byli</option><option value="fv">👥 Byli znajomi</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
       <button class="fmore" id="fmore" type="button">Więcej filtrów<span id="fmoren"></span></button>
       <div id="fextra" style="display:none">
       <div class="row2" id="frow3"><select id="fgroup"></select></div>
@@ -1040,7 +1040,7 @@ async function wxAllLoad(){
   })().finally(() => { WXL = null; if (MODE === M) renderList(); });
   return WXL;
 }
-const passF = r => (fStat==="all" || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id]) || (fStat==="tog" && isPlan(r.id) && friendsPlan(r.id).length > 0) || (fStat==="fv" && !isVis(r.id) && friendsAt(r.id).length > 0)) && (!fCountry || r.c.split(",").includes(fCountry)) && (!fMinKm || r.k >= fMinKm) && (!fMinEl || (r.e || 0) >= fMinEl) && (!fGroup || !G[+fGroup] || G[+fGroup].m.includes(r.id)) && (!fMinR || (((rateOf(r.id) || {}).n || 0) > 0 && rateOf(r.id).a >= fMinR)) && (!fPrice || (MODE === "w" && priceTier(r) === fPrice)) && (!fCat || MODE === "w" || (r.cs || ["g"]).includes(fCat)) && wxOk(r);
+const passF = r => (fStat==="all" || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id]) || (fStat==="tog" && isPlan(r.id) && friendsPlan(r.id).length > 0) || (fStat==="pfv" && isPlan(r.id) && !isVis(r.id) && friendsAt(r.id).length > 0) || (fStat==="fv" && !isVis(r.id) && friendsAt(r.id).length > 0)) && (!fCountry || r.c.split(",").includes(fCountry)) && (!fMinKm || r.k >= fMinKm) && (!fMinEl || (r.e || 0) >= fMinEl) && (!fGroup || !G[+fGroup] || G[+fGroup].m.includes(r.id)) && (!fMinR || (((rateOf(r.id) || {}).n || 0) > 0 && rateOf(r.id).a >= fMinR)) && (!fPrice || (MODE === "w" && priceTier(r) === fPrice)) && (!fCat || MODE === "w" || (r.cs || ["g"]).includes(fCat)) && wxOk(r);
 const filtN = () => !!fCat + !!fWx + !!fWs + !!fWc + (fStat !== "all") + !!fCountry + !!fGroup + !!fMinKm + !!fMinEl + !!fMinR + !!fPrice;
 function buildCountrySelect(){
   const cs = {}; R.forEach(r => r.c.split(",").forEach(c => cs[c] = (cs[c]||0) + 1));
@@ -1630,7 +1630,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v93";
+const APPV = "v94";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1676,7 +1676,7 @@ function friendsHtml(id){
   const av = (u, c) => `<span class="av" style="--c:${c}">${esc(String(u).charAt(0).toUpperCase())}</span>`;
   const nk = x => `<b class="nick" data-u="${esc(x.u)}">@${esc(x.u)}</b>${x.e.pd ? ` <span class="small">${esc(fmtPd(x.e.pd))}</span>` : ""}`;
   const ban = fp.length ? `<div class="frban${meP ? "" : " plain"}"><span class="fi">${meP ? "🤝" : "🗓"}</span><div><b>${meP ? "Planujecie razem" : "Chcą tu pojechać"}</b><div class="small">${fp.map(nk).join(", ")}</div></div></div>` : "";
-  const col = meV ? "#9aa6b2" : meP ? "#c58bff" : "#ff7eb6";
+  const col = meV ? "#9aa6b2" : "#ff7eb6";
   const rows = fa.map(x => { const lk = ((OPN[opKey(id)] || {}).list || []).find(z => String(z.username).toLowerCase() === String(x.u).toLowerCase()), ys = [...new Set((x.e.stays || []).map(k => k.y).filter(Boolean))].sort().join(", "), hd = x.e.done ? Object.keys(x.e.done).length : 0, nt = (x.e.n || "").trim();
     return `<div class="frp">${av(x.u, col)}<div class="frm"><div><b class="nick" data-u="${esc(x.u)}">@${esc(x.u)}</b> <span class="small">${esc(ys)}${!W && hd ? (ys ? " · " : "") + hd + " " + plur(hd, "szlak", "szlaki", "szlaków") : ""}</span>${x.e.r ? ` <span style="color:var(--warn)">${"★".repeat(x.e.r)}</span>` : ""}</div>${nt ? `<div class="small" data-nt style="white-space:pre-wrap;margin-top:2px">📝 ${esc(nt.length > 160 ? nt.slice(0, 159) + "…" : nt)}</div>` : ""}${W ? "" : Object.keys(x.e.done || {}).map(i => { const h = r.hikes[i]; if (!h) return ""; const st = (x.e.hr && x.e.hr[i]) || 0, hn = ((x.e.hn && x.e.hn[i]) || "").trim(); return `<div class="small" style="margin-top:4px"><b>${esc(h.n)}</b> ${st ? `<span style="color:var(--warn)">${"★".repeat(st)}</span>` : ""}${hn ? `<div data-nt style="white-space:pre-wrap">📝 ${esc(hn.length > 160 ? hn.slice(0, 159) + "…" : hn)}</div>` : ""}</div>`; }).join("")}</div>${lk ? `<button class="btn sm opl ${lk.liked ? "pri" : ""}" data-a="${esc(lk.author)}" style="flex:none">♥ ${lk.likes}</button>` : ""}</div>`; }).join("");
   const inner = ban + (rows ? (fp.length ? `<div class="small frh" style="margin:6px 0 2px">Byli</div>` : "") + rows : "");
@@ -2263,15 +2263,15 @@ function vbHeavy(full){
   dots.forEach(d => {
     const id = d.r.id;
     if (full) {
-      const v = isVis(id), pl = isPlan(id), sel = id === curId, fv = !!fr_ && fr_.has(id), pfr = pl && !v && fv, fr = showFr && fv && !v && !pl, on = v || pl || fr;
+      const v = isVis(id), pl = isPlan(id), sel = id === curId, fv = !!fr_ && fr_.has(id), pfr = pl && !v && fv, ptg = pl && !v && !!fr_ && friendsPlan(id).length > 0, fr = showFr && fv && !v && !pl, on = v || pl || fr;
       let show = fn ? (passF(d.r) || sel) : (showAll || on || sel);
-      if (show && !sel && lgOff.size) { const cat = v ? "v" : pfr ? "pf" : pl ? "p" : "u"; if (lgOff.has(cat)) show = false; }
-      d._show = show; d._on = on; d._sel = sel; d._col = v ? "#38e0a0" : pfr ? "#c58bff" : pl ? "#ffc65c" : fr ? "#ff7eb6" : "#7aa8ff"; d._s = 0;
+      if (show && !sel && lgOff.size) { const cat = v ? "v" : ptg ? "pt" : pl ? "p" : "u"; if (lgOff.has(cat)) show = false; }
+      d._show = show; d._on = on; d._sel = sel; d._ring = pfr; d._col = v ? "#38e0a0" : ptg ? "#c58bff" : pl ? "#ffc65c" : fr ? "#ff7eb6" : "#7aa8ff"; d._s = 0;
       d.c.style.display = show ? "" : "none"; d.h.style.display = show ? "" : "none";
       if (show) {
         d.c.setAttribute("fill", on ? d._col : "rgba(122,168,255,.6)");
-        d.c.setAttribute("stroke", (sel || on) ? "#ffffff" : "rgba(255,255,255,.3)");
-        d.c.setAttribute("stroke-width", sel ? 2.5 : on ? 1.5 : 1);
+        d.c.setAttribute("stroke", d._ring && !sel ? "#ff7eb6" : (sel || on) ? "#ffffff" : "rgba(255,255,255,.3)");
+        d.c.setAttribute("stroke-width", sel ? 2.5 : d._ring ? 3 : on ? 1.5 : 1);
         d.h.setAttribute("fill", sel ? "#5ad1ff" : d._col); d.h.setAttribute("opacity", sel ? .35 : on ? .26 : 0); d.h.classList.toggle("selp", !!sel);
       }
     }
@@ -2309,7 +2309,7 @@ function openMapFilters(){
   const W = MODE === "w", cnt = () => R.filter(passF).length;
   const draw = () => {
     ovBox().innerHTML = `<div class="card" style="width:min(460px,94vw)"><h3>Filtry mapy</h3>
-      <div class="fld"><label>STATUS</label><div class="seg" id="mfs">${[["all", "Wszystkie"], ["yes", "Byłem"], ["plan", "Planuję"], ["no", "Nie byłem"], ["tog", "🤝 Razem"], ["fv", "👥 Znajomi byli"]].map(([v, l]) => `<button data-v="${v}" class="${fStat === v ? "on" : ""}">${l}</button>`).join("")}</div></div>
+      <div class="fld"><label>STATUS</label><div class="seg" id="mfs">${[["all", "Wszystkie"], ["yes", "Byłem"], ["plan", "Planuję"], ["no", "Nie byłem"], ["tog", "🤝 Razem"], ["pfv", "📍 Chcę, byli znajomi"], ["fv", "👥 Znajomi byli"]].map(([v, l]) => `<button data-v="${v}" class="${fStat === v ? "on" : ""}">${l}</button>`).join("")}</div></div>
       <div class="fld"><label>KRAJ</label><select id="mfc" class="sel">${$("fcountry").innerHTML}</select></div>
       ${W ? `<div class="fld"><label>GRUPA / DOMENA</label><select id="mfg" class="sel">${$("fgroup").innerHTML}</select></div>
       <div style="display:flex;gap:8px"><div class="fld" style="flex:1"><label>WIELKOŚĆ</label><select id="mfk" class="sel">${$("fminkm").innerHTML}</select></div><div class="fld" style="flex:1"><label>WYSOKOŚĆ</label><select id="mfe" class="sel">${$("fminel").innerHTML}</select></div></div>` : ""}
@@ -2326,7 +2326,7 @@ function openMapFilters(){
   };
   draw();
 }
-function mapRefresh(){ { const lp = $("lgpf"); if (lp) lp.style.display = Object.keys(FRD).length && [...frIds()].some(i => isPlan(i) && !isVis(i)) ? "" : "none"; } { const lg = $("lgfr"); if (lg) { lg.style.display = Object.keys(FRD).length && frIds().size ? "" : "none"; } } legSync(); if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
+function mapRefresh(){ { const lp = $("lgpf"); if (lp) lp.style.display = Object.keys(FRD).length && Object.keys(FRD).some(f => { const m = MODE === "w" ? FRD[f].visits : FRD[f].hvisits; return m && Object.keys(m).some(i => m[i] && m[i].s === "p" && isPlan(i) && !isVis(i)); }) ? "" : "none"; } { const lg = $("lgfr"); if (lg) { lg.style.display = Object.keys(FRD).length && frIds().size ? "" : "none"; } } legSync(); if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){
   const rc = svg.getBoundingClientRect();
   const cx = ctr ? vb.x + (ctr.x - rc.left) / rc.width * vb.w : vb.x + vb.w / 2;
