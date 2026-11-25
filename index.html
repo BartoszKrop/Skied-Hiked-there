@@ -1641,7 +1641,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v97";
+const APPV = "v98";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2917,12 +2917,12 @@ function splitWire(root, totalOf) {
     b.querySelectorAll(".spm button").forEach(x => x.onclick = () => {
       b.querySelectorAll(".spm button").forEach(y => y.classList.toggle("on", y === x)); const am = x.dataset.m === "am";
       b.querySelector(".speq").style.display = am ? "none" : ""; b.querySelector(".spam").style.display = am ? "" : "none";
-      if (am && ![...b.querySelectorAll(".spa")].some(i => num(i) > 0)) { const tot = totalOf(b) || 0, ck = [...b.querySelectorAll(".spc")].filter(c => c.checked).map(c => c.value);
-        if (tot > 0 && ck.length) { const base = Math.floor(tot / ck.length * 100) / 100; let rest = Math.round((tot - base * ck.length) * 100) / 100;
-          b.querySelectorAll(".spa").forEach(i => { if (ck.includes(i.dataset.p)) { i.value = fmtN(base + rest); rest = 0; } }); } }
       sum(); });
-    b.querySelectorAll(".spa").forEach(i => i.addEventListener("input", sum)); sum(); });
-  if (!root._spl) { root._spl = 1; root.addEventListener("input", e => { if (!e.target.classList.contains("spa")) root.querySelectorAll(".spblk").forEach(b => b._sum && b._sum()); }); }
+    b._auto = () => { const am = b.querySelector(".spm .on").dataset.m === "am"; if (am) { const tot = totalOf(b) || 0, all = [...b.querySelectorAll(".spa")], typed = all.filter(i => i.dataset.auto !== "1" && num(i) > 0), emp = all.filter(i => i.dataset.auto === "1" || !(num(i) > 0));
+        if (tot > 0 && emp.length === 1 && typed.length) { const rest = Math.round((tot - typed.reduce((q, i) => q + num(i), 0)) * 100) / 100; emp[0].value = rest > 0 ? fmtN(rest) : ""; emp[0].dataset.auto = rest > 0 ? "1" : ""; }
+        else emp.forEach(i => { if (i.dataset.auto === "1") { i.value = ""; i.dataset.auto = ""; } }); } sum(); };
+    b.querySelectorAll(".spa").forEach(i => i.addEventListener("input", () => { i.dataset.auto = ""; b._auto(); })); b.querySelectorAll(".spm button").forEach(x => x.addEventListener("click", () => b._auto())); sum(); });
+  if (!root._spl) { root._spl = 1; root.addEventListener("input", e => { if (!e.target.classList.contains("spa")) root.querySelectorAll(".spblk").forEach(b => b._auto ? b._auto() : b._sum && b._sum()); }); }
 }
 function splitRead(b, a) {
   const am = b.querySelector(".spm .on").dataset.m === "am";
