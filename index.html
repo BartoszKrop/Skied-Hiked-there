@@ -1303,9 +1303,10 @@ function decodeTopo(t){
   const ring = idx => { const out = []; idx.forEach(i => { const a = i >= 0 ? arcs[i] : arcs[~i].slice().reverse(); out.push(...(out.length ? a.slice(1) : a)); }); return out; };
   const rings = [];
   const obj = t.objects.countries || t.objects[Object.keys(t.objects)[0]];
-  (obj.geometries || []).forEach(g => {
-    if (g.type === "Polygon") g.arcs.forEach(r => rings.push(ring(r)));
-    else if (g.type === "MultiPolygon") g.arcs.forEach(p => p.forEach(r => rings.push(ring(r))));
+  (obj.geometries || []).forEach((g, gi) => {
+    const mk = r => { const q = ring(r); q.f = gi; return q; };
+    if (g.type === "Polygon") g.arcs.forEach(r => rings.push(mk(r)));
+    else if (g.type === "MultiPolygon") g.arcs.forEach(p => p.forEach(r => rings.push(mk(r))));
   });
   return rings;
 }
@@ -1321,7 +1322,9 @@ function loadGeo(){
   }).then(g => { if (!g) GEOP = null; return g; });
   return GEOP;
 }
-function drawMapPanel(c, pts, PX, PY, PW, PH, rad){
+const inRing = (rg, x, y) => { let ins = false; for (let i = 0, j = rg.length - 1; i < rg.length; j = i++) { const a = rg[i], b = rg[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) ins = !ins; } return ins; };
+function drawMapPanel(c, pts, PX, PY, PW, PH, rad, opt){
+  opt = opt || {};
   c.fillStyle = "rgba(255,255,255,.05)"; c.beginPath(); c.roundRect(PX, PY, PW, PH, 26); c.fill();
   if (!pts.length) return;
   const xs = pts.map(r => px(r.x)), ys = pts.map(r => py(r.y)); let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
@@ -1332,10 +1335,14 @@ function drawMapPanel(c, pts, PX, PY, PW, PH, rad){
   const lx0 = (PX - ox) / sc / COS + x0 / COS, lx1 = (PX + PW - ox) / sc / COS + x0 / COS, la0 = -((PY + PH - oy) / sc + y0), la1 = -((PY - oy) / sc + y0);
   const GG = GEO || LANDR;
   if (GG) {
-    c.fillStyle = "rgba(255,255,255,.085)"; c.strokeStyle = "rgba(255,255,255,.32)"; c.lineWidth = 1.6; c.lineJoin = "round";
+    c.lineWidth = 1.6; c.lineJoin = "round";
+    const hit = new Set(), bb = new Map(), grn = "56,224,160";
+    GG.forEach(rg => { let a = 1e9, b = -1e9, d = 1e9, e = -1e9; for (const p of rg) { if (p[0] < a) a = p[0]; if (p[0] > b) b = p[0]; if (p[1] < d) d = p[1]; if (p[1] > e) e = p[1]; } bb.set(rg, [a, b, d, e]); });
+    if (GEO) pts.forEach(r => { for (const rg of GG) { const q = bb.get(rg); if (rg.f !== undefined && !hit.has(rg.f) && r.x >= q[0] && r.x <= q[1] && r.y >= q[2] && r.y <= q[3] && inRing(rg, r.x, r.y)) { hit.add(rg.f); break; } } });
     GG.forEach(rg => {
-      let a = 1e9, b = -1e9, d = 1e9, e = -1e9; for (const p of rg) { if (p[0] < a) a = p[0]; if (p[0] > b) b = p[0]; if (p[1] < d) d = p[1]; if (p[1] > e) e = p[1]; }
-      if (b < lx0 || a > lx1 || e < la0 || d > la1) return;
+      const q = bb.get(rg), h = rg.f !== undefined && hit.has(rg.f);
+      if (q[1] < lx0 || q[0] > lx1 || q[3] < la0 || q[2] > la1) return;
+      c.fillStyle = h ? `rgba(${grn},.2)` : "rgba(255,255,255,.085)"; c.strokeStyle = h ? `rgba(${grn},.75)` : "rgba(255,255,255,.32)";
       c.beginPath(); rg.forEach((p, i) => { const X = TX(px(p[0])), Y = TY(py(p[1])); if (i) c.lineTo(X, Y); else c.moveTo(X, Y); }); c.closePath(); c.fill(); c.stroke();
     });
   } else {
@@ -1349,6 +1356,20 @@ function drawMapPanel(c, pts, PX, PY, PW, PH, rad){
   pts.forEach(r => { const X = TX(px(r.x)), Y = TY(py(r.y));
     c.fillStyle = "rgba(56,224,160,.3)"; c.beginPath(); c.arc(X, Y, rad * 2, 0, 7); c.fill();
     c.fillStyle = "#38e0a0"; c.strokeStyle = "#fff"; c.lineWidth = 3; c.beginPath(); c.arc(X, Y, rad, 0, 7); c.fill(); c.stroke(); });
+  if (opt.labels) {
+    const F2 = "Barlow, system-ui, -apple-system, 'Segoe UI', sans-serif", fs = pts.length > 40 ? 19 : pts.length > 22 ? 22 : 26, dots = pts.map(r => ({x: TX(px(r.x)), y: TY(py(r.y))})), boxes = [];
+    c.font = `700 ${fs}px ${F2}`; c.textAlign = "left"; c.lineJoin = "round";
+    const hit = (a, b) => a[0] < b[0] + b[2] && a[0] + a[2] > b[0] && a[1] < b[1] + b[3] && a[1] + a[3] > b[1];
+    pts.map((r, i) => ({r, i})).sort((a, b) => b.r.k - a.r.k).slice(0, 70).forEach(({r, i}) => {
+      let n = String(r.n).split(/\s[-–]\s|\s?\(|\s?\/|,/)[0].trim(); if (n.length > 20) n = n.slice(0, 19) + "…"; if (!n) return;
+      const w = c.measureText(n).width, X = dots[i].x, Y = dots[i].y, g = rad + 7;
+      const cand = [[X + g, Y - fs * .5], [X - g - w, Y - fs * .5], [X - w / 2, Y - g - fs - 2], [X - w / 2, Y + g], [X + g, Y - fs * 1.4], [X + g, Y + 2]];
+      for (const [bx, by] of cand) { const bx0 = [bx - 2, by - 1, w + 4, fs + 4];
+        if (bx0[0] < PX + 8 || bx0[0] + bx0[2] > PX + PW - 8 || bx0[1] < PY + 8 || bx0[1] + bx0[3] > PY + PH - 8) continue;
+        if (boxes.some(b => hit(b, bx0)) || dots.some((d, k) => k !== i && d.x > bx0[0] - rad && d.x < bx0[0] + bx0[2] + rad && d.y > bx0[1] - rad && d.y < bx0[1] + bx0[3] + rad)) continue;
+        boxes.push(bx0); c.strokeStyle = "rgba(6,12,24,.9)"; c.lineWidth = 6; c.strokeText(n, bx, by + fs * .85); c.fillStyle = "#fff"; c.fillText(n, bx, by + fs * .85); break; }
+    });
+  }
   c.restore();
 }
 function shareCanvasBase(kind, per){
@@ -1398,7 +1419,17 @@ function shareCanvasBase(kind, per){
   } else {
     const pts = vis;
     if (!pts.length) { c.fillStyle = "rgba(255,255,255,.05)"; c.beginPath(); c.roundRect(60, 350, 960, 880, 26); c.fill(); c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText(tr("Oznacz miejsca, a pojawią się tutaj na mapie."), 100, 420); }
-    else drawMapPanel(c, pts, 60, 350, 960, 880, 11);
+    else {
+      drawMapPanel(c, pts, 60, 350, 960, 770, 11, {labels: true});
+      const cc = {}; pts.forEach(r => { const k = r.c.split(",")[0]; cc[k] = (cc[k] || 0) + 1; });
+      const ks = Object.keys(cc).sort((a, b) => cc[b] - cc[a] || a.localeCompare(b)), top = ks.length > 8 ? ks.slice(0, 7) : ks, EM = "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
+      top.forEach((k, i) => { const X = 60 + (i % 4) * 242, Y = 1134 + Math.floor(i / 4) * 62;
+        c.fillStyle = "rgba(255,255,255,.07)"; c.beginPath(); c.roundRect(X, Y, 228, 52, 16); c.fill();
+        c.font = `34px ${EM}`; c.fillStyle = "#fff"; c.fillText(flag(k), X + 12, Y + 39);
+        let nm = cname(k); if (nm.length > 11) nm = nm.slice(0, 10) + "…"; c.font = `600 23px ${F}`; c.fillStyle = "#e8f0ff"; c.fillText(nm, X + 62, Y + 35);
+        c.textAlign = "right"; c.font = `800 28px ${FD}`; c.fillStyle = acc; c.fillText(String(cc[k]), X + 214, Y + 36); c.textAlign = "left"; });
+      if (ks.length > 8) { const i = 7, X = 60 + (i % 4) * 242, Y = 1134 + 62; c.fillStyle = "rgba(255,255,255,.04)"; c.beginPath(); c.roundRect(X, Y, 228, 52, 16); c.fill(); c.font = `700 24px ${F}`; c.fillStyle = acc; c.fillText("+" + (ks.length - 7) + " " + tr("krajów"), X + 20, Y + 35); }
+    }
     c.fillStyle = "#38e0a0"; c.beginPath(); c.arc(90, 1275, 10, 0, 7); c.fill(); c.fillStyle = "#cdd8ee"; c.font = `500 24px ${F}`; c.fillText(tr("byłem") + " · " + pts.length, 110, 1283);
   }
   { const un = store && store.prof && store.prof.username, url = (location.protocol.indexOf("http") === 0 ? location.host + location.pathname.replace(/\/$/, "") : "bartoszkrop.github.io/Skied-Hiked-there");
@@ -1663,7 +1694,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v126";
+const APPV = "v127";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
