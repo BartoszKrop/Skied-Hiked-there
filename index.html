@@ -61,7 +61,8 @@ body.summer .logo{box-shadow:0 4px 14px rgba(255,170,60,.4)}
 body.summer .mode::before{transform:translateX(calc(100% + 2px))}
 .mode button{position:relative;flex:1;background:none;border:0;color:var(--mute);padding:6px 11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:color .25s;white-space:nowrap}
 .mode button.on{color:#071426}.mode button:not(.on):hover{color:var(--text)}
-.savel{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:10.5px;color:var(--faint);margin-top:6px;min-height:14px}
+.savel{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:10.5px;color:var(--faint);margin-top:4px;min-height:14px}
+.savel + .prog{margin-top:5px}
 .savel #saveState{text-align:right}
 .acct{border:1px solid var(--line);background:var(--glass);color:var(--text);border-radius:999px;padding:6px 9px;font-size:11px;font-weight:600;cursor:pointer;min-width:0;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
 @media(max-width:430px){.brand h1{font-size:16px;white-space:nowrap}.mode button{padding:6px 7px;font-size:11.5px}.rt .acct{padding:6px 7px!important}.brand{gap:5px}.mode .em{display:none}.mode button{padding:6px 9px}.swt{padding:0!important;border:0!important;background:none!important}.rt{gap:6px}}
@@ -548,8 +549,8 @@ svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spa
     <div class="rt"><button id="bell" class="acct" style="flex:none;padding:6px 9px;font-size:15px;display:none" aria-label="Powiadomienia" title="Powiadomienia"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.6 2H4.4z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><span class="bdg" id="bdg" style="display:none"></span></button><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Obserwowani" title="Obserwowani"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.9.2 5 2.6 5 5.8"/></svg></button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button><button id="acct" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Profil" title="Profil"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button></div><i class="brk"></i>
   </div>
   <div class="hstats" id="hstats"></div>
-  <div class="prog"><i id="progBar"></i></div>
   <div class="savel" style="display:none"><span id="saveState"></span></div>
+  <div class="prog"><i id="progBar"></i></div>
 </header>
 <div id="robar"></div>
 <main>
@@ -1658,7 +1659,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v117";
+const APPV = "v118";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
