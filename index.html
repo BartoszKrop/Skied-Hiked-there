@@ -1659,7 +1659,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v118";
+const APPV = "v119";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2388,6 +2388,16 @@ function bindMapGestures(){
   });
   svg.addEventListener("pointerup", e => { const wasOne = ptrs.size === 1; ptrs.delete(e.pointerId); if (wasOne && moved < 8 && startPt) tapAt(e.clientX, e.clientY); });
   svg.addEventListener("pointercancel", e => ptrs.delete(e.pointerId));
+  document.addEventListener("keydown", e => {
+    const v = $("v-mapa"); if (!v || !v.classList.contains("on") || e.ctrlKey || e.metaKey || e.altKey) return;
+    const ae = document.activeElement, tg = ae && ae.tagName; if (tg === "INPUT" || tg === "TEXTAREA" || tg === "SELECT" || (ae && ae.isContentEditable)) return;
+    if (document.querySelector("#appdlg, .ddm.open") || ($("acctov") && $("acctov").style.display !== "none") || ($("sheet") && $("sheet").style.display !== "none" && $("sheet").style.display !== "")) return;
+    const k = e.key, st = 0.18;
+    if (k === "ArrowLeft") vb.x -= vb.w * st; else if (k === "ArrowRight") vb.x += vb.w * st; else if (k === "ArrowUp") vb.y -= vb.h * st; else if (k === "ArrowDown") vb.y += vb.h * st;
+    else if (k === "+" || k === "=") { zoomAt(0.7, null); e.preventDefault(); return; } else if (k === "-" || k === "_") { zoomAt(1 / 0.7, null); e.preventDefault(); return; }
+    else return;
+    e.preventDefault(); applyVB(true);
+  });
   svg.addEventListener("wheel", e => { e.preventDefault(); zoomAt(e.deltaY < 0 ? 0.8 : 1.25, {x:e.clientX, y:e.clientY}); }, {passive:false});
 }
 function tapAt(cx, cy){
