@@ -399,6 +399,7 @@ details>summary svg,details>summary .chev{transition:transform .2s}
 @keyframes dpulse{0%,100%{opacity:.12}50%{opacity:.6}}.pulse{animation:dpulse 2.2s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.pulse{animation:none}}
 #fabw{display:none}
 #fabx{position:fixed;right:14px;bottom:calc(78px + var(--safe-b,0px));z-index:62;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font:inherit;font-size:12.5px;font-weight:600;letter-spacing:.2px;box-shadow:0 4px 14px rgba(0,0,0,.28);cursor:pointer;display:flex;align-items:center;gap:7px}
+#fabx.fabround{width:46px;height:46px;padding:0;justify-content:center;font-size:26px;font-weight:400;line-height:1;border-radius:50%}#fabx.fabround::before{display:none}#fabw.open #fabx.fabround{font-size:19px}
 #fabx::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
 #fabw.open #fabx{background:var(--accentbg);border-color:var(--accent)}
 #fabbg{display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.28)}#fabw.open #fabbg{display:block}
@@ -1714,7 +1715,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v133";
+const APPV = "v134";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -3081,8 +3082,9 @@ function openQuickShop(t){
     t.shop.push({id: newTripId(), n, by: meName() || "ja", ok: false}); tripSave(); closeAccount(); toast("Dodano do listy zakupów: " + n); renderTrips(); };
   $("qsx").onclick = closeAccount; $("qsa").onclick = go; $("qsn").onkeydown = e => { if (e.key === "Enter") go(); }; setTimeout(() => $("qsn").focus(), 60);
 }
-function fabLabel(){ return curTrip() ? "Obecny wyjazd" : "Dodaj"; }
-function fabClose(){ const w = $("fabw"); if (w) w.classList.remove("open"); const f = $("fabx"); if (f) { f.textContent = fabLabel(); f.setAttribute("aria-expanded", "false"); } }
+const fabRound = () => { const v = $("v-wyjazdy"), q = qaTrip(); return !!(v && v.classList.contains("on") && q && tripOpen === q.id); };
+function fabLabel(){ return fabRound() ? "＋" : curTrip() ? "Obecny wyjazd" : "Dodaj"; }
+function fabClose(){ const w = $("fabw"); if (w) w.classList.remove("open"); const f = $("fabx"); if (f) { f.textContent = fabLabel(); f.classList.toggle("fabround", fabRound()); f.setAttribute("aria-expanded", "false"); } }
 async function finishTrip(t){
   const W = t.mode === "w", store_ = W ? wVisits : sVisits, y = (t.from || "").slice(0, 4) || String(new Date().getFullYear()), m = (t.from || "").slice(5, 7) || "";
   const its = (t.items || []).filter(i => i.p && byId[i.p]), places = [...new Set(its.map(i => i.p))];
@@ -3124,11 +3126,11 @@ function updateFab() {
         else if (k === "fc") openQuickCost({id: 1, tid: t.id});
         else if (k === "fp") openQuickPack(t);
         else { if (MODE !== (t.mode || "s")) setMode(t.mode || "s"); openTripPicker(t, "", 0); } });
-      w.classList.add("open"); $("fabx").textContent = "Zamknij"; $("fabx").setAttribute("aria-expanded", "true");
+      w.classList.add("open"); $("fabx").textContent = fabRound() ? "✕" : "Zamknij"; $("fabx").setAttribute("aria-expanded", "true");
     };
   }
   const v = $("v-wyjazdy"), has = allTrips().some(x => !x.ar), on = !RO && has && !(v && v.classList.contains("on") && tripsTab === "packs");
-  w.style.display = on ? "block" : "none"; if (!w.classList.contains("open")) { const f = $("fabx"); if (f) f.textContent = fabLabel(); } if (!on) fabClose();
+  w.style.display = on ? "block" : "none"; if (!w.classList.contains("open")) { const f = $("fabx"); if (f) { f.textContent = fabLabel(); f.classList.toggle("fabround", fabRound()); } } if (!on) fabClose();
 }
 function openQuickVisit(pre){
   if (RO) return;
