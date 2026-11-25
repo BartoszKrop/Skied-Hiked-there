@@ -551,7 +551,7 @@ svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spa
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button><button id="zcost" aria-label="Dodaj wydatek" title="Dodaj wydatek" style="font-size:13px;font-weight:800;display:none">+$</button></div>
       <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
-      <div class="legend"><span data-c="v"><i style="background:var(--ok)"></i>byłem</span><span data-c="p"><i style="background:var(--warn)"></i>planuję</span><span data-c="u"><i style="background:#7aa8ff"></i>jeszcze nie</span><span id="lgpf" data-c="pf" style="display:none"><i style="background:#c58bff"></i>chcę, znajomi byli</span><span id="lgfr" data-c="fr" style="display:none"><i style="background:#ff7eb6"></i>znajomi byli</span></div>
+      <div class="legend"><span data-c="v"><i style="background:var(--ok)"></i>byłem</span><span data-c="p"><i style="background:var(--warn)"></i>planuję</span><span id="lgpf" data-c="pf" style="display:none"><i style="background:#c58bff"></i>chcę, znajomi byli</span><span data-c="u"><i style="background:#7aa8ff"></i>jeszcze nie</span><span id="lgfr" data-c="fr" style="display:none"><i style="background:#ff7eb6"></i>znajomi byli</span></div>
       <div class="note" id="mapnote"></div>
     </div>
   </section>
@@ -881,8 +881,8 @@ let FRD = {};
 let showFr = false; try { showFr = localStorage.getItem("sht-showfr") === "1"; } catch (e) {}
 function frIds(){ if (frIds._k !== FRD || frIds._m !== MODE) { const st = new Set(); Object.keys(FRD).forEach(f => { const m = MODE === "w" ? FRD[f].visits : FRD[f].hvisits; m && Object.keys(m).forEach(id => { if (m[id] && m[id].s === "v") st.add(id); }); }); frIds._k = FRD; frIds._m = MODE; frIds._s = st; } return frIds._s; }
 let lgOff = new Set(); try { lgOff = new Set((localStorage.getItem("sht-lgoff") || "").split(",").filter(Boolean)); } catch (e) {}
-function legSync(){ document.querySelectorAll(".legend [data-c]").forEach(sp => { const c = sp.dataset.c, off = c === "fr" ? !showFr : lgOff.has(c); sp.style.opacity = off ? ".4" : ""; sp.style.textDecoration = off ? "line-through" : ""; sp.style.cursor = "pointer"; }); }
-function legToggle(c){ if (c === "fr") { setShowFr(!showFr); return; } if (lgOff.has(c)) lgOff.delete(c); else lgOff.add(c); try { localStorage.setItem("sht-lgoff", [...lgOff].join(",")); } catch (e) {} legSync(); applyVB(); }
+function legSync(){ document.querySelectorAll(".legend [data-c]").forEach(sp => { const c = sp.dataset.c, off = c === "fr" ? !showFr : c === "u" ? !showAll : lgOff.has(c); sp.style.opacity = off ? ".4" : ""; sp.style.textDecoration = off ? "line-through" : ""; sp.style.cursor = "pointer"; }); }
+function legToggle(c){ if (c === "fr") { setShowFr(!showFr); return; } if (c === "u") { showAll = !showAll; mapRefresh(); return; } if (lgOff.has(c)) lgOff.delete(c); else lgOff.add(c); try { localStorage.setItem("sht-lgoff", [...lgOff].join(",")); } catch (e) {} legSync(); applyVB(); }
 function setShowFr(v){ showFr = !!v; try { localStorage.setItem("sht-showfr", v ? "1" : "0"); } catch (e) {} legSync(); applyVB(); }
 function friendsAt(id){
   const out = [];
@@ -1630,7 +1630,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v91";
+const APPV = "v92";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2202,7 +2202,7 @@ function mapInit(){
   buildDots(); fit(); loadLand();
   new ResizeObserver(() => { const rc = svg.getBoundingClientRect(); if (rc.width) { vb.h = vb.w * rc.height / rc.width; applyVB(); } }).observe(svg);
   $("zin").onclick = () => zoomAt(0.6, null); $("zout").onclick = () => zoomAt(1 / 0.6, null); $("zcost").onclick = () => openQuickCost();
-  const toggleAll = () => { showAll = !showAll; mapRefresh(); };
+  const toggleAll = () => { showAll = !showAll; legSync(); mapRefresh(); };
   $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
   const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
   { const nb = $("znames"); const sync = () => { nb.style.opacity = showNames ? 1 : .45; nb.style.textDecoration = showNames ? "none" : "line-through"; }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
