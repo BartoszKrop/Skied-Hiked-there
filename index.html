@@ -392,7 +392,7 @@ details>summary svg,details>summary .chev{transition:transform .2s}
 .cve{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:6px 0 12px}.cve button{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);font-size:20px;cursor:pointer;padding:0}.cve button.on{border-color:var(--accent);background:var(--accentbg)}
 .mfm{padding-bottom:16px}.mfm h3{margin-bottom:10px}.mfg2{display:grid;grid-template-columns:1fr 1fr;gap:8px 8px}.mfm .fld{margin:0;min-width:0}.mfm .fld label{font-size:10px;margin-bottom:3px;letter-spacing:.4px}.mfm .ddb{min-height:36px;padding:6px 9px;font-size:13px}
 .legend.fm{display:grid;grid-template-columns:auto auto;gap:5px 7px;align-items:center;justify-items:start}.legend.fm .lgf{white-space:nowrap}
-.mapchips2{position:absolute;left:12px;top:52px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.mapchips2 .btn.sm{white-space:nowrap;padding-left:8px;padding-right:8px;flex:none}.mapchips2 #mfrm{padding:0 9px;display:inline-flex;align-items:center;color:var(--accent);border-color:var(--accent)}.mapchips2 #mfrm.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mapchips2{position:absolute;left:12px;top:52px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.mapchips2 .btn.sm{white-space:nowrap;padding-left:8px;padding-right:8px;flex:none}.mapchips2 .btn{min-width:42px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}.mapchips2 .btn.on{color:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .legend .lgx.lgfr.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .legend .lgx.lgfr{display:inline-flex;align-items:center;gap:5px;color:var(--accent);border-color:var(--accent);background:var(--accentbg)}
 .legend .lgx{border:1px solid var(--line);background:var(--bg2);color:var(--text);font:inherit;font-size:10.5px;font-weight:600;border-radius:999px;padding:2px 9px;cursor:pointer}
@@ -1717,7 +1717,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v140";
+const APPV = "v141";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2334,7 +2334,7 @@ function mapInit(){
   $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
   const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
   $("zin").onclick = () => zoomAt(0.6, null); $("zout").onclick = () => zoomAt(1 / 0.6, null);
-  { const nb = $("znames"); const sync = () => { nb.style.opacity = showNames ? 1 : .45; nb.style.textDecoration = showNames ? "none" : "line-through"; }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
+  { const nb = $("znames"); const sync = () => { nb.classList.toggle("on", !!showNames); }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
   $("mfilt").onclick = openMapFilters; $("mlist").onclick = () => show("lista"); $("madd2").onclick = () => openQuickVisit(); $("qvadd").onclick = () => { if (!RO && SBC) openSuggest($("q").value || ""); else openQuickVisit(); };
   bindMapGestures();
 }
