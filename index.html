@@ -388,7 +388,14 @@ details>summary svg,details>summary .chev{transition:transform .2s}
 .tcb{position:absolute;right:8px;bottom:6px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.3);padding:2px 9px;border-radius:999px}
 .cvg{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}.cvg button{width:44px;height:44px;border-radius:12px;border:2px solid transparent;cursor:pointer}.cvg button.on{border-color:var(--text)}
 .cve{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:6px 0 12px}.cve button{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);font-size:20px;cursor:pointer;padding:0}.cve button.on{border-color:var(--accent);background:var(--accentbg)}
-#fabx{position:fixed;right:16px;bottom:calc(84px + var(--safe-b,0px));z-index:60;border:0;border-radius:999px;padding:12px 18px;font:inherit;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,#f4a259,#d95f14);box-shadow:0 8px 22px rgba(0,0,0,.35);cursor:pointer;display:none}
+#fabw{display:none}
+#fabx{position:fixed;right:16px;bottom:calc(84px + var(--safe-b,0px));z-index:62;border:0;border-radius:999px;padding:12px 18px;font:inherit;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,#f4a259,#d95f14);box-shadow:0 8px 22px rgba(0,0,0,.35);cursor:pointer}
+#fabbg{display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45)}#fabw.open #fabbg{display:block}
+#fabm{display:none;position:fixed;right:16px;bottom:calc(138px + var(--safe-b,0px));z-index:62;flex-direction:column;align-items:flex-end;gap:10px}#fabw.open #fabm{display:flex}
+.fabt{font-size:12px;color:#fff;opacity:.85;margin-bottom:2px;max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fabi{display:flex;align-items:center;gap:10px;border:0;background:none;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:0}
+.fabi span{background:var(--card,#1c2530);border:1px solid var(--line);padding:7px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.fabi i{font-style:normal;width:42px;height:42px;border-radius:50%;background:var(--card,#1c2530);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
 #fabx:active{transform:scale(.96)}
 .rsvc{display:inline-flex;gap:5px;align-items:center;padding:3px 10px;border:1px solid;border-radius:999px;font-size:13px;font-weight:700}
 span.d0,span.d1,span.d2{display:inline-block;padding:1px 9px;border-radius:999px;font-size:11.5px;font-weight:700;line-height:1.55;vertical-align:1px;letter-spacing:.2px}
@@ -507,12 +514,21 @@ body.light .view .big .card,body.light #trips>.card:not(.tripc):not(.pkc){backgr
 #fextra .row2,#frow6{display:contents}
 #fextra select{margin:0;padding:7px 5px;font-size:12px;border-radius:9px;min-width:0;text-overflow:ellipsis;height:34px}
 #frow5{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px}#frow5 #fwsort{grid-column:1/-1}#frow5.sm #fwsort{grid-column:auto}#frow5 .wxh{grid-column:1/-1;margin:0 2px;font-size:11.5px;font-weight:700;color:var(--mute)}#frow5 select{width:100%}#frow5 .ddb,#fextra .ddb{font-size:13px;padding:7px 10px;min-height:38px;gap:6px}
-/* znajomi: chipy w liscie i na kartach */
+/* znajomi: chipy w liscie i karty */
 .frl{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
-.fc{font-size:11.5px;line-height:1.3;padding:2px 9px;border-radius:999px;background:rgba(122,168,255,.14);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.fc.fv{background:rgba(56,224,160,.15);color:#38e0a0}
-.fc.fp{background:rgba(255,198,92,.15);color:#ffc65c}
-.fc.fp.both{background:#ffc65c;color:#1a1306;font-weight:700}
+.fc{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;line-height:1.3;padding:3px 9px;border-radius:999px;background:var(--bg2,rgba(127,127,127,.12));border:1px solid var(--line);color:var(--text);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--c,#9aa6b2)}
+.fc.pv{--c:#c58bff}.fc.fr{--c:#ff7eb6}.fc.pl{--c:#ffc65c}.fc.nv{--c:#9aa6b2}
+.fc.pl.both{border-color:#ffc65c}
+.frcard{background:var(--bg2,rgba(127,127,127,.1));border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0}
+.frh{font-weight:700;margin:0 0 6px!important}
+.frban{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:11px;background:rgba(255,198,92,.12);border-left:3px solid #ffc65c;margin-bottom:6px}
+.frban.plain{background:transparent;border-left-color:var(--line)}
+.frban .fi{font-size:18px}
+.frp{display:flex;gap:10px;padding:6px 0;align-items:flex-start}
+.av{flex:none;width:26px;height:26px;border-radius:50%;background:var(--c,#9aa6b2);color:#111;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+.frm{min-width:0;flex:1}
+.frdet{margin:8px 0}.frdet summary{cursor:pointer;color:var(--mute);font-size:13px;padding:6px 2px}
 svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spacing:normal}
 </style>
 </head>
@@ -535,7 +551,7 @@ svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spa
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button><button id="zcost" aria-label="Dodaj wydatek" title="Dodaj wydatek" style="font-size:13px;font-weight:800;display:none">+$</button></div>
       <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
-      <div class="legend"><span><i style="background:var(--ok)"></i>byłem</span><span><i style="background:var(--warn)"></i>planuję</span><span><i style="background:#7aa8ff"></i>jeszcze nie</span><span id="lgfr" style="display:none;cursor:pointer"><i style="background:#c58bff"></i>znajomi byli</span></div>
+      <div class="legend"><span><i style="background:var(--ok)"></i>byłem</span><span><i style="background:var(--warn)"></i>planuję</span><span><i style="background:#7aa8ff"></i>jeszcze nie</span><span id="lgpf" style="display:none"><i style="background:#c58bff"></i>chcę, znajomi byli</span><span id="lgfr" style="display:none;cursor:pointer"><i style="background:#ff7eb6"></i>znajomi byli</span></div>
       <div class="note" id="mapnote"></div>
     </div>
   </section>
@@ -862,7 +878,7 @@ function renderRoBar(){
   const f = $("rofr"); if (f) f.onclick = async () => { f.disabled = true; if (f.dataset.a === "un") await socAct("remove_friend", {uname: low}); else await sendFriendReq(low); await socLoad(); renderRoBar(); };
 }
 let FRD = {};
-let showFr = true; try { showFr = localStorage.getItem("sht-showfr") !== "0"; } catch (e) {}
+let showFr = false; try { showFr = localStorage.getItem("sht-showfr") === "1"; } catch (e) {}
 function frIds(){ if (frIds._k !== FRD || frIds._m !== MODE) { const st = new Set(); Object.keys(FRD).forEach(f => { const m = MODE === "w" ? FRD[f].visits : FRD[f].hvisits; m && Object.keys(m).forEach(id => { if (m[id] && m[id].s === "v") st.add(id); }); }); frIds._k = FRD; frIds._m = MODE; frIds._s = st; } return frIds._s; }
 function setShowFr(v){ showFr = !!v; try { localStorage.setItem("sht-showfr", v ? "1" : "0"); } catch (e) {} const lg = $("lgfr"); if (lg) { lg.style.opacity = showFr ? "" : ".45"; lg.style.textDecoration = showFr ? "" : "line-through"; } applyVB(); }
 function friendsAt(id){
@@ -875,19 +891,20 @@ function friendsPlan(id){ const out = []; Object.keys(FRD).forEach(f => { const 
 function nickList(a, n){ n = n || 3; return a.slice(0, n).map(x => "@" + esc(x.u || x)).join(", ") + (a.length > n ? " +" + (a.length - n) : ""); }
 function friendChips(id){
   if (RO || !Object.keys(FRD).length) return "";
-  const v = visits[id], me = v && v.s === "p", fv = friendsAt(id), fp = friendsPlan(id); let h = "";
-  if (fv.length) h += `<span class="fc fv" title="Byli tutaj">✓ ${nickList(fv)}</span>`;
-  if (fp.length) h += me ? `<span class="fc fp both" title="Oboje chcecie tu pojechać">🤝 razem: ${nickList(fp)}</span>` : `<span class="fc fp" title="Chcą tu pojechać">🗓 ${nickList(fp)}</span>`;
+  const v = visits[id]; if (v && v.s === "v") return "";
+  const me = !!(v && v.s === "p"), fv = friendsAt(id), fp = friendsPlan(id); let h = "";
+  if (fv.length && (me || showFr)) h += `<span class="fc ${me ? "pv" : "fr"}" title="Byli tutaj">byli: ${nickList(fv)}</span>`;
+  if (fp.length) h += `<span class="fc pl${me ? " both" : ""}" title="Chcą tu pojechać">${me ? "🤝 razem: " : "chcą: "}${nickList(fp)}</span>`;
   return h ? `<div class="frl">${h}</div>` : "";
 }
 function hikeFriends(r, i, v){
   if (RO || !Object.keys(FRD).length) return "";
-  const me = !!(v && v.hp && v.hp[i]), done = [], plan = [];
+  const meD = !!(v && v.done && v.done[i]), me = !!(v && v.hp && v.hp[i]), done = [], plan = [];
   Object.keys(FRD).forEach(f => { const e = frEntry(f, r.id); if (!e) return; if (e.done && e.done[i]) done.push({u: f, st: (e.hr && e.hr[i]) || 0, hn: ((e.hn && e.hn[i]) || "").trim()}); else if (e.hp && e.hp[i]) plan.push({u: f}); });
   if (!done.length && !plan.length) return "";
   let h = `<div class="frl" style="margin:4px 0 2px">`;
-  if (done.length) h += `<span class="fc fv">✓ ${done.slice(0, 4).map(x => "@" + esc(x.u) + (x.st ? " ★" + x.st : "")).join(", ")}${done.length > 4 ? " +" + (done.length - 4) : ""}</span>`;
-  if (plan.length) h += me ? `<span class="fc fp both">🤝 razem: ${nickList(plan)}</span>` : `<span class="fc fp">🗓 ${nickList(plan)}</span>`;
+  if (done.length) h += `<span class="fc ${meD ? "nv" : me ? "pv" : "fr"}">byli: ${done.slice(0, 4).map(x => "@" + esc(x.u) + (x.st ? " ★" + x.st : "")).join(", ")}${done.length > 4 ? " +" + (done.length - 4) : ""}</span>`;
+  if (plan.length) h += `<span class="fc pl${me ? " both" : ""}">${me ? "🤝 razem: " : "chcą: "}${nickList(plan)}</span>`;
   h += `</div>`;
   done.filter(x => x.hn).slice(0, 2).forEach(x => { h += `<div class="small" data-nt style="white-space:pre-wrap;margin:2px 0">📝 <b>@${esc(x.u)}</b>: ${esc(x.hn.length > 140 ? x.hn.slice(0, 139) + "…" : x.hn)}</div>`; });
   return h;
@@ -1098,7 +1115,15 @@ function renderList(){
   const fc = $("fcount"); if (fc) fc.textContent = a.length + " " + (MODE === "w" ? plur(a.length, "ośrodek", "ośrodki", "ośrodków") : plur(a.length, "miejsce", "miejsca", "miejsc"));
 }
 
-function hikeFriendsRow(r, i){ if (RO || !Object.keys(FRD).length) return ""; const v = visits[r.id], me = !!(v && v.hp && v.hp[i]), d = [], pl = []; Object.keys(FRD).forEach(f => { const e = frEntry(f, r.id); if (!e) return; if (e.done && e.done[i]) d.push({u: f, st: (e.hr && e.hr[i]) || 0}); else if (e.hp && e.hp[i]) pl.push({u: f}); }); if (!d.length && !pl.length) return ""; return `<div class="frl">${d.length ? `<span class="fc fv">✓ ${d.slice(0, 3).map(x => "@" + esc(x.u) + (x.st ? " ★" + x.st : "")).join(", ")}${d.length > 3 ? " +" + (d.length - 3) : ""}</span>` : ""}${pl.length ? (me ? `<span class="fc fp both">🤝 razem: ${nickList(pl)}</span>` : `<span class="fc fp">🗓 ${nickList(pl)}</span>`) : ""}</div>`; }
+function hikeFriendsRow(r, i){
+  if (RO || !Object.keys(FRD).length) return "";
+  const v = visits[r.id] || {}, meD = !!(v.done && v.done[i]), me = !!(v.hp && v.hp[i]), d = [], pl = [];
+  Object.keys(FRD).forEach(f => { const e = frEntry(f, r.id); if (!e) return; if (e.done && e.done[i]) d.push({u: f, st: (e.hr && e.hr[i]) || 0}); else if (e.hp && e.hp[i]) pl.push({u: f}); });
+  let h = "";
+  if (d.length && !meD && (me || showFr)) h += `<span class="fc ${me ? "pv" : "fr"}">byli: ${d.slice(0, 3).map(x => "@" + esc(x.u) + (x.st ? " ★" + x.st : "")).join(", ")}${d.length > 3 ? " +" + (d.length - 3) : ""}</span>`;
+  if (pl.length && !meD) h += `<span class="fc pl${me ? " both" : ""}">${me ? "🤝 razem: " : "chcą: "}${nickList(pl)}</span>`;
+  return h ? `<div class="frl">${h}</div>` : "";
+}
 function renderHikeList(){
   const E = [];
   R.filter(r => passF(r)).forEach(r => { const v = visits[r.id] || {}; (r.hikes || []).forEach((h, i) => { if (h.del) return; if (fCat && (h.ct || "g") !== fCat) return; if (fQ && !r.s.includes(fQ) && !norm(h.n).includes(fQ)) return; const g = RATEH[r.id] && RATEH[r.id][i]; E.push({r, h, i, my: (v.hr && v.hr[i]) || 0, g: g && g.n ? g : null, done: !!(v.done && v.done[i])}); }); });
@@ -1463,6 +1488,13 @@ function socStart(){
 function socRealtime(){
   try { if (SOC.rt || !store.sb || !store.sb.channel) return; SOC.rt = store.sb.channel("notif-" + store.uid).on("postgres_changes", {event: "*", schema: "public", table: "notifications", filter: "user_id=eq." + store.uid}, () => socLoad()).subscribe(); } catch(e){}
 }
+function followBack(n){
+  if (n.kind !== "follow" || !n.ref) return "";
+  const u = String(n.ref).toLowerCase(), fl = new Set([...(store.friends || []), ...SOC.friends].map(x => String(x).toLowerCase()));
+  if (fl.has(u)) return `<span class="small" style="flex:none;color:var(--ok)">obserwujesz ✓</span>`;
+  if ((SOC.outReq || []).some(r => String(r.to_name).toLowerCase() === u && r.status !== "accepted")) return `<span class="small" style="flex:none">prośba wysłana</span>`;
+  return `<button class="btn sm pri fbk" data-u="${esc(u)}" style="flex:none">Zaobserwuj też</button>`;
+}
 function inboxCard(){
   const acts = [
     ...SOC.inReq.map(r => `<div class="frow"><span>🤝 <b>@${esc(r.from_name)}</b> prosi o możliwość obserwowania Cię</span><span style="display:flex;gap:6px;flex:none"><button class="btn sm pri fra" data-id="${esc(r.id)}">Akceptuj</button><button class="btn sm frd" data-id="${esc(r.id)}">Odrzuć</button></span></div>`),
@@ -1472,13 +1504,14 @@ function inboxCard(){
     ${SOC.err ? `<div class="small" style="color:#ff8a8a">Powiadomienia nie działają: ${esc(SOC.err.slice(0, 90))}. Uruchom w Supabase plik social.sql.</div>` : ""}
     ${acts.length ? `<div class="sech" style="margin-top:6px">Do zaakceptowania</div>${acts.join("")}` : ""}
     <div class="sech">Aktywność</div>
-    ${notes.length ? notes.map(n => `<div class="nrow go ${SOC.newIds.has(n.id) ? "nw" : ""}" data-k="${esc(n.kind)}" data-r="${esc(n.ref || "")}"><i class="dot"></i><div><div>${esc(n.text)}</div><div class="tm">${esc(ago(n.created_at))}</div></div></div>`).join("") : `<div class="small" style="padding:6px 0">Na razie cicho. Tu pojawią się komentarze i zmiany we wspólnych wyjazdach, zaproszenia, nowi obserwujący i akceptacje.</div>`}
+    ${notes.length ? notes.map(n => `<div class="nrow go ${SOC.newIds.has(n.id) ? "nw" : ""}" data-k="${esc(n.kind)}" data-r="${esc(n.ref || "")}"><i class="dot"></i><div style="flex:1;min-width:0"><div>${esc(n.text)}</div><div class="tm">${esc(ago(n.created_at))}</div></div>${followBack(n)}</div>`).join("") : `<div class="small" style="padding:6px 0">Na razie cicho. Tu pojawią się komentarze i zmiany we wspólnych wyjazdach, zaproszenia, nowi obserwujący i akceptacje.</div>`}
     <button class="btn" id="lclose" style="width:100%;margin-top:12px">Zamknij</button></div>`;
 }
 function bindInbox(){
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
   document.querySelectorAll("#acctov .fra,#acctov .frd").forEach(b => b.onclick = async () => { b.disabled = true; const acc = b.classList.contains("fra"); if (await socAct("respond_friend_request", {rid: b.dataset.id, acc})) toast(acc ? "Zaakceptowano ✓" : "Odrzucono"); await socLoad(); });
   document.querySelectorAll("#acctov .tia,#acctov .tid").forEach(b => b.onclick = async () => { b.disabled = true; const acc = b.classList.contains("tia"); if (await socAct("respond_trip_invite", {iid: b.dataset.id, acc})) { toast(acc ? "Dołączono do wyjazdu ✓" : "Odrzucono"); if (acc) await loadShared(true); } await socLoad(); });
+  document.querySelectorAll("#acctov .fbk").forEach(b => b.onclick = async e => { e.stopPropagation(); b.disabled = true; b.textContent = "…"; await sendFriendReq(b.dataset.u); if (SOC.ov === "inbox") { const ov = $("acctov"); if (ov) { ov.innerHTML = inboxCard(); bindInbox(); } } });
   document.querySelectorAll("#acctov .nrow").forEach(r => r.onclick = () => {
     const k = r.dataset.k, id = r.dataset.r;
     if (/^trip_/.test(k)) { const tj = SHT.find(x => x.id === id); closeAccount(); if (tj) { if (MODE !== (tj.mode || "s")) setMode(tj.mode || "s"); tripOpen = id; } show("wyjazdy"); renderTrips(); }
@@ -1581,7 +1614,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v84";
+const APPV = "v86";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1620,12 +1653,18 @@ function opinionsHtml(id){
   const n = o.shown || 3, V = L.slice(0, n);
   return `<div>${head}${V.map(x => { const lv = String(x.last_visit || ""), ym = /^(\d{4})-(\d{2})$/.exec(lv); return `<div class="frow" style="align-items:flex-start;gap:8px"><div style="min-width:0;flex:1"><b class="nick" data-u="${esc(x.username)}">@${esc(x.username)}</b>${x.rating ? ` <span style="color:var(--warn)">${"★".repeat(x.rating)}</span>` : ""}${ym ? ` <span class="small">${esc(fmtYM(ym[1], ym[2] === "00" ? "" : ym[2]))}</span>` : (lv.length === 4 ? ` <span class="small">${esc(lv)}</span>` : "")}${x.note ? `<div class="small" style="white-space:pre-wrap;margin-top:2px">${esc(x.note)}</div>` : ""}</div><button class="btn sm opl ${x.liked ? "pri" : ""}" data-a="${esc(x.author)}">♥ ${x.likes}</button></div>`; }).join("")}${L.length > n ? `<button class="btn sm opmore" style="margin-top:6px">Pokaż kolejne (${L.length - n})</button>` : ""}</div>`;
 }
-function friendsHtml(id, force){
-  const r = byId[id], W = MODE === "w", v = visits[id]; if (!r || RO || (!force && v && v.s === "v")) return "";
+function friendsHtml(id){
+  const r = byId[id], W = MODE === "w", v = visits[id]; if (!r || RO) return "";
   const fa = friendsAt(id), fp = friendsPlan(id); if (!fa.length && !fp.length) return "";
-  const meP = !!(v && v.s === "p"), planRow = fp.length ? `<div class="frow" style="margin:2px 0 6px"><span class="fc fp${meP ? " both" : ""}">${meP ? "🤝 Oboje chcecie tu pojechać" : "🗓 Chcą tu pojechać"}: ${fp.map(x => `<b class="nick" data-u="${esc(x.u)}">@${esc(x.u)}</b>${x.e.pd ? " (" + esc(fmtPd(x.e.pd)) + ")" : ""}`).join(", ")}</span></div>` : "";
-  return `<div class="small" style="font-weight:700;margin:2px 0 4px">Znajomi</div>${planRow}${fa.map(x => { const lk = ((OPN[opKey(id)] || {}).list || []).find(z => String(z.username).toLowerCase() === String(x.u).toLowerCase()), ys = [...new Set((x.e.stays || []).map(k => k.y).filter(Boolean))].sort().join(", "), hd = x.e.done ? Object.keys(x.e.done).length : 0, nt = (x.e.n || "").trim();
-    return `<div class="frow" style="align-items:flex-start"><div style="min-width:0"><b class="nick" data-u="${esc(x.u)}">@${esc(x.u)}</b> <span class="small">${esc(ys)}${!W && hd ? (ys ? " · " : "") + hd + " " + plur(hd, "szlak", "szlaki", "szlaków") : ""}</span>${x.e.r ? ` <span style="color:var(--warn)">${"★".repeat(x.e.r)}</span>` : ""}${nt ? `<div class="small" data-nt style="white-space:pre-wrap;margin-top:2px">📝 ${esc(nt.length > 160 ? nt.slice(0, 159) + "…" : nt)}</div>` : ""}${W ? "" : Object.keys(x.e.done || {}).map(i => { const h = r.hikes[i]; if (!h) return ""; const st = (x.e.hr && x.e.hr[i]) || 0, hn = ((x.e.hn && x.e.hn[i]) || "").trim(); return `<div class="small" style="margin-top:4px"><b>${esc(h.n)}</b> ${st ? `<span style="color:var(--warn)">${"★".repeat(st)}</span>` : ""}${hn ? `<div data-nt style="white-space:pre-wrap">📝 ${esc(hn.length > 160 ? hn.slice(0, 159) + "…" : hn)}</div>` : ""}</div>`; }).join("")}</div><span style="display:flex;flex-direction:column;gap:6px;flex:none">${lk ? `<button class="btn sm opl ${lk.liked ? "pri" : ""}" data-a="${esc(lk.author)}">♥ ${lk.likes}</button>` : ""}</span></div>`; }).join("")}`;
+  const meV = !!(v && v.s === "v"), meP = !!(v && v.s === "p"), n = new Set([...fa, ...fp].map(x => x.u)).size;
+  const av = (u, c) => `<span class="av" style="--c:${c}">${esc(String(u).charAt(0).toUpperCase())}</span>`;
+  const nk = x => `<b class="nick" data-u="${esc(x.u)}">@${esc(x.u)}</b>${x.e.pd ? ` <span class="small">${esc(fmtPd(x.e.pd))}</span>` : ""}`;
+  const ban = fp.length ? `<div class="frban${meP ? "" : " plain"}"><span class="fi">${meP ? "🤝" : "🗓"}</span><div><b>${meP ? "Planujecie razem" : "Chcą tu pojechać"}</b><div class="small">${fp.map(nk).join(", ")}</div></div></div>` : "";
+  const col = meV ? "#9aa6b2" : meP ? "#c58bff" : "#ff7eb6";
+  const rows = fa.map(x => { const lk = ((OPN[opKey(id)] || {}).list || []).find(z => String(z.username).toLowerCase() === String(x.u).toLowerCase()), ys = [...new Set((x.e.stays || []).map(k => k.y).filter(Boolean))].sort().join(", "), hd = x.e.done ? Object.keys(x.e.done).length : 0, nt = (x.e.n || "").trim();
+    return `<div class="frp">${av(x.u, col)}<div class="frm"><div><b class="nick" data-u="${esc(x.u)}">@${esc(x.u)}</b> <span class="small">${esc(ys)}${!W && hd ? (ys ? " · " : "") + hd + " " + plur(hd, "szlak", "szlaki", "szlaków") : ""}</span>${x.e.r ? ` <span style="color:var(--warn)">${"★".repeat(x.e.r)}</span>` : ""}</div>${nt ? `<div class="small" data-nt style="white-space:pre-wrap;margin-top:2px">📝 ${esc(nt.length > 160 ? nt.slice(0, 159) + "…" : nt)}</div>` : ""}${W ? "" : Object.keys(x.e.done || {}).map(i => { const h = r.hikes[i]; if (!h) return ""; const st = (x.e.hr && x.e.hr[i]) || 0, hn = ((x.e.hn && x.e.hn[i]) || "").trim(); return `<div class="small" style="margin-top:4px"><b>${esc(h.n)}</b> ${st ? `<span style="color:var(--warn)">${"★".repeat(st)}</span>` : ""}${hn ? `<div data-nt style="white-space:pre-wrap">📝 ${esc(hn.length > 160 ? hn.slice(0, 159) + "…" : hn)}</div>` : ""}</div>`; }).join("")}</div>${lk ? `<button class="btn sm opl ${lk.liked ? "pri" : ""}" data-a="${esc(lk.author)}" style="flex:none">♥ ${lk.likes}</button>` : ""}</div>`; }).join("");
+  const inner = ban + (rows ? (fp.length ? `<div class="small frh" style="margin:6px 0 2px">Byli</div>` : "") + rows : "");
+  return meV ? `<details class="frdet"><summary>👥 Znajomi w tym miejscu · ${n}</summary><div class="frcard">${inner}</div></details>` : `<div class="frcard"><div class="small frh">👥 Znajomi</div>${inner}</div>`;
 }
 function bindOpinions(id){
   document.querySelectorAll("#opfr .opl, #opsec .opl").forEach(b => b.onclick = () => likeOpinion(id, b.dataset.a));
@@ -1974,7 +2013,7 @@ function renderSheet(){
       <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span>${(!RO && h.sk && v && v.s === "v") ? `<button class="szc hkpie ${(v.sz && v.sz[h.sk]) ? "on" : ""}" data-sk="${esc(h.sk)}" title="Szarlotka w schronisku" style="padding:1px 8px;font-size:12px">🥧 ${(v.sz && v.sz[h.sk]) ? "✓" : "?"}</button>` : ""}${!RO ? `<button class="hkgear" data-h="${i}" title="Więcej opcji" aria-label="Więcej opcji" style="margin-left:auto;background:none;border:0;color:var(--mute);font-size:14px;cursor:pointer;padding:0 4px">⚙</button>` : ""}</div>${(!RO && h.sk && v && v.s === "v" && szOpenSk === h.sk) ? `<div class="szrow" style="margin:6px 0"><span style="flex:1;min-width:120px">🥧 ${esc(h.sk)}</span><button class="szb ${(v.sz && v.sz[h.sk]) ? "on" : ""}" data-sk="${esc(h.sk)}">${(v.sz && v.sz[h.sk]) ? "Jadłem ✓" : "Jadłem?"}</button>${(v.sz && v.sz[h.sk]) ? `<span class="szs">${[1,2,3,4,5].map(k => `<button data-sk="${esc(h.sk)}" data-i="${k}" class="${((v.sz[h.sk].r||0)>=k)?"on":""}">★</button>`).join("")}</span>` : ""}</div>` : ""}<p>${esc(h.o)}</p><div class="hkmenu" data-h="${i}" style="display:none;margin:2px 0 6px"><button class="btn sm hktrip" data-h="${i}">＋ Do wyjazdu</button></div>${(store.admin && !RO && SBC) ? `<button class="hkdel" data-h="${i}" title="Usuń szlak (admin)" aria-label="Usuń szlak (admin)">🗑</button>` : ""}
       ${hikeFriends(r, i, v)}${(v && v.s === "p") ? "" : `<div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>`}${noteUi}
       <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
-  const frsec = (!showOp && !RO && friendsHtml(r.id, true)) ? `<div class="sect"><div id="opfr">${friendsHtml(r.id, true)}</div></div>` : "";
+  const frsec = (!showOp && !RO && friendsHtml(r.id)) ? `<div id="opfr">${friendsHtml(r.id)}</div>` : "";
   const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b>${(secOn || r.hikes.length < 4) ? "" : `<button class="btn sm" id="hkdir" type="button" onclick="toggleHkDir()" style="padding:4px 10px;font-size:12px">${hkDir > 0 ? "Od łatwych ↓" : "Od trudnych ↑"}</button>`}</div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
   const sks0 = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
   const sks = RO ? sks0.filter(sk => v && v.sz && v.sz[sk]) : sks0;
@@ -2185,14 +2224,14 @@ function vbHeavy(full){
   if (!base) return;
   const rc = svg.getBoundingClientRect(), s = (rc.width || 360) / vb.w, z = s / ((rc.width || 360) / (base.x1 - base.x0));
   const fn = full ? filtN() : 0, mx = vb.w * .04, my = vb.h * .04, X0 = vb.x - mx, X1 = vb.x + vb.w + mx, Y0 = vb.y - my, Y1 = vb.y + vb.h + my;
-  if (full) { var fr_ = showFr ? frIds() : null; }
+  if (full) { var fr_ = Object.keys(FRD).length ? frIds() : null; }
   const cand = [];
   dots.forEach(d => {
     const id = d.r.id;
     if (full) {
-      const v = isVis(id), pl = isPlan(id), sel = id === curId, fr = !!fr_ && !v && !pl && fr_.has(id), on = v || pl || fr;
+      const v = isVis(id), pl = isPlan(id), sel = id === curId, fv = !!fr_ && fr_.has(id), pfr = pl && !v && fv, fr = showFr && fv && !v && !pl, on = v || pl || fr;
       const show = fn ? (passF(d.r) || sel) : (showAll || on || sel);
-      d._show = show; d._on = on; d._sel = sel; d._col = v ? "#38e0a0" : pl ? "#ffc65c" : fr ? "#c58bff" : "#7aa8ff"; d._s = 0;
+      d._show = show; d._on = on; d._sel = sel; d._col = v ? "#38e0a0" : pfr ? "#c58bff" : pl ? "#ffc65c" : fr ? "#ff7eb6" : "#7aa8ff"; d._s = 0;
       d.c.style.display = show ? "" : "none"; d.h.style.display = show ? "" : "none";
       if (show) {
         d.c.setAttribute("fill", on ? d._col : "rgba(122,168,255,.6)");
@@ -2252,7 +2291,7 @@ function openMapFilters(){
   };
   draw();
 }
-function mapRefresh(){ { const lg = $("lgfr"); if (lg) { lg.style.display = Object.keys(FRD).length && frIds().size ? "" : "none"; lg.style.opacity = showFr ? "" : ".45"; lg.style.textDecoration = showFr ? "" : "line-through"; } } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
+function mapRefresh(){ { const lp = $("lgpf"); if (lp) lp.style.display = Object.keys(FRD).length && [...frIds()].some(i => isPlan(i) && !isVis(i)) ? "" : "none"; } { const lg = $("lgfr"); if (lg) { lg.style.display = Object.keys(FRD).length && frIds().size ? "" : "none"; lg.style.opacity = showFr ? "" : ".45"; lg.style.textDecoration = showFr ? "" : "line-through"; } } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){
   const rc = svg.getBoundingClientRect();
   const cx = ctr ? vb.x + (ctr.x - rc.left) / rc.width * vb.w : vb.x + vb.w / 2;
@@ -2842,10 +2881,44 @@ function splitRead(b, a) {
   if (Math.abs(a - sm) > 1.005) return {err: "Kwoty osób muszą się sumować do kwoty wydatku (różnica maks. 1)."};
   return {sp: ks, sh};
 }
+function qaTrip(){
+  const L = allTrips().filter(x => !x.ar); if (!L.length) return null; let last = ""; try { last = localStorage.getItem("sht_qt") || ""; } catch (e) {}
+  const today = new Date().toISOString().slice(0, 10);
+  return L.find(x => x.id === tripOpen) || L.find(x => x.from && x.from <= today && (x.to || x.from) >= today) || L.find(x => x.id === last) || L[0];
+}
+function fabClose(){ const w = $("fabw"); if (w) w.classList.remove("open"); const f = $("fabx"); if (f) f.textContent = "＋ Dodaj"; }
+function openQuickPack(t){
+  t.pack = t.pack || []; const me = meName(), ppl = tripPeople(t), shared = t.shared && ppl.length > 1;
+  ovBox().innerHTML = `<div class="card" style="width:min(420px,94vw)"><h3>Dodaj rzecz do wzięcia</h3><div class="sub">${esc(t.name || "Wyjazd")}</div>
+    <div class="fld"><label>CO</label><input id="qpn" class="lin" maxlength="60" placeholder="np. kask, ładowarka, karnet"></div>
+    ${shared ? `<div class="fld"><label>KTO ZAPEWNIA</label><select id="qpw" class="sel"><option value="">Wspólne / ktokolwiek</option>${ppl.map(p => `<option value="${esc(p)}">@${esc(p)}${p === me ? " (ja)" : ""}</option>`).join("")}</select></div>` : ""}
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="qpx" style="flex:1">Anuluj</button><button class="btn pri" id="qpa" style="flex:2">Dodaj</button></div></div>`;
+  const go = () => { const n = $("qpn").value.trim().slice(0, 60); if (!n) { $("qpn").focus(); return; } if (t.pack.some(x => x.n === n)) { toast("Już jest na liście"); return; }
+    t.pack.push({id: newTripId(), n, by: shared ? me : undefined, who: shared ? ($("qpw").value || "") : "", ok: false}); try { localStorage.setItem("sht_qt", t.id); } catch (e) {} tripSave(); closeAccount(); toast("Dodano: " + n); renderTrips(); };
+  $("qpx").onclick = closeAccount; $("qpa").onclick = go; $("qpn").onkeydown = e => { if (e.key === "Enter") go(); }; setTimeout(() => $("qpn").focus(), 60);
+}
 function updateFab() {
   { const zc = $("zcost"); if (zc) zc.style.display = (!RO && allTrips().some(x => !x.ar)) ? "flex" : "none"; }
-  let f = $("fabx"); if (!f) { f = document.createElement("button"); f.id = "fabx"; f.textContent = "＋ Wydatek"; f.setAttribute("aria-label", "Dodaj wydatek"); f.onclick = openQuickCost; document.body.append(f); }
-  const v = $("v-wyjazdy"); f.style.display = (!RO && v && v.classList.contains("on") && allTrips().some(x => !x.ar) && tripsTab !== "packs") ? "block" : "none";
+  let w = $("fabw");
+  if (!w) {
+    w = document.createElement("div"); w.id = "fabw";
+    w.innerHTML = `<div id="fabbg"></div><div id="fabm"></div><button id="fabx" aria-label="Szybkie akcje wyjazdu" aria-expanded="false">＋ Dodaj</button>`; document.body.append(w);
+    $("fabbg").onclick = fabClose;
+    $("fabx").onclick = () => {
+      if (w.classList.contains("open")) { fabClose(); return; }
+      const t = qaTrip(); if (!t) return; const W = t.mode === "w", can = !!(SBC && store.authed);
+      const acts = [["fu", "👥", "Dodaj znajomego do wyjazdu"], ["fc", "💸", "Dodaj wydatek"], ["fp", "🎒", "Dodaj rzecz do wzięcia"], ["fh", W ? "⛷" : "🥾", W ? "Dodaj ośrodek do wyjazdu" : "Dodaj szlak do wyjazdu"]];
+      $("fabm").innerHTML = `<div class="fabt">${esc(t.name || "Wyjazd")}</div>` + acts.map(a => `<button class="fabi" data-a="${a[0]}"><span>${a[2]}</span><i>${a[1]}</i></button>`).join("");
+      $("fabm").querySelectorAll(".fabi").forEach(b => b.onclick = () => { const k = b.dataset.a; fabClose(); if (tripOpen !== t.id) { try { localStorage.setItem("sht_qt", t.id); } catch (e) {} }
+        if (k === "fu") { if (!can) { toast("Zaloguj się, żeby zapraszać znajomych"); return; } openTripShare(t); }
+        else if (k === "fc") openQuickCost({id: 1, tid: t.id});
+        else if (k === "fp") openQuickPack(t);
+        else openTripPicker(t, "", 0); });
+      w.classList.add("open"); $("fabx").textContent = "✕ Zamknij"; $("fabx").setAttribute("aria-expanded", "true");
+    };
+  }
+  const v = $("v-wyjazdy"), on = !RO && v && v.classList.contains("on") && allTrips().some(x => !x.ar) && tripsTab !== "packs";
+  w.style.display = on ? "block" : "none"; if (!on) fabClose();
 }
 function openQuickVisit(pre){
   if (RO) return;
