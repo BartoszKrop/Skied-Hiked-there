@@ -551,7 +551,7 @@ svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spa
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button><button id="zcost" aria-label="Dodaj wydatek" title="Dodaj wydatek" style="font-size:13px;font-weight:800;display:none">+$</button></div>
       <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
-      <div class="legend"><span><i style="background:var(--ok)"></i>byłem</span><span><i style="background:var(--warn)"></i>planuję</span><span><i style="background:#7aa8ff"></i>jeszcze nie</span><span id="lgpf" style="display:none"><i style="background:#c58bff"></i>chcę, znajomi byli</span><span id="lgfr" style="display:none;cursor:pointer"><i style="background:#ff7eb6"></i>znajomi byli</span></div>
+      <div class="legend"><span data-c="v"><i style="background:var(--ok)"></i>byłem</span><span data-c="p"><i style="background:var(--warn)"></i>planuję</span><span data-c="u"><i style="background:#7aa8ff"></i>jeszcze nie</span><span id="lgpf" data-c="pf" style="display:none"><i style="background:#c58bff"></i>chcę, znajomi byli</span><span id="lgfr" data-c="fr" style="display:none"><i style="background:#ff7eb6"></i>znajomi byli</span></div>
       <div class="note" id="mapnote"></div>
     </div>
   </section>
@@ -880,7 +880,10 @@ function renderRoBar(){
 let FRD = {};
 let showFr = false; try { showFr = localStorage.getItem("sht-showfr") === "1"; } catch (e) {}
 function frIds(){ if (frIds._k !== FRD || frIds._m !== MODE) { const st = new Set(); Object.keys(FRD).forEach(f => { const m = MODE === "w" ? FRD[f].visits : FRD[f].hvisits; m && Object.keys(m).forEach(id => { if (m[id] && m[id].s === "v") st.add(id); }); }); frIds._k = FRD; frIds._m = MODE; frIds._s = st; } return frIds._s; }
-function setShowFr(v){ showFr = !!v; try { localStorage.setItem("sht-showfr", v ? "1" : "0"); } catch (e) {} const lg = $("lgfr"); if (lg) { lg.style.opacity = showFr ? "" : ".45"; lg.style.textDecoration = showFr ? "" : "line-through"; } applyVB(); }
+let lgOff = new Set(); try { lgOff = new Set((localStorage.getItem("sht-lgoff") || "").split(",").filter(Boolean)); } catch (e) {}
+function legSync(){ document.querySelectorAll(".legend [data-c]").forEach(sp => { const c = sp.dataset.c, off = c === "fr" ? !showFr : lgOff.has(c); sp.style.opacity = off ? ".4" : ""; sp.style.textDecoration = off ? "line-through" : ""; sp.style.cursor = "pointer"; }); }
+function legToggle(c){ if (c === "fr") { setShowFr(!showFr); return; } if (lgOff.has(c)) lgOff.delete(c); else lgOff.add(c); try { localStorage.setItem("sht-lgoff", [...lgOff].join(",")); } catch (e) {} legSync(); applyVB(); }
+function setShowFr(v){ showFr = !!v; try { localStorage.setItem("sht-showfr", v ? "1" : "0"); } catch (e) {} legSync(); applyVB(); }
 function friendsAt(id){
   const out = [];
   Object.keys(FRD).forEach(f => { const m = MODE === "w" ? FRD[f].visits : FRD[f].hvisits, e = m && m[id]; if (e && e.s === "v") out.push({u: f, e}); });
@@ -1063,7 +1066,7 @@ function initListControls(){
   $("fwx").addEventListener("change", e => { fWx = e.target.value; renderList(); mapRefresh(); });
   $("fwd").addEventListener("change", e => { fWd = +e.target.value; renderList(); mapRefresh(); });
   fixWxOpts(MODE);
-  $("lgfr").onclick = () => setShowFr(!showFr);
+  document.querySelectorAll(".legend [data-c]").forEach(sp => sp.onclick = () => legToggle(sp.dataset.c)); legSync();
   $("fminr").addEventListener("change", e => { fMinR = +e.target.value; renderList(); mapRefresh(); });
   $("fminkm").addEventListener("change", e => { fMinKm = +e.target.value; renderList(); mapRefresh(); });
   $("fminel").addEventListener("change", e => { fMinEl = +e.target.value; renderList(); mapRefresh(); });
@@ -1627,7 +1630,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v90";
+const APPV = "v91";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2254,7 +2257,8 @@ function vbHeavy(full){
     const id = d.r.id;
     if (full) {
       const v = isVis(id), pl = isPlan(id), sel = id === curId, fv = !!fr_ && fr_.has(id), pfr = pl && !v && fv, fr = showFr && fv && !v && !pl, on = v || pl || fr;
-      const show = fn ? (passF(d.r) || sel) : (showAll || on || sel);
+      let show = fn ? (passF(d.r) || sel) : (showAll || on || sel);
+      if (show && !sel && lgOff.size) { const cat = v ? "v" : pfr ? "pf" : pl ? "p" : "u"; if (lgOff.has(cat)) show = false; }
       d._show = show; d._on = on; d._sel = sel; d._col = v ? "#38e0a0" : pfr ? "#c58bff" : pl ? "#ffc65c" : fr ? "#ff7eb6" : "#7aa8ff"; d._s = 0;
       d.c.style.display = show ? "" : "none"; d.h.style.display = show ? "" : "none";
       if (show) {
@@ -2315,7 +2319,7 @@ function openMapFilters(){
   };
   draw();
 }
-function mapRefresh(){ { const lp = $("lgpf"); if (lp) lp.style.display = Object.keys(FRD).length && [...frIds()].some(i => isPlan(i) && !isVis(i)) ? "" : "none"; } { const lg = $("lgfr"); if (lg) { lg.style.display = Object.keys(FRD).length && frIds().size ? "" : "none"; lg.style.opacity = showFr ? "" : ".45"; lg.style.textDecoration = showFr ? "" : "line-through"; } } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
+function mapRefresh(){ { const lp = $("lgpf"); if (lp) lp.style.display = Object.keys(FRD).length && [...frIds()].some(i => isPlan(i) && !isVis(i)) ? "" : "none"; } { const lg = $("lgfr"); if (lg) { lg.style.display = Object.keys(FRD).length && frIds().size ? "" : "none"; } } legSync(); if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){
   const rc = svg.getBoundingClientRect();
   const cx = ctr ? vb.x + (ctr.x - rc.left) / rc.width * vb.w : vb.x + vb.w / 2;
