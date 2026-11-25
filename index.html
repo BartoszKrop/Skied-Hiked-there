@@ -1663,7 +1663,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v125";
+const APPV = "v126";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1690,7 +1690,7 @@ async function loadRatings(force){
     RATE = out; RATEH = oh; renderList(); if (curId) renderSheet();
   } catch(e){}
 }
-let COM = {w: null, s: null}, comT = {w: 0, s: 0}, statScope = (() => { try { return localStorage.getItem("sht_rks") === "c" ? "c" : "m"; } catch (e) { return "m"; } })();
+const RKOPEN = {}; let COM = {w: null, s: null}, comT = {w: 0, s: 0}, statScope = (() => { try { return localStorage.getItem("sht_rks") === "c" ? "c" : "m"; } catch (e) { return "m"; } })();
 async function loadCommunity(force){
   const md = MODE; if (!(SBC && store && store.sb)) return; if (!force && COM[md] && Date.now() - comT[md] < 300000) return; comT[md] = Date.now();
   try { const r = await store.sb.rpc("get_community_stats", {md}); if (r.error) throw r.error; const o = {}; (r.data || []).forEach(x => { o[x.place_id] = {v: +x.visited, p: +x.planned}; }); COM[md] = o; }
@@ -1969,7 +1969,8 @@ function renderStats(){
   const s = stats(), W = MODE === "w";
   const vis = R.filter(r => isVis(r.id));
   const nv = r => visits[r.id].stays.length, rt = r => visits[r.id].r || 0, hd = r => Object.keys(visits[r.id].done).length;
-  const tb = (h, rows) => rows.length ? `<table><tr>${h.map((x, k) => `<th${k ? ' class="r"' : ""}>${x}</th>`).join("")}</tr>${rows.join("")}</table>` : `<div class="sub">Brak danych. Zaznacz miejsca, w których byłeś.</div>`;
+  const tb = (h, rows) => { if (!rows.length) return `<div class="sub">Brak danych. Zaznacz miejsca, w których byłeś.</div>`; const key = statScope + MODE + statRank[statScope === "c" ? "c" + MODE : MODE], open = !!RKOPEN[key], tot = rows.length, shown = open ? rows : rows.slice(0, 10);
+    return `<table><tr>${h.map((x, k) => `<th${k ? ' class="r"' : ""}>${x}</th>`).join("")}</tr>${shown.join("")}</table>${tot > 10 ? `<button class="btn" id="rkmore" data-k="${key}" style="width:100%;margin-top:8px">${open ? "Pokaż tylko top 10" : "Pokaż wszystkie (" + tot + ")"}</button>` : ""}`; };
   const nm = r => `${flag(r.c.split(",")[0])} ${esc(r.n)}`;
   const stars = n => n ? `<span style="color:var(--warn)">${"★".repeat(n)}</span>` : `<span class="small">bez oceny</span>`;
   const OPTS = W
@@ -2025,6 +2026,7 @@ function renderStats(){
     </div>`}
     <div class="small" style="margin:6px 4px 24px">Ośrodki: © współtwórcy OpenStreetMap / OpenSkiMap (licencja ODbL); długości tras bywają zaniżone tam, gdzie mapowanie jest niepełne. Szlaki letnie to ręcznie wybrana lista orientacyjna, czasy i trudność sprawdź w mapach turystycznych przed wyjściem.</div>`;
   $("rkpick").onchange = e => { statRank[com ? ck : MODE] = e.target.value; renderStats(); };
+  { const mb = $("rkmore"); if (mb) mb.onclick = () => { RKOPEN[mb.dataset.k] = !RKOPEN[mb.dataset.k]; renderStats(); }; }
   { const sc = $("rkscope"); if (sc) sc.onclick = e => { const b = e.target.closest("button"); if (!b) return; statScope = b.dataset.s; try { localStorage.setItem("sht_rks", statScope); } catch (x) {} renderStats(); }; }
   $("shyear").onclick = () => { const o = periodOptions().find(x => x.v === $("shper").value); if (o) openShare("period", o); };
   if ($("shrank")) $("shrank").onclick = () => openShare("ranking"); $("shmap").onclick = () => openShare("map");
