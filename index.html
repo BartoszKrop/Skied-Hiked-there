@@ -832,7 +832,7 @@ async function attachUser(user){
     const rd = (r.data && r.data.data) || {}, rv = migrate(cloneJ(rd.visits)), rh = migrate(cloneJ(rd.hvisits));
     store.friends = Array.isArray(rd.friends) ? rd.friends : []; store.prof = {username: (r.data && r.data.username) || "", is_public: !(r.data && r.data.is_public === false), show_notes: !(r.data && r.data.show_notes === false)};
     store.admin = false; try { sb.from("admins").select("user_id").eq("user_id", user.id).maybeSingle().then(x => { store.admin = !!(x && x.data); }).catch(() => {}); } catch(e){}
-    if (RO) { store.mode = "local"; setSaveState("podgląd profilu @" + RO.username); updateAcct(); renderRoBar(); renderStats(); return; }
+    if (RO) { store.mode = "local"; setSaveState("podgląd profilu @" + RO.username); updateAcct(); renderRoBar(); roRel(); renderStats(); return; }
     const empty = !Object.keys(rv).length && !Object.keys(rh).length;   // pierwsze logowanie: dane gościa przechodzą na konto; potem konto jest jedynym źródłem
     if (!empty) { wVisits = rv; sVisits = rh; } if (Array.isArray(rd.trips) && (rd.trips.length || !TRIPS.length)) TRIPS = rd.trips; if (Array.isArray(rd.packs) && (rd.packs.length || !PACKS.length)) PACKS = rd.packs;
     syncVisits(); store.mode = "sb"; wipeLocal(); store.rev = r.data ? r.data.updated_at : "";
@@ -869,13 +869,24 @@ async function loadRO(){
     syncVisits(); renderAll(); renderRoBar(); setSaveState("podgląd profilu @" + RO.username + " · tylko do odczytu"); try { fit(); } catch(e){}
   } catch(e){ setSaveState("nie udało się wczytać profilu: " + String((e && (e.message || e.code)) || e).slice(0,70)); }
 }
+async function roRel(){
+  if (!RO || !store.authed || !store.sb) return;
+  try {
+    const me = String((store.prof && store.prof.username) || "").toLowerCase(), r = await store.sb.from("friend_requests").select("*"), low = x => String(x || "").toLowerCase(); if (r.error) throw r.error;
+    const fr = r.data || [];
+    SOC.friends = fr.filter(x => x.status === "accepted" && low(x.from_name) === me).map(x => low(x.to_name));
+    SOC.followers = fr.filter(x => x.status === "accepted" && low(x.to_name) === me).map(x => low(x.from_name));
+    SOC.outReq = fr.filter(x => x.status === "pending" && low(x.from_name) === me);
+  } catch (e) {}
+  SOC.roReady = true; renderRoBar();
+}
 function renderRoBar(){
   const b = $("robar"); if (!b) return; if (!RO) { b.style.display = "none"; return; }
   const low = RO.username.toLowerCase();
   b.style.display = "flex";
-  const st = RO.ok ? stats() : null; b.innerHTML = `<span>👁 Mapa: <b>@${esc(RO.username)}</b>${RO.ok ? ` · ${st.n} ${plur(st.n, "miejsce", "miejsca", "miejsc")} · ${st.countries.size} ${plur(st.countries.size, "kraj", "kraje", "krajów")}` : " (nie wczytano)"}</span><span class="sp"></span>${store.authed ? (SOC.friends.includes(low) ? `<button class="btn sm" id="rofr" data-a="un">Obserwujesz ✓</button>` : SOC.outReq.some(r => r.to_name === low) ? `<button class="btn sm" id="rofr" data-a="un">Wysłano · anuluj</button>` : `<button class="btn sm pri" id="rofr" data-a="fo">+ Obserwuj</button>`) : ""}<button class="btn sm pri" id="roback">${store.authed ? "Moja mapa" : "Zrób swoją mapę"}</button>`;
+  const st = RO.ok ? stats() : null; b.innerHTML = `<span>👁 Mapa: <b>@${esc(RO.username)}</b>${(SOC.followers || []).includes(low) ? ` <span class="small">· obserwuje Cię</span>` : ""}${RO.ok ? ` · ${st.n} ${plur(st.n, "miejsce", "miejsca", "miejsc")} · ${st.countries.size} ${plur(st.countries.size, "kraj", "kraje", "krajów")}` : " (nie wczytano)"}</span><span class="sp"></span>${store.authed && low !== String((store.prof && store.prof.username) || "").toLowerCase() ? (!SOC.roReady ? `<button class="btn sm" disabled>…</button>` : SOC.friends.includes(low) ? `<button class="btn sm" id="rofr" data-a="un">Obserwujesz ✓</button>` : SOC.outReq.some(r => String(r.to_name).toLowerCase() === low) ? `<button class="btn sm" id="rofr" data-a="un">Wysłano · anuluj</button>` : `<button class="btn sm pri" id="rofr" data-a="fo">${(SOC.followers || []).includes(low) ? "+ Obserwuj też" : "+ Obserwuj"}</button>`) : ""}<button class="btn sm pri" id="roback">${store.authed ? "Moja mapa" : "Zrób swoją mapę"}</button>`;
   $("roback").onclick = () => { if (!store.authed) { try { sessionStorage.setItem("skibeen.openlogin", "1"); } catch(e){} } history.replaceState(null, "", location.pathname); location.reload(); };
-  const f = $("rofr"); if (f) f.onclick = async () => { f.disabled = true; if (f.dataset.a === "un") await socAct("remove_friend", {uname: low}); else await sendFriendReq(low); await socLoad(); renderRoBar(); };
+  const f = $("rofr"); if (f) f.onclick = async () => { if (f.dataset.a === "un" && SOC.friends.includes(low) && !(await appConfirm("Przestać obserwować @" + RO.username + "?"))) return; f.disabled = true; if (f.dataset.a === "un") await socAct("remove_friend", {uname: low}); else await sendFriendReq(low); await roRel(); };
 }
 let FRD = {};
 let showFr = false; try { showFr = localStorage.getItem("sht-showfr") === "1"; } catch (e) {}
@@ -1630,7 +1641,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v94";
+const APPV = "v95";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
