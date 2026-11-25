@@ -1446,9 +1446,9 @@ async function socLoad(){
   const tk = ++SOC.tk;
   try {
     const me = String((store.prof && store.prof.username) || "").toLowerCase(), sb = store.sb;
-    const [a, b, c] = await Promise.all([sb.from("friend_requests").select("*"), sb.from("trip_invites").select("*").eq("status", "pending"), sb.from("notifications").select("*").order("created_at", {ascending: false}).limit(10)]);
+    const [a, b, c0, c1] = await Promise.all([sb.from("friend_requests").select("*"), sb.from("trip_invites").select("*").eq("status", "pending"), sb.from("notifications").select("*").eq("read", false).order("created_at", {ascending: false}), sb.from("notifications").select("*").eq("read", true).order("created_at", {ascending: false}).limit(25)]);
     if (tk !== SOC.tk) return;
-    const er = a.error || b.error || c.error;
+    const er = a.error || b.error || c0.error || c1.error, c = {data: [...(c0.data || []), ...(c1.data || [])]};
     if (er) { SOC.err = String(er.message || er.code || "błąd"); updateBell(); return; }
     SOC.err = "";
     const fr = a.data || [], iv = b.data || [], low = x => String(x || "").toLowerCase();
@@ -1458,7 +1458,7 @@ async function socLoad(){
     SOC.outReq = fr.filter(r => r.status === "pending" && low(r.from_name) === me);
     SOC.inInv = iv.filter(r => low(r.to_name) === me); SOC.outInv = iv.filter(r => low(r.from_name) === me);
     const key = n => n.id + "|" + n.created_at, known = new Set(SOC.notes.map(key));
-    SOC.notes = (c.data || []).slice(0, 10);
+    SOC.notes = c.data;
     const fresh = SOC.seen ? SOC.notes.filter(n => !n.read && !known.has(key(n))) : [];
     SOC.seen = true;
     if (fresh.length) {
@@ -1488,6 +1488,18 @@ function socStart(){
 function socRealtime(){
   try { if (SOC.rt || !store.sb || !store.sb.channel) return; SOC.rt = store.sb.channel("notif-" + store.uid).on("postgres_changes", {event: "*", schema: "public", table: "notifications", filter: "user_id=eq." + store.uid}, () => socLoad()).subscribe(); } catch(e){}
 }
+function groupNotes(L){
+  const G = [], idx = {}, LB = {trip_comment: "komentarz", trip_item: "nowy cel", trip_cost: "wydatek", trip_edit: "zmiana"};
+  L.forEach(n => {
+    if (!LB[n.kind]) { G.push(n); return; }
+    const k = n.ref + "|" + (n.read ? 1 : 0); let g = idx[k];
+    if (!g) { g = idx[k] = {id: n.id, ids: [], kind: n.kind, ref: n.ref, read: n.read, created_at: n.created_at, who: [], what: [], nm: ((n.text || "").match(/„(.*)”/) || [])[1] || "Wyjazd", cnt: 0}; G.push(g); }
+    g.ids.push(n.id); g.cnt++; const u = ((n.text || "").match(/^@(\S+)/) || [])[1]; if (u && !g.who.includes(u)) g.who.push(u); if (!g.what.includes(LB[n.kind])) g.what.push(LB[n.kind]);
+    if (n.created_at > g.created_at) g.created_at = n.created_at;
+  });
+  G.forEach(g => { if (g.ids) { g.text = g.cnt === 1 && g.who.length ? "@" + g.who[0] + " wprowadził(a) zmianę w wyjeździe „" + g.nm + "”: " + g.what[0] : "Zmiany w wyjeździe „" + g.nm + "”: " + g.what.join(", ") + (g.who.length ? " · " + g.who.map(x => "@" + x).join(", ") : ""); g.kind = "trip_edit"; } });
+  return G.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+}
 function followBack(n){
   if (n.kind !== "follow" || !n.ref) return "";
   const u = String(n.ref).toLowerCase(), fl = new Set([...(store.friends || []), ...SOC.friends].map(x => String(x).toLowerCase()));
@@ -1499,12 +1511,12 @@ function inboxCard(){
   const acts = [
     ...SOC.inReq.map(r => `<div class="frow"><span>🤝 <b>@${esc(r.from_name)}</b> prosi o możliwość obserwowania Cię</span><span style="display:flex;gap:6px;flex:none"><button class="btn sm pri fra" data-id="${esc(r.id)}">Akceptuj</button><button class="btn sm frd" data-id="${esc(r.id)}">Odrzuć</button></span></div>`),
     ...SOC.inInv.map(r => `<div class="frow"><span>👥 <b>@${esc(r.from_name)}</b> zaprasza Cię do wyjazdu „${esc(r.trip_name || "Wyjazd")}”</span><span style="display:flex;gap:6px;flex:none"><button class="btn sm pri tia" data-id="${esc(r.id)}">Dołącz</button><button class="btn sm tid" data-id="${esc(r.id)}">Odrzuć</button></span></div>`)];
-  const notes = SOC.notes.filter(n => n.kind !== "friend_req" && n.kind !== "trip_inv");
+  const notes = groupNotes(SOC.notes.filter(n => n.kind !== "friend_req" && n.kind !== "trip_inv")), nw = notes.filter(n => !n.read), old = notes.filter(n => n.read);
   return `<div class="card" style="width:min(480px,94vw);max-height:88vh;overflow:auto"><h3>Powiadomienia</h3>
     ${SOC.err ? `<div class="small" style="color:#ff8a8a">Powiadomienia nie działają: ${esc(SOC.err.slice(0, 90))}. Uruchom w Supabase plik social.sql.</div>` : ""}
     ${acts.length ? `<div class="sech" style="margin-top:6px">Do zaakceptowania</div>${acts.join("")}` : ""}
     <div class="sech">Aktywność</div>
-    ${notes.length ? notes.map(n => `<div class="nrow go ${SOC.newIds.has(n.id) ? "nw" : ""}" data-k="${esc(n.kind)}" data-r="${esc(n.ref || "")}"><i class="dot"></i><div style="flex:1;min-width:0"><div>${esc(n.text)}</div><div class="tm">${esc(ago(n.created_at))}</div></div>${followBack(n)}</div>`).join("") : `<div class="small" style="padding:6px 0">Na razie cicho. Tu pojawią się komentarze i zmiany we wspólnych wyjazdach, zaproszenia, nowi obserwujący i akceptacje.</div>`}
+    ${notes.length ? (() => { const row = n => `<div class="nrow go ${SOC.newIds.has(n.id) || (n.ids || []).some(i => SOC.newIds.has(i)) ? "nw" : ""}" data-k="${esc(n.kind)}" data-r="${esc(n.ref || "")}"><i class="dot"></i><div style="flex:1;min-width:0"><div>${esc(n.text)}</div><div class="tm">${esc(ago(n.created_at))}${n.read ? " · ✓ widziane" : ""}</div></div>${followBack(n)}</div>`; return (nw.length ? `<div class="small" style="margin:6px 0 2px;font-weight:700">Nowe (${nw.length})</div>` + nw.map(row).join("") : "") + (old.length ? `<div class="small" style="margin:10px 0 2px;color:var(--mute)">Wcześniej</div>` + old.map(row).join("") : ""); })() : `<div class="small" style="padding:6px 0">Na razie cicho. Tu pojawią się komentarze i zmiany we wspólnych wyjazdach, zaproszenia, nowi obserwujący i akceptacje.</div>`}
     <button class="btn" id="lclose" style="width:100%;margin-top:12px">Zamknij</button></div>`;
 }
 function bindInbox(){
@@ -1614,7 +1626,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v86";
+const APPV = "v87";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2615,8 +2627,10 @@ function renderTrips(){
     <button class="btn pri" id="tadd" style="width:100%;margin:0 0 12px">＋ Dodaj cel</button>
     ${body || `<div class="empty">Dodaj pierwsze szlaki do wyjazdu.</div>`}
     ${costsHtml}${shopHtml}${packHtml}
+    ${t.items.some(i => i.p && byId[i.p]) && !RO ? `<button class="btn pri" id="tfin" style="width:100%;margin:10px 0 6px">${t.fin ? "✅ Wyjazd zakończony · dodaj ponownie" : "✅ Zakończ wyjazd"}</button><div class="small" style="margin:0 0 8px">${t.mode === "w" ? "Ośrodki z wyjazdu zapiszą się jako odwiedzone" : "Szlaki z wyjazdu zapiszą się jako zaliczone"}${t.shared ? " tylko u Ciebie" : ""}.</div>` : ""}
     <button class="tdelall" id="tarch" style="margin-bottom:0;text-decoration:none;color:var(--mute)"></button><button class="tdelall" id="tdelall" style="margin-top:4px"></button>`;
   const rr = () => { window.__rrT = Date.now(); const st = $("v-wyjazdy").scrollTop, open = [...box.querySelectorAll("details")].map(x => x.open); renderTrips(); box.querySelectorAll("details").forEach((x, i) => { if (open[i] !== undefined) x.open = open[i]; }); $("v-wyjazdy").scrollTop = st; };
+  { const fb = $("tfin"); if (fb) fb.onclick = () => finishTrip(t); }
   $("tback").onclick = () => { tripOpen = null; renderTrips(); };
   $("tname").onchange = e => { t.name = e.target.value.trim().slice(0, 80); tripSave(); };
   $("tcover").onclick = () => openTripCover(t);
@@ -2887,6 +2901,19 @@ function qaTrip(){
   return L.find(x => x.id === tripOpen) || L.find(x => x.from && x.from <= today && (x.to || x.from) >= today) || L.find(x => x.id === last) || L[0];
 }
 function fabClose(){ const w = $("fabw"); if (w) w.classList.remove("open"); const f = $("fabx"); if (f) f.textContent = "＋ Dodaj"; }
+async function finishTrip(t){
+  const W = t.mode === "w", store_ = W ? wVisits : sVisits, y = (t.from || "").slice(0, 4) || String(new Date().getFullYear()), m = (t.from || "").slice(5, 7) || "";
+  const its = (t.items || []).filter(i => i.p && byId[i.p]), places = [...new Set(its.map(i => i.p))];
+  if (!its.length) return;
+  if (!(await appConfirm("Zakończyć wyjazd „" + (t.name || "") + "”? " + (W ? places.length + " " + plur(places.length, "ośrodek", "ośrodki", "ośrodków") + " zapisze się jako odwiedzone" : its.length + " " + plur(its.length, "szlak", "szlaki", "szlaków") + " zapisze się jako zaliczone") + " (" + y + (m ? "-" + m : "") + ")."))) return;
+  let add = 0;
+  places.forEach(pid => {
+    const r = byId[pid], e = store_[pid] || (store_[pid] = newEntry("v")); e.s = "v"; e.done = e.done || {}; e.hp = e.hp || {}; e.stays = e.stays || [];
+    if (W) { const days = new Set(its.filter(i => i.p === pid && i.day).map(i => i.day)).size; if (!e.stays.some(k => String(k.y) === y && (!k.m || k.m === m))) { e.stays.push({y, m, d: days}); e.stays = sortStays(e.stays); add++; } }
+    else { its.filter(i => i.p === pid).forEach(i => { const k = (r.hikes || []).findIndex(h => h.n === i.n); if (k >= 0 && !e.done[k]) { e.done[k] = 1; delete e.hp[k]; add++; } }); if (!e.stays.some(k => String(k.y) === y)) e.stays.push({y, m: ""}); }
+  });
+  t.fin = Date.now(); tripSave(); scheduleSave(); renderAll(); renderTrips(); toast(add ? "Dodano do odwiedzonych: " + add : "Wszystko już było zapisane");
+}
 function openQuickPack(t){
   t.pack = t.pack || []; const me = meName(), ppl = tripPeople(t), shared = t.shared && ppl.length > 1;
   ovBox().innerHTML = `<div class="card" style="width:min(420px,94vw)"><h3>Dodaj rzecz do wzięcia</h3><div class="sub">${esc(t.name || "Wyjazd")}</div>
