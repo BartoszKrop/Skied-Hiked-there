@@ -299,6 +299,7 @@ nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.
 .mode::before{border-radius:7px;background:var(--accent);box-shadow:none}
 .mode button{font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border-radius:7px}
 .card{border-radius:12px;background:rgba(var(--pn),.55)}
+.rkhead{position:sticky;top:0;z-index:6;background:var(--bg2);border-radius:12px;box-shadow:0 8px 10px -6px rgba(0,0,0,.35)}.rkhead h3{margin-bottom:6px}
 .card h3,#sheet h2,.sect .sh b{font-family:var(--fd);letter-spacing:.03em}
 .card h3{font-size:19px;font-weight:700;text-transform:uppercase}
 #sheet{border-radius:18px 18px 0 0}
@@ -1662,7 +1663,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v124";
+const APPV = "v125";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2007,8 +2008,8 @@ function renderStats(){
     : [[s.n, "miejsc z " + R.length], [s.countries.size, "krajów"], [R.filter(r => isVis(r.id) && visits[r.id].stays.some(x => x.y === String(new Date().getFullYear()))).length, "miejsc w tym roku"], [s.hikes, "zaliczonych szlaków"], [planned, "w planach"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
   $("stats").innerHTML = `
     <div class="big">${cards.map(c => `<div class="card"><div class="n">${c[0]}</div><div class="l">${c[1]}</div></div>`).join("")}</div>
-    <div class="card"><h3>Rankingi</h3>${SBC && store && store.sb && !RO ? `<div class="seg" id="rkscope" style="margin-bottom:8px"><button data-s="m" class="${com ? "" : "on"}">Moje</button><button data-s="c" class="${com ? "on" : ""}">Społeczność</button></div>` : ""}<select class="sel" id="rkpick">${OP.map(o => `<option value="${o[0]}"${o[0] === pick ? " selected" : ""}>${o[1]}</option>`).join("")}</select></div>
-    ${rankCard}
+    <div class="rkwrap"><div class="card rkhead"><h3>Rankingi</h3>${SBC && store && store.sb && !RO ? `<div class="seg" id="rkscope" style="margin-bottom:8px"><button data-s="m" class="${com ? "" : "on"}">Moje</button><button data-s="c" class="${com ? "on" : ""}">Społeczność</button></div>` : ""}<select class="sel" id="rkpick">${OP.map(o => `<option value="${o[0]}"${o[0] === pick ? " selected" : ""}>${o[1]}</option>`).join("")}</select></div>
+    ${rankCard}</div>
     <div class="card"><h3>Udostępnij i eksportuj</h3>
       <div class="sub">Obraz do wrzucenia na TikToka/Instagram oraz pliki z Twoimi miejscami do map.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">${W ? `<button class="btn pri" id="shrank">🖼️ Obraz: ranking</button>` : ""}<button class="btn pri" id="shmap">🗺️ Obraz: mapa</button></div>
