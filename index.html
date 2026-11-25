@@ -501,6 +501,7 @@ body.summer.light{--soft:rgba(80,50,10,.045);--softb:rgba(80,50,10,.09)}
 .tday{background:var(--soft);border:1px solid var(--softb);border-radius:14px;box-shadow:none;padding:0 12px 6px;margin-top:16px;overflow:hidden}
 .tday .sh,.tday.t0 .sh{background:none;border:0;border-bottom:1px solid var(--softb);margin:0 -12px 10px;padding:12px}
 .tday.t0{border-style:dashed;background:none}
+.tcd>summary::after{margin-left:6px!important}.tcplus{margin-left:auto;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-size:20px;font-weight:400;line-height:1;padding:0 0 2px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:background .12s,color .12s,transform .1s}.tcplus:hover{background:var(--accent);color:#fff}.tcplus:active{transform:scale(.92)}
 .tday .sh{cursor:pointer}.dchev{width:8px;height:8px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(-135deg) translateY(-2px);transition:transform .2s;margin-left:4px;flex:none}.tday.col .dchev{transform:rotate(45deg) translateY(-2px)}.tday.col>*:not(.sh){display:none!important}.tday.col .sh{margin-bottom:0!important;border-bottom:0!important}.tday.col{padding-bottom:0!important}
 .tfold{background:var(--soft);border:1px solid var(--softb);border-radius:14px;margin-top:14px}
 .tfold>summary{padding:13px 14px}.tfold[open]>summary{border-bottom:1px solid var(--softb)}
@@ -1716,7 +1717,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v139";
+const APPV = "v140";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2758,7 +2759,7 @@ function renderTrips(){
     <div class="tflab" style="margin-top:10px">Własna waluta</div><div style="display:flex;gap:6px"><input id="fxck" class="lin" placeholder="Kod (np. GBP)" maxlength="5" style="flex:1;padding:6px 10px;min-height:0;font-size:13px"><input id="fxcr" class="lin" inputmode="decimal" placeholder="Kurs → ${esc(CSYM[cur] || cur)}" style="flex:1;padding:6px 10px;min-height:0;font-size:13px"><button class="btn sm pri" id="fxca">Dodaj</button></div>
     <div class="small" style="opacity:.75;margin-top:6px">EUR, USD i CHF aktualizują się same (kursy dzienne EBC), ale możesz je wpisać ręcznie. Własne waluty mają kurs ręczny.</div></div></details>`;
   const sgn = x => (x > 0.005 ? "+" : x < -0.005 ? "−" : "") + dm(Math.abs(x));
-  const costsHtml = `<details class="tcd tfold" ${t.costs.length ? "open" : ""}><summary>Koszty${totalC ? `<span class="sbadge">${dm(totalC)}</span>` : ""}<button type="button" class="btn sm pri" id="tcplus" style="margin-left:auto;padding:4px 11px;min-height:30px">＋ Wydatek</button></summary>
+  const costsHtml = `<details class="tcd tfold" ${t.costs.length ? "open" : ""}><summary>Koszty${totalC ? `<span class="sbadge">${dm(totalC)}</span>` : ""}<button type="button" class="tcplus" id="tcplus" aria-label="Dodaj wydatek" title="Dodaj wydatek">＋</button></summary>
     ${fxHtml}${cvm.length ? `<div class="small" style="color:var(--warn);margin:0 0 6px">⚠ Brak kursu: ${esc(cvm.join(", "))}. Te wydatki nie są wliczone do sum.</div>` : ""}
     ${shared && totalC ? `<div class="card" style="margin:6px 0 8px;padding:9px 11px;border:1px solid var(--acc,#4aa3ff)"><div style="font-weight:700;font-size:13px;margin-bottom:4px">Rozliczenie</div>
       ${tr.length ? tr.map(x => `<div style="font-size:14px;padding:5px 0;border-top:1px solid rgba(128,128,128,.25)"><b>${pn(x[0])}</b> oddaje <b>${pn(x[1])}</b><span style="float:right;font-weight:700;font-size:15px">${dm(x[2])}</span><div style="margin-top:4px"><button class="btn sm tset" data-f="${esc(x[0])}" data-t="${esc(x[1])}" data-a="${Math.round(x[2] * 100) / 100}">✓ Rozliczone</button></div></div>`).join("") : `<div style="font-size:14px;padding:4px 0">Wszyscy rozliczeni ✓</div>`}
