@@ -1715,7 +1715,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v135";
+const APPV = "v136";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -3061,6 +3061,7 @@ function splitRead(b, a) {
 }
 function qaTrip(){
   const L = allTrips().filter(x => !x.ar); if (!L.length) return null; let last = ""; try { last = localStorage.getItem("sht_qt") || ""; } catch (e) {}
+  const vw = $("v-wyjazdy"); if (vw && vw.classList.contains("on") && tripOpen) { const o = L.find(x => x.id === tripOpen); if (o) return o; }
   return curTrip() || L.find(x => x.id === tripOpen) || L.find(x => x.id === last) || L[0];
 }
 const actGet = () => { try { return localStorage.getItem("sht_act") || ""; } catch (e) { return ""; } };
@@ -3082,7 +3083,7 @@ function openQuickShop(t){
     t.shop.push({id: newTripId(), n, by: meName() || "ja", ok: false}); tripSave(); closeAccount(); toast("Dodano do listy zakupów: " + n); renderTrips(); };
   $("qsx").onclick = closeAccount; $("qsa").onclick = go; $("qsn").onkeydown = e => { if (e.key === "Enter") go(); }; setTimeout(() => $("qsn").focus(), 60);
 }
-const fabRound = () => { const v = $("v-wyjazdy"), q = qaTrip(); return !!(v && v.classList.contains("on") && q && tripOpen === q.id); };
+const fabRound = () => { const v = $("v-wyjazdy"); return !!(v && v.classList.contains("on") && tripOpen && allTrips().some(x => x.id === tripOpen && !x.ar)); };
 function fabLabel(){ return fabRound() ? "＋" : curTrip() ? "Obecny wyjazd" : "Dodaj"; }
 function fabClose(){ const w = $("fabw"); if (w) w.classList.remove("open"); const f = $("fabx"); if (f) { f.textContent = fabLabel(); f.classList.toggle("fabround", fabRound()); f.setAttribute("aria-expanded", "false"); } }
 async function finishTrip(t){
