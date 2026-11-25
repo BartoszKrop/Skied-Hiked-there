@@ -389,6 +389,7 @@ details>summary svg,details>summary .chev{transition:transform .2s}
 .cvg{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}.cvg button{width:44px;height:44px;border-radius:12px;border:2px solid transparent;cursor:pointer}.cvg button.on{border-color:var(--text)}
 .cve{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:6px 0 12px}.cve button{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);font-size:20px;cursor:pointer;padding:0}.cve button.on{border-color:var(--accent);background:var(--accentbg)}
 .mfm{padding-bottom:16px}.mfm h3{margin-bottom:10px}.mfg2{display:grid;grid-template-columns:1fr 1fr;gap:8px 8px}.mfm .fld{margin:0;min-width:0}.mfm .fld label{font-size:10px;margin-bottom:3px;letter-spacing:.4px}.mfm .ddb{min-height:36px;padding:6px 9px;font-size:13px}
+.legend .lgx.lgfr{display:inline-flex;align-items:center;gap:5px;color:var(--accent);border-color:var(--accent);background:var(--accentbg)}
 .legend .lgx{border:1px solid var(--line);background:var(--bg2);color:var(--text);font:inherit;font-size:10.5px;font-weight:600;border-radius:999px;padding:2px 9px;cursor:pointer}
 @keyframes dpulse{0%,100%{opacity:.12}50%{opacity:.6}}.pulse{animation:dpulse 2.2s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.pulse{animation:none}}
 #fabw{display:none}
@@ -553,9 +554,9 @@ svg text{font-family:var(--fb);letter-spacing:.01em;text-transform:none;word-spa
     <div id="mapwrap">
       <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button><button id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-size:12px;font-weight:800">Aa</button></div>
-      <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button><button class="btn sm" id="mfrm" aria-label="Widok znajomych" title="Widok znajomych" style="display:none">👥</button></div>
+      <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
-      <div class="legend"><span class="lgn" data-c="v"><i style="background:var(--ok)"></i>byłem</span><span class="lgn" data-c="p"><i style="background:var(--warn)"></i>planuję</span><span class="lgn" data-c="u"><i style="background:#7aa8ff"></i>nie byłem</span><span class="lgf" data-f="A" style="display:none"><i style="background:#2dd4bf"></i>znajomi byli</span><span class="lgf" data-f="B" style="display:none"><i style="background:#e6f46a"></i>chcę, znajomi byli</span><span class="lgf" data-f="C" style="display:none"><i style="background:#c58bff"></i>znajomi planują</span><span class="lgf" data-f="D" style="display:none"><i style="background:#ff7eb6"></i>oboje planujemy</span><button class="lgf lgx" id="lgx" style="display:none">✕ Widok podstawowy</button></div>
+      <div class="legend"><span class="lgn" data-c="v"><i style="background:var(--ok)"></i>byłem</span><span class="lgn" data-c="p"><i style="background:var(--warn)"></i>planuję</span><span class="lgn" data-c="u"><i style="background:#7aa8ff"></i>nie byłem</span><button class="lgn lgx lgfr" id="mfrm" aria-label="Widok znajomych" title="Widok znajomych" style="display:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.2c2.6.2 4.5 2 4.5 5"/></svg>Znajomi</button><span class="lgf" data-f="A" style="display:none"><i style="background:#2dd4bf"></i>znajomi byli</span><span class="lgf" data-f="B" style="display:none"><i style="background:#e6f46a"></i>chcę, znajomi byli</span><span class="lgf" data-f="C" style="display:none"><i style="background:#c58bff"></i>znajomi planują</span><span class="lgf" data-f="D" style="display:none"><i style="background:#ff7eb6"></i>oboje planujemy</span><button class="lgf lgx" id="lgx" style="display:none">✕ Widok podstawowy</button></div>
       <div class="note" id="mapnote"></div>
     </div>
   </section>
@@ -903,7 +904,7 @@ function frCat(id){
   if (pl && fp) return "D"; if (!pl && fp) return "C"; if (pl && fv) return "B"; if (fv) return "A"; return null;
 }
 function setFrMode(v){ frMode = !!v; if (frMode) { showAll = false; } legSync(); mapRefresh(); }
-function legSync(){ document.querySelectorAll(".legend span.lgf[data-f]").forEach(e => { const off = frOff.has(e.dataset.f); e.style.opacity = off ? ".4" : ""; e.style.textDecoration = off ? "line-through" : ""; e.style.cursor = "pointer"; }); { const fm = frMode; document.querySelectorAll(".legend .lgn").forEach(e => { e.style.display = fm ? "none" : ""; }); document.querySelectorAll(".legend .lgf").forEach(e => { e.style.display = fm ? "" : "none"; }); } document.querySelectorAll(".legend [data-c]").forEach(sp => { const c = sp.dataset.c, off = c === "u" ? !showAll : lgOff.has(c); sp.style.opacity = off ? ".4" : ""; sp.style.textDecoration = off ? "line-through" : ""; sp.style.cursor = "pointer"; }); }
+function legSync(){ document.querySelectorAll(".legend span.lgf[data-f]").forEach(e => { const off = frOff.has(e.dataset.f); e.style.opacity = off ? ".4" : ""; e.style.textDecoration = off ? "line-through" : ""; e.style.cursor = "pointer"; }); { const fm = frMode; document.querySelectorAll(".legend .lgn").forEach(e => { e.style.display = fm ? "none" : ""; }); { const fb = $("mfrm"); if (fb && !fm) fb.style.display = (!RO && Object.keys(FRD).length) ? "" : "none"; } document.querySelectorAll(".legend .lgf").forEach(e => { e.style.display = fm ? "" : "none"; }); } document.querySelectorAll(".legend [data-c]").forEach(sp => { const c = sp.dataset.c, off = c === "u" ? !showAll : lgOff.has(c); sp.style.opacity = off ? ".4" : ""; sp.style.textDecoration = off ? "line-through" : ""; sp.style.cursor = "pointer"; }); }
 function legToggle(c){ if (c === "u") { showAll = !showAll; mapRefresh(); return; } if (lgOff.has(c)) lgOff.delete(c); else lgOff.add(c); try { localStorage.setItem("sht-lgoff", [...lgOff].join(",")); } catch (e) {} legSync(); applyVB(); }
 function setShowFr(v){ showFr = !!v; try { localStorage.setItem("sht-showfr", v ? "1" : "0"); } catch (e) {} legSync(); applyVB(); }
 function friendsAt(id){
@@ -1654,7 +1655,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v106";
+const APPV = "v107";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2357,7 +2358,7 @@ function openMapFilters(){
   };
   draw();
 }
-function mapRefresh(){ legSync(); { const fb = $("mfrm"); if (fb) { fb.style.display = (!RO && Object.keys(FRD).length) ? "" : "none"; fb.classList.toggle("pri", frMode); } if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
+function mapRefresh(){ legSync(); { if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){
   const rc = svg.getBoundingClientRect();
   const cx = ctr ? vb.x + (ctr.x - rc.left) / rc.width * vb.w : vb.x + vb.w / 2;
