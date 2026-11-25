@@ -1717,7 +1717,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v143";
+const APPV = "v144";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -3335,6 +3335,10 @@ function pickTripFor(pid, hn){
 
 function renderAll(){ renderHeader(); renderList(); renderTiers(); renderStats(); renderTrips(); mapRefresh(); updateFab(); }
 setInterval(() => { try { updateFab(); } catch (e) {} }, 60000);
+/* auto-aktualizacja: po powrocie do aplikacji sprawdź, czy jest nowsza wersja, i przeładuj */
+{ let chk = 0; const upd = () => { const n = Date.now(); if (n - chk < 20000) return; chk = n;
+    fetch("./?v=" + n, {cache: "no-store"}).then(r => r.ok ? r.text() : "").then(h => { const m = /const APPV = "(v\d+)"/.exec(h); if (m && m[1] !== APPV) { const busy = document.querySelector("#appdlg, .ov.on, .overlay.on, textarea:focus, input:focus"); if (!busy) location.reload(); } }).catch(() => {}); };
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") upd(); }); window.addEventListener("pageshow", upd); setTimeout(upd, 4000); }
 
 document.addEventListener("click", e => { if (e.target && e.target.id === "sgbtn") openSuggest(fQ ? ($("q").value || "") : ""); });
 /* instalacja jako aplikacja (PWA) */
