@@ -94,8 +94,8 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}@media(hover:n
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:8px}
 .zoom button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:rgba(var(--pn),.78);backdrop-filter:blur(8px);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .zoom button:active{background:var(--glass2)}
-.legend{position:absolute;left:12px;bottom:12px;background:rgba(var(--pn),.78);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:12px;color:var(--mute);display:flex;gap:14px}
-.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.legend{position:absolute;left:12px;bottom:12px;background:rgba(var(--pn),.78);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:5px 9px;font-size:10.5px;color:var(--mute);display:flex;flex-wrap:wrap;gap:4px 10px;max-width:calc(100% - 24px)}
+.legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:0}
 .note{position:absolute;left:12px;bottom:58px;font-size:11px;color:var(--faint);max-width:70%}
 .mapchips{position:absolute;left:12px;top:12px;display:flex;gap:8px;flex-wrap:wrap;max-width:calc(100% - 72px)}
 .mapempty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;padding:20px}
@@ -1630,7 +1630,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v92";
+const APPV = "v93";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2202,7 +2202,14 @@ function mapInit(){
   buildDots(); fit(); loadLand();
   new ResizeObserver(() => { const rc = svg.getBoundingClientRect(); if (rc.width) { vb.h = vb.w * rc.height / rc.width; applyVB(); } }).observe(svg);
   $("zin").onclick = () => zoomAt(0.6, null); $("zout").onclick = () => zoomAt(1 / 0.6, null); $("zcost").onclick = () => openQuickCost();
-  const toggleAll = () => { showAll = !showAll; legSync(); mapRefresh(); };
+  const toggleAll = () => {
+    const allOn = showAll && showFr && !lgOff.size && !filtN();
+    if (allOn) { showAll = false; setShowFr(false); legSync(); mapRefresh(); return; }
+    fCountry = ""; fGroup = ""; fMinKm = 0; fMinEl = 0; fMinR = 0; fPrice = 0; fCat = ""; fWx = ""; fWd = 0; fWs = 0; fWc = 0; fStat = "all";
+    [["fcountry", ""], ["fgroup", ""], ["fminkm", "0"], ["fminel", "0"], ["fminr", "0"], ["fcat", ""], ["fwx", ""], ["fwd", "0"], ["fws", "0"], ["fwc", "0"], ["fstat", "all"]].forEach(([i, v]) => { const e = $(i); if (e) { e.value = v; e.dispatchEvent(new Event("change")); } });
+    lgOff.clear(); try { localStorage.setItem("sht-lgoff", ""); } catch (e) {} showAll = true; showFr = true; try { localStorage.setItem("sht-showfr", "1"); } catch (e) {}
+    legSync(); renderList(); mapRefresh();
+  };
   $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
   const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
   { const nb = $("znames"); const sync = () => { nb.style.opacity = showNames ? 1 : .45; nb.style.textDecoration = showNames ? "none" : "line-through"; }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
@@ -2296,7 +2303,7 @@ function updateMapUI(){
   const show = !n && !showAll && !hintDone && !hintSeen();
   $("mapempty").style.display = show ? "flex" : "none";
   if (show) { const W = MODE === "w"; $("welh").textContent = W ? "Gdzie już zjechałeś?" : "Gdzie już byłeś w górach?"; $("wels").textContent = W ? "Zaznacz ośrodki, w których jeździłeś." : "Zaznacz miejsca i szlaki, które już zrobiłeś."; }
-  $("mall").textContent = showAll ? "Ukryj nieoznaczone" : "Pokaż wszystkie"; $("mall").style.display = filtN() ? "none" : ""; $("mfilt").textContent = "⚙ Filtry" + (filtN() ? " · " + filtN() : ""); $("mfilt").classList.toggle("pri", !!filtN());
+  $("mall").textContent = (showAll && showFr && !lgOff.size && !filtN()) ? "Ukryj nieoznaczone" : "Pokaż wszystkie"; $("mall").style.display = ""; $("mfilt").textContent = "⚙ Filtry" + (filtN() ? " · " + filtN() : ""); $("mfilt").classList.toggle("pri", !!filtN());
 }
 function openMapFilters(){
   const W = MODE === "w", cnt = () => R.filter(passF).length;
