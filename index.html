@@ -834,18 +834,18 @@ async function flush(){
 const SBC = window.__SB__ || null;
 const cloneJ = o => JSON.parse(JSON.stringify(o || {}));
 async function attachUser(user){
-  const sb = store.sb; store.uid = user.id; store.authed = true; store.email = user.email || ""; const um = user.user_metadata || {}; store.name = um.full_name || um.name || (user.email ? user.email.split("@")[0] : ""); setSaveState("synchronizuję…");
+  const sb = store.sb; store.uid = user.id; store.authed = true; store.email = user.email || ""; const um = user.user_metadata || {}; store.name = um.nick || um.full_name || um.name || ""; setSaveState("synchronizuję…");
   try {
-    const r = await sb.from("profiles").select("data,updated_at,username,is_public,show_notes").eq("user_id", user.id).maybeSingle();
+    const r = await sb.from("profiles").select("data,updated_at,username,is_public,show_notes,find_by_email").eq("user_id", user.id).maybeSingle();
     if (r.error) throw r.error;
     const rd = (r.data && r.data.data) || {}, rv = migrate(cloneJ(rd.visits)), rh = migrate(cloneJ(rd.hvisits));
-    store.friends = Array.isArray(rd.friends) ? rd.friends : []; store.prof = {username: (r.data && r.data.username) || "", is_public: !(r.data && r.data.is_public === false), show_notes: !(r.data && r.data.show_notes === false)};
+    store.friends = Array.isArray(rd.friends) ? rd.friends : []; store.prof = {username: (r.data && r.data.username) || "", is_public: !(r.data && r.data.is_public === false), show_notes: !(r.data && r.data.show_notes === false), find_by_email: !(r.data && r.data.find_by_email === false)};
     store.admin = false; try { sb.from("admins").select("user_id").eq("user_id", user.id).maybeSingle().then(x => { store.admin = !!(x && x.data); }).catch(() => {}); } catch(e){}
     if (RO) { store.mode = "local"; setSaveState("podgląd profilu @" + RO.username); updateAcct(); renderRoBar(); roRel(); renderStats(); return; }
     const empty = !Object.keys(rv).length && !Object.keys(rh).length;   // pierwsze logowanie: dane gościa przechodzą na konto; potem konto jest jedynym źródłem
     if (!empty) { wVisits = rv; sVisits = rh; } if (Array.isArray(rd.trips) && (rd.trips.length || !TRIPS.length)) TRIPS = rd.trips; if (Array.isArray(rd.packs) && (rd.packs.length || !PACKS.length)) PACKS = rd.packs;
     syncVisits(); store.mode = "sb"; wipeLocal(); store.rev = r.data ? r.data.updated_at : "";
-    dirty = true; await flush(); renderAll(); updateAcct(); closeAccount(); loadFriendsData(); loadShared(true).then(() => tryJoin()); socStart(); socRealtime();
+    dirty = true; await flush(); { const nk = String(um.nick || "").toLowerCase(); if (nk && !store.prof.username) { try { const sr = await sb.from("profiles").update({username: nk}).eq("user_id", user.id); if (!sr.error) store.prof.username = nk; else toast(sr.error.code === "23505" ? "Nick @" + nk + " jest już zajęty, ustaw inny w koncie" : "Nie udało się ustawić nicku"); } catch (e) {} } } renderAll(); updateAcct(); closeAccount(); loadFriendsData(); loadShared(true).then(() => tryJoin()); socStart(); socRealtime();
   } catch(e){ store.mode = "local"; setSaveState("zalogowano, ale sync nie działa: " + String((e && (e.message || e.code)) || e).slice(0,90)); renderAll(); updateAcct(); closeAccount(); }
 }
 async function refreshSb(){
@@ -972,6 +972,7 @@ async function initSb(){
   if (RO) loadRO();
   try { const hp = new URLSearchParams((location.hash||"").replace(/^#/,"") + "&" + (location.search||"").replace(/^\?/,"")); const er = hp.get("error_description") || hp.get("error"); if (er) { setSaveState("logowanie nie wyszło: " + decodeURIComponent(er.replace(/\+/g," ")).slice(0,90)); history.replaceState(null,"",location.pathname); } } catch(e){}
   sb.auth.onAuthStateChange((ev, ses) => {
+    if (ev === "PASSWORD_RECOVERY") { setTimeout(openRecovery, 300); }
     if (ses && ses.user && store.uid !== ses.user.id) setTimeout(() => attachUser(ses.user), 0);
     else if (!ses && !RO && (store.mode === "sb" || store.authed)) { store.mode = "local"; store.authed = false; store.uid = null; store.name = ""; SOC.friends = []; SOC.inReq = []; SOC.outReq = []; SOC.inInv = []; SOC.outInv = []; SOC.notes = []; SOC.seen = false; SOC.sig = ""; SOC.fsig = ""; try { if (SOC.rt) { store.sb.removeChannel(SOC.rt); SOC.rt = null; } } catch(e){} wipeLocal(); wVisits = {}; sVisits = {}; syncVisits(); closeSheet(); setSaveState("wylogowano · bez konta dane zapisują się tylko w tej przeglądarce"); renderAll(); updateAcct(); }
   });
@@ -1436,22 +1437,23 @@ function accountCard(){
   if (!SBC || !window.supabase) return "";
   const on = store.mode === "sb" || !!store.authed;
   return `<div class="card">` + (on ? `<h3>Konto</h3>` : "") + (on
-    ? `<div class="sub">Zalogowano jako <b>${esc(store.name || store.email)}</b>${store.name && store.email ? " (" + esc(store.email) + ")" : ""}. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div>${(() => { const p = store.prof || {}; const link = p.username && p.is_public !== false ? location.origin + location.pathname + "#u/" + p.username : ""; return `<div class="fld" style="margin-top:12px"><label>NAZWA UŻYTKOWNIKA (żeby inni Cię znaleźli)</label><div style="display:flex;gap:8px"><input id="uname" class="lin" value="${esc(p.username || "")}" placeholder="np. bartek_ski" autocapitalize="none" style="flex:1"><button class="btn pri" id="usave">Zapisz</button></div></div><div class="fld" style="margin-top:12px"><label>WIDOCZNOŚĆ KONTA</label><div class="seg big" id="upriv"><button data-v="1" class="${p.is_public !== false ? "on" : ""}">Publiczne</button><button data-v="0" class="${p.is_public === false ? "on" : ""}">Prywatne</button></div><div class="small" id="uprivd" style="margin-top:6px">${p.is_public === false ? "Obserwować Cię można tylko po Twojej akceptacji, a mapę widzą tylko zaakceptowani obserwujący." : "Każdy może Cię obserwować i zobaczyć Twoją mapę."}</div></div><label class="chk"><input type="checkbox" id="unotes" ${p.show_notes !== false ? "checked" : ""}> Pokazuj moje notatki w publicznym profilu</label><div class="small" style="margin:-2px 0 6px">Publiczne notatki i gwiazdki pokazują się też jako opinie na kartach miejsc.</div><div class="small" id="umsg" style="min-height:16px"></div>${link ? `<div class="small" style="word-break:break-all">Twój link: ${esc(link)} <button class="btn sm" id="ucopy">${navigator.share ? "Udostępnij" : "Kopiuj"}</button></div>` : ""}`; })()}${store.admin ? `<button class="btn" id="ladm" style="width:100%;margin-top:10px">🛠 Zgłoszone miejsca (admin)</button>` : ""}<button class="btn" id="lrfsh" style="width:100%;margin-top:10px">↻ Odśwież dane z konta</button><div style="display:flex;gap:8px;margin-top:10px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
+    ? `<div class="sub">Zalogowano jako <b>${esc((store.prof && store.prof.username) ? "@" + store.prof.username : (store.name || "konto"))}</b>. E-mail służy tylko do awaryjnego resetu hasła. Dane zapisują się tylko na koncie, więc masz to samo na telefonie i komputerze.</div>${(() => { const p = store.prof || {}; const link = p.username && p.is_public !== false ? location.origin + location.pathname + "#u/" + p.username : ""; return `<div class="fld" style="margin-top:12px"><label>NAZWA UŻYTKOWNIKA (żeby inni Cię znaleźli)</label><div style="display:flex;gap:8px"><input id="uname" class="lin" value="${esc(p.username || "")}" placeholder="np. bartek_ski" autocapitalize="none" style="flex:1"><button class="btn pri" id="usave">Zapisz</button></div></div><div class="fld" style="margin-top:12px"><label>WIDOCZNOŚĆ KONTA</label><div class="seg big" id="upriv"><button data-v="1" class="${p.is_public !== false ? "on" : ""}">Publiczne</button><button data-v="0" class="${p.is_public === false ? "on" : ""}">Prywatne</button></div><div class="small" id="uprivd" style="margin-top:6px">${p.is_public === false ? "Obserwować Cię można tylko po Twojej akceptacji, a mapę widzą tylko zaakceptowani obserwujący." : "Każdy może Cię obserwować i zobaczyć Twoją mapę."}</div></div><label class="chk"><input type="checkbox" id="unotes" ${p.show_notes !== false ? "checked" : ""}> Pokazuj moje notatki w publicznym profilu</label><div class="small" style="margin:-2px 0 6px">Publiczne notatki i gwiazdki pokazują się też jako opinie na kartach miejsc.</div><label class="chk"><input type="checkbox" id="ufbe" ${p.find_by_email !== false ? "checked" : ""}> Pozwól znajomym znaleźć mnie po dokładnym adresie e-mail</label><div class="small" style="margin:-2px 0 6px">Adres nigdy nie jest nikomu pokazywany. Wyszukanie działa tylko, gdy ktoś wpisze go w całości.</div><div class="small" id="umsg" style="min-height:16px"></div>${link ? `<div class="small" style="word-break:break-all">Twój link: ${esc(link)} <button class="btn sm" id="ucopy">${navigator.share ? "Udostępnij" : "Kopiuj"}</button></div>` : ""}`; })()}${store.admin ? `<button class="btn" id="ladm" style="width:100%;margin-top:10px">🛠 Zgłoszone miejsca (admin)</button>` : ""}<button class="btn" id="lrfsh" style="width:100%;margin-top:10px">↻ Odśwież dane z konta</button><div style="display:flex;gap:8px;margin-top:10px"><button class="btn bad" id="lout" style="flex:1">Wyloguj</button><button class="btn" id="lclose" style="flex:1">Zamknij</button></div>`
     : `<div class="lg"><div class="lgi">👤</div><h3 style="margin:6px 0 4px">Zaloguj się</h3>
        <div class="sub" style="margin-bottom:14px">Podaj e-mail i hasło. Dzięki temu masz te same dane na telefonie i komputerze.</div></div>
-       <input id="lemail" class="lin" type="email" inputmode="email" autocomplete="email" placeholder="ty@example.com">
+       <input id="lnick" class="lin" autocapitalize="none" autocomplete="username" maxlength="20" placeholder="nick (przy zakładaniu konta), np. bartek_ski" style="margin-bottom:8px">
+       <input id="lemail" class="lin" type="email" inputmode="email" autocomplete="email" placeholder="e-mail (tylko do resetu hasła)">
        <input id="lpass" class="lin" type="password" autocomplete="current-password" placeholder="hasło (min. 6 znaków)" style="margin-top:8px">
        <div style="display:flex;gap:8px"><button class="btn pri lbtn" id="lin" style="flex:1">Zaloguj</button><button class="btn lbtn" id="lup" style="flex:1">Załóż konto</button></div>
-       <button class="btn lcl" id="lsend" style="margin-top:8px;font-size:13px">albo wyślij link na e-mail</button>
+       <button class="btn lcl" id="lsend" style="margin-top:8px;font-size:13px">Nie pamiętam hasła</button>
        <div class="small" id="lmsg" style="margin-top:10px;text-align:center;min-height:16px"></div>
-       <div class="small" style="margin-top:6px;text-align:center">Otwórz link na tym samym urządzeniu. Jeśli konto jest puste, dołączą do niego dane wpisane w tej przeglądarce.</div>
+       <div class="small" style="margin-top:6px;text-align:center">Nick widzą inni i po nim Cię znajdą. E-mail jest używany tylko awaryjnie, do resetu hasła. Jeśli konto jest puste, dołączą do niego dane wpisane w tej przeglądarce.</div>
        <button class="btn lcl" id="lclose">Zamknij</button>`) + `</div>`;
 }
 function updateAcct(){
   const b = $("acct"); if (!b) return;
   if (!SBC || !window.supabase) { b.style.display = "none"; return; }
   b.style.display = ""; const on = store.mode === "sb" || !!store.authed;
-  b.innerHTML = IC.user; b.title = on ? "Profil: " + (store.name || store.email) : "Zaloguj się"; b.setAttribute("aria-label", b.title); b.classList.toggle("on", on); updateBell(); { const rb = $("rfsh"); if (rb) rb.style.display = store.mode === "sb" ? "" : "none"; }
+  b.innerHTML = IC.user; b.title = on ? "Profil: " + ((store.prof && store.prof.username) ? "@" + store.prof.username : (store.name || "konto")) : "Zaloguj się"; b.setAttribute("aria-label", b.title); b.classList.toggle("on", on); updateBell(); { const rb = $("rfsh"); if (rb) rb.style.display = store.mode === "sb" ? "" : "none"; }
 }
 /* znajomi, zaproszenia, powiadomienia */
 const SOC = {followers: [], friends: [], inReq: [], outReq: [], inInv: [], outInv: [], notes: [], seen: false, ov: "", sig: "", fsig: "", tk: 0, err: "", newIds: new Set(), rt: null};
@@ -1600,12 +1602,12 @@ function bindFriends(){
   document.querySelectorAll("#acctov .ffr").forEach(b => b.onclick = async () => { const q = curq(); b.disabled = true; await socAct("remove_friend", {uname: b.dataset.u}); await socLoad(); reopen(q); });
   document.querySelectorAll("#acctov .fra,#acctov .frd").forEach(b => b.onclick = async () => { const q = curq(), acc = b.classList.contains("fra"); b.disabled = true; if (await socAct("respond_friend_request", {rid: b.dataset.id, acc})) toast(acc ? "Zaakceptowano ✓" : "Odrzucono"); await socLoad(); reopen(q); });
   const fg = $("fsgo"); if (fg) { const go = async () => {
-    const q = ($("fsq").value || "").trim().toLowerCase().replace(/^@/, ""), m = $("fsres"); if (q.length < 2) { m.textContent = "Wpisz co najmniej 2 znaki."; return; }
-    m.textContent = "Szukam…";
-    try { const r = await store.sb.rpc("find_users", {q}); if (r.error) throw r.error;
+    const q = ($("fsq").value || "").trim().toLowerCase().replace(/^@(?=[^@]*$)/, ""), m = $("fsres"); if (q.length < 2) { m.textContent = "Wpisz co najmniej 2 znaki."; return; }
+    m.textContent = "Szukam…"; const isEm = /^\S+@\S+\.\S+$/.test(q);
+    try { const r = isEm ? await store.sb.rpc("find_by_email", {e: q}) : await store.sb.rpc("find_users", {q}); if (r.error) throw r.error;
       m.innerHTML = (r.data || []).length ? r.data.map(x => { const u = String(x.username).toLowerCase(), isF = SOC.friends.includes(u), out = SOC.outReq.find(y => String(y.to_name).toLowerCase() === u), inn = SOC.inReq.find(y => String(y.from_name).toLowerCase() === u);
         const act = isF ? `<button class="btn sm ffr2" data-u="${esc(u)}">Obserwujesz ✓</button>` : out ? `<button class="btn sm ffr2" data-u="${esc(u)}">Wysłano · anuluj</button>` : store.authed ? `<button class="btn sm pri fiv" data-u="${esc(u)}">${x.is_public === false ? "Poproś" : "Obserwuj"}</button>` : "";
-        return `<div class="frow"><span>@${esc(x.username)}${x.is_public === false ? ` <span class="small">· prywatne 🔒</span>` : ""}</span><span style="display:flex;gap:6px;flex:none">${x.is_public !== false || isF ? `<button class="btn sm fgo2" data-u="${esc(x.username)}">Zobacz</button>` : ""}${act}</span></div>`; }).join("") : "Nikogo nie znaleziono.";
+        return `<div class="frow"><span>@${esc(x.username)}${x.is_public === false ? ` <span class="small">· prywatne 🔒</span>` : ""}</span><span style="display:flex;gap:6px;flex:none">${x.is_public !== false || isF ? `<button class="btn sm fgo2" data-u="${esc(x.username)}">Zobacz</button>` : ""}${act}</span></div>`; }).join("") : (isEm ? "Nie ma konta z takim adresem (albo osoba wyłączyła wyszukiwanie po e-mailu)." : "Nikogo nie znaleziono.");
       m.querySelectorAll(".fgo2").forEach(b => b.onclick = () => openProfile(b.dataset.u));
       m.querySelectorAll(".fiv").forEach(b => b.onclick = async () => { b.disabled = true; await sendFriendReq(b.dataset.u); reopen(q); });
       m.querySelectorAll(".ffr2").forEach(b => b.onclick = async () => { b.disabled = true; await socAct("remove_friend", {uname: b.dataset.u}); await socLoad(); reopen(q); });
@@ -1659,7 +1661,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v119";
+const APPV = "v120";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1917,6 +1919,7 @@ function bindAccount(){
     if (await saveProf({username: u}, m)) { openAccount(); }
   };
   const up = $("upriv"); if (up) up.onclick = async e => { const b = e.target.closest("button"); if (!b) return; const pub = b.dataset.v === "1"; if (await saveProf({is_public: pub}, $("umsg"))) { up.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); $("uprivd").textContent = pub ? "Każdy może Cię obserwować i zobaczyć Twoją mapę." : "Obserwować Cię można tylko po Twojej akceptacji, a mapę widzą tylko zaakceptowani obserwujący."; } };
+  const fbe = $("ufbe"); if (fbe) fbe.onchange = () => saveProf({find_by_email: fbe.checked}, $("umsg"));
   const un = $("unotes"); if (un) un.onchange = () => saveProf({show_notes: un.checked}, $("umsg"));
   const uc = $("ucopy"); if (uc) uc.onclick = () => shareLink("Moja mapa", "Zobacz moją mapę:", location.origin + location.pathname + "#u/" + store.prof.username);
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
@@ -1927,8 +1930,10 @@ function bindAccount(){
     const em = ($("lemail").value || "").trim(), pa = $("lpass").value || "";
     if (!/^\S+@\S+\.\S+$/.test(em)) { $("lmsg").textContent = "Podaj poprawny adres e-mail."; return; }
     if (pa.length < 6) { $("lmsg").textContent = "Hasło: minimum 6 znaków."; return; }
+    let nick = ""; if (up) { nick = ($("lnick").value || "").trim().toLowerCase().replace(/^@/, ""); if (!/^[a-z0-9_-]{3,20}$/.test(nick)) { $("lmsg").textContent = "Nick: 3–20 znaków, małe litery, cyfry, _ lub -."; $("lnick").focus(); return; }
+      try { const fr = await store.sb.rpc("nick_free", {q: nick}); if (fr && !fr.error && fr.data === false) { $("lmsg").textContent = "Ten nick jest już zajęty."; $("lnick").focus(); return; } } catch (e) {} }
     $("lmsg").textContent = "Chwilę…";
-    const r = up ? await store.sb.auth.signUp({email: em, password: pa}) : await store.sb.auth.signInWithPassword({email: em, password: pa});
+    const r = up ? await store.sb.auth.signUp({email: em, password: pa, options: {data: {nick}}}) : await store.sb.auth.signInWithPassword({email: em, password: pa});
     if (r.error) { $("lmsg").textContent = (/invalid login/i.test(r.error.message) ? "Zły e-mail lub hasło (albo konto jeszcze nie istnieje)." : r.error.message); return; }
     if (up && !r.data.session) { $("lmsg").textContent = "Konto utworzone, ale Supabase wymaga potwierdzenia e-mailem. Wyłącz „Confirm email”."; return; }
     const u = r.data && (r.data.user || (r.data.session && r.data.session.user)); if (u && store.uid !== u.id) attachUser(u); closeAccount();
@@ -1937,9 +1942,14 @@ function bindAccount(){
   const b = $("lsend"); if (b) b.onclick = async () => {
     const em = ($("lemail").value || "").trim(); if (!/^\S+@\S+\.\S+$/.test(em)) { $("lmsg").textContent = "Podaj poprawny adres e-mail."; return; }
     b.disabled = true; $("lmsg").textContent = "Wysyłam…";
-    const r = await store.sb.auth.signInWithOtp({email: em, options: {emailRedirectTo: location.origin + location.pathname}});
-    b.disabled = false; $("lmsg").textContent = r.error ? "Nie udało się wysłać: " + r.error.message : "Wysłano. Sprawdź skrzynkę (także spam) i otwórz link.";
+    const r = await store.sb.auth.resetPasswordForEmail(em, {redirectTo: location.origin + location.pathname});
+    b.disabled = false; $("lmsg").textContent = r.error ? "Nie udało się wysłać: " + r.error.message : "Jeśli konto z tym e-mailem istnieje, wysłaliśmy link do ustawienia nowego hasła (sprawdź też spam).";
   };
+}
+function openRecovery(){
+  ovBox().innerHTML = `<div class="card" style="width:min(380px,94vw)"><h3>Nowe hasło</h3><div class="sub">Ustaw nowe hasło do konta.</div><input id="rnp" class="lin" type="password" autocomplete="new-password" placeholder="nowe hasło (min. 6 znaków)" style="margin-top:10px"><div class="small" id="rmsg" style="min-height:16px;margin-top:6px"></div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="rcx" style="flex:1">Anuluj</button><button class="btn pri" id="rok" style="flex:2">Zapisz hasło</button></div></div>`;
+  $("rcx").onclick = closeAccount;
+  $("rok").onclick = async () => { const p = $("rnp").value || ""; if (p.length < 6) { $("rmsg").textContent = "Hasło: minimum 6 znaków."; return; } $("rok").disabled = true; const r = await store.sb.auth.updateUser({password: p}); $("rok").disabled = false; if (r.error) { $("rmsg").textContent = r.error.message; return; } closeAccount(); toast("Hasło zmienione ✓"); };
 }
 function szCard(){
   const m = {}; R.forEach(r => { const v = visits[r.id]; if (v && v.sz) Object.keys(v.sz).forEach(k => { (m[k] = m[k] || {hub:r.n, rs:[]}).rs.push(v.sz[k].r || 0); }); });
