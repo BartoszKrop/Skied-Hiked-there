@@ -1694,7 +1694,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v127";
+const APPV = "v128";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1721,11 +1721,12 @@ async function loadRatings(force){
     RATE = out; RATEH = oh; renderList(); if (curId) renderSheet();
   } catch(e){}
 }
-const RKOPEN = {}; let COM = {w: null, s: null}, comT = {w: 0, s: 0}, statScope = (() => { try { return localStorage.getItem("sht_rks") === "c" ? "c" : "m"; } catch (e) { return "m"; } })();
+const RKOPEN = {}; let COMP = null, compT = 0; let COM = {w: null, s: null}, comT = {w: 0, s: 0}, statScope = (() => { try { return localStorage.getItem("sht_rks") === "c" ? "c" : "m"; } catch (e) { return "m"; } })();
 async function loadCommunity(force){
   const md = MODE; if (!(SBC && store && store.sb)) return; if (!force && COM[md] && Date.now() - comT[md] < 300000) return; comT[md] = Date.now();
   try { const r = await store.sb.rpc("get_community_stats", {md}); if (r.error) throw r.error; const o = {}; (r.data || []).forEach(x => { o[x.place_id] = {v: +x.visited, p: +x.planned}; }); COM[md] = o; }
   catch (e) { COM[md] = {err: 1}; }
+  if (md === "s" && (force || !COMP || Date.now() - compT > 300000)) { compT = Date.now(); try { const r = await store.sb.rpc("get_community_pies"); if (r.error) throw r.error; COMP = (r.data || []).map(x => ({n: x.pie, pid: x.place_id, a: x.avg_rating == null ? null : +x.avg_rating, nr: +x.n_rated, ate: +x.n_ate})); } catch (e) { COMP = {err: 1}; } }
   if (statScope === "c" && $("v-statystyki").classList.contains("on") && MODE === md) renderStats();
 }
 const rateOf = id => (RATE[MODE] || {})[id];
@@ -2007,7 +2008,7 @@ function renderStats(){
   const OPTS = W
     ? [["visits", "Najczęściej odwiedzane"], ["rating", "Najwyżej oceniane"], ["km", "Największe (km tras)"], ["country", "Według kraju"], ["year", "Wizyty według roku"], ["groups", "Grupy (domeny narciarskie)"]]
     : [["hikerate", "Najwyżej oceniane szlaki"], ["rating", "Najwyżej oceniane miejsca"], ["hikes", "Najwięcej szlaków"], ["country", "Według kraju"], ["year", "Odwiedzone miejsca według roku"], ["sz", "Szarlotki"]];
-  const COPTS = W ? [["cv", "Gdzie ludzie najczęściej byli"], ["cp", "Gdzie najchętniej by pojechali"], ["cr", "Najwyżej oceniane"]] : [["cv", "Gdzie ludzie najczęściej byli"], ["cp", "Gdzie najchętniej by poszli"], ["cr", "Najwyżej oceniane miejsca"], ["ch", "Najwyżej oceniane szlaki"]];
+  const COPTS = W ? [["cv", "Gdzie ludzie najczęściej byli"], ["cp", "Gdzie najchętniej by pojechali"], ["cr", "Najwyżej oceniane"]] : [["cv", "Gdzie ludzie najczęściej byli"], ["cp", "Gdzie najchętniej by poszli"], ["cr", "Najwyżej oceniane miejsca"], ["ch", "Najwyżej oceniane szlaki"], ["cs", "Szarlotki (ranking ogólny)"]];
   const com = statScope === "c" && SBC && store && store.sb && !RO, OP = com ? COPTS : OPTS, ck = "c" + MODE;
   if (!OP.some(o => o[0] === statRank[com ? ck : MODE])) statRank[com ? ck : MODE] = OP[0][0];
   const pick = statRank[com ? ck : MODE]; if (com) loadCommunity();
@@ -2030,6 +2031,8 @@ function renderStats(){
       rankBody = ctb(["#  " + (W ? "Ośrodek" : "Miejsce"), pick === "cv" ? "Byli" : "Chcą"], rows.map((r, i) => `<tr><td>${i + 1}. ${nm(r)}</td><td class="r">${cm[r.id][k]} ${pl(cm[r.id][k])}</td></tr>`), pick === "cv" ? "Jeszcze nikt z publicznych kont nie zaznaczył tu odwiedzin." : "Jeszcze nikt z publicznych kont nie dodał tu planów."); }
     else if (pick === "cr") { const rr = RATE[MODE] || {}, rows = R.filter(r => rr[r.id] && rr[r.id].n > 0).sort((a, b) => rr[b.id].a - rr[a.id].a || rr[b.id].n - rr[a.id].n).slice(0, 50);
       rankBody = ctb(["#  " + (W ? "Ośrodek" : "Miejsce"), "Średnia"], rows.map((r, i) => `<tr><td>${i + 1}. ${nm(r)}</td><td class="r"><span style="color:var(--warn)">★ ${fmtAvg(rr[r.id].a)}</span> <span class="small">(${rr[r.id].n})</span></td></tr>`), "Jeszcze nikt z publicznych kont nie ocenił miejsc."); }
+    else if (pick === "cs") { const cp = COMP; if (!cp) rankBody = `<div class="sub">Ładuję…</div>`; else if (cp.err) rankBody = `<div class="sub">Ranking szarlotek wymaga uruchomienia pliku SQL w Supabase.</div>`;
+      else rankBody = ctb(["#  Szarlotka", "Średnia"], cp.slice().sort((a, b) => (a.a == null) - (b.a == null) || (b.a || 0) - (a.a || 0) || b.nr - a.nr || b.ate - a.ate || a.n.localeCompare(b.n, "pl")).map((x, i) => `<tr><td>${i + 1}. ${esc(x.n)}<div class="small">${byId[x.pid] ? esc(byId[x.pid].n) + " · " : ""}jadło: ${x.ate}</div></td><td class="r">${x.a == null ? `<span class="small">bez ocen</span>` : `<span style="color:var(--warn)">★ ${fmtAvg(x.a)}</span> <span class="small">(${x.nr})</span>`}</td></tr>`), "Jeszcze nikt z publicznych kont nie zaznaczył szarlotki."); }
     else { const hr = []; R.forEach(r => { const m = RATEH[r.id] || {}; Object.keys(m).forEach(i => { if (r.hikes[i] && !r.hikes[i].del && m[i].n > 0) hr.push({h: r.hikes[i], r, a: m[i].a, n: m[i].n}); }); });
       rankBody = ctb(["#  Szlak / miejsce", "Średnia"], hr.sort((a, b) => b.a - a.a || b.n - a.n).slice(0, 50).map((x, i) => `<tr><td>${i + 1}. ${esc(x.h.n)}<div class="small">${flag(x.r.c.split(",")[0])} ${esc(x.r.n)}</div></td><td class="r"><span style="color:var(--warn)">★ ${fmtAvg(x.a)}</span> <span class="small">(${x.n})</span></td></tr>`), "Jeszcze nikt z publicznych kont nie ocenił szlaków."); }
   }
