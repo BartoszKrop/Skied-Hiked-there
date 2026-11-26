@@ -1737,7 +1737,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v188";
+const APPV = "v189";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1766,7 +1766,8 @@ function tourDemo(){
 }
 const TOUR = [
   {t: "Witaj", x: "Pokażę to, czego nie widać na pierwszy rzut oka, przede wszystkim planer wyjazdów. Możesz pominąć w każdej chwili."},
-  {v: "mapa", s: ".legend", t: "Punkty i karta miejsca", x: "Zielony to miejsca, w których byłeś, żółty to planowane, niebieski to jeszcze nie. Dotknij punktu, a otworzy się karta: oznaczysz wizytę, odhaczysz pojedyncze szlaki, ocenisz miejsce i przeczytasz opinie innych. Wszystkie opinie są publiczne, więc Twoja pomaga następnym."},
+  {v: "mapa", s: ".legend", t: "Legenda to przełącznik", x: "Zielony to miejsca, w których byłeś, żółty to planowane, niebieski to jeszcze nie. <b>Kliknij kolor w legendzie, żeby ukryć albo pokazać punkty tego rodzaju</b>, na przykład tylko Twoje plany albo same nieodwiedzone."},
+  {v: "mapa", s: ".legend", t: "Karta miejsca", x: "Dotknij punktu na mapie, a otworzy się karta: oznaczysz wizytę, odhaczysz pojedyncze szlaki, ocenisz miejsce i przeczytasz opinie innych. Wszystkie opinie są publiczne, więc Twoja pomaga następnym."},
   {v: "mapa", pre: () => openMapFilters(), s: "#mfv", t: "Trzy tryby mapy", x: "To pole Tryb w filtrach mapy.<br>• <b>Zwykły</b>: Twoje miejsca, wizyty i plany.<br>• <b>Znajomi</b>: mapa ze znajomymi, gdzie byli i co planują.<br>• Trzeci tryb zostawiam Tobie do odkrycia."},
   {v: "mapa", pre: () => openMapFilters(), s: ".mfg2", t: "Pozostałe filtry", x: "Kraj, ocena, wielkość i wysokość (zima) albo grupa (lato), a także pogoda: opady, chmury i dzień prognozy. Aktywne filtry pokazują się potem jako małe żetony na mapie. Wyczyść resetuje je i wraca do trybu zwykłego."},
   {v: "mapa", s: "#frbtn", t: "Znajomi", x: "Dodaj znajomych po nicku. Dzięki temu działa tryb znajomi, a w wyjazdach możesz planować razem z nimi."},
