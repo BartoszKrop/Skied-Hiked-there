@@ -588,7 +588,7 @@ table tr{transition:background .12s}
     <div id="mapwrap">
       <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button></div>
-      <div class="mapchips2"><button class="btn sm" id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-weight:800">Aa</button><button class="btn sm" id="mfrm" aria-label="Zmień tryb mapy" title="Zmień tryb mapy (zwykły / znajomi / film)" style="display:none">Zwykły</button></div>
+      <div class="mapchips2"><button class="btn sm" id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-weight:800">Aa</button></div>
       <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
       <div class="legend"><span class="lgn" data-c="v"><i style="background:var(--ok)"></i>byłem</span><span class="lgn" data-c="p"><i style="background:var(--warn)"></i>planuję</span><span class="lgn" data-c="u"><i style="background:#7aa8ff"></i>nie byłem</span><span class="lgf" data-f="A" style="display:none"><i style="background:#2dd4bf"></i>znajomi byli</span><span class="lgf" data-f="B" style="display:none"><i style="background:#e6f46a"></i>planuję, a znajomi byli</span><span class="lgf" data-f="C" style="display:none"><i style="background:#c58bff"></i>znajomi planują</span><span class="lgf" data-f="D" style="display:none"><i style="background:#ff7eb6"></i>oboje planujemy</span></div>
@@ -1725,7 +1725,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v165";
+const APPV = "v166";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2450,7 +2450,7 @@ function openMapFilters(){
       </div>
       <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="mfclr" style="flex:1">Wyczyść</button><button class="btn pri" id="mfok" style="flex:2">Pokaż (${cnt()})</button></div></div>`;
     $("mfv").value = viewVal(); if ($("mfs")) $("mfs").value = fStat; $("mfr").value = String(fMinR); if ($("mfct")) $("mfct").value = fCat; $("mfwd").value = String(fWd); $("mfwx").value = fWx; $("mfwc").value = String(fWc); $("mfc").value = fCountry; if (W) { $("mfg").value = fGroup; $("mfk").value = String(fMinKm); $("mfe").value = String(fMinEl); }
-    const upd = () => { renderList(); mapRefresh(); setTimeout(() => { fit(); }, 0); $("mfok").textContent = "Pokaż (" + cnt() + ")"; };
+    const upd = () => { renderList(); mapRefresh(); $("mfok").textContent = "Pokaż (" + cnt() + ")"; };
     if ($("mfs")) $("mfs").onchange = e => { setFStat(e.target.value); upd(); };
     $("mfr").onchange = e => { fMinR = +e.target.value; $("fminr").value = e.target.value; upd(); };
     if ($("mfct")) $("mfct").onchange = e => { fCat = e.target.value; $("fcat").value = fCat; upd(); };
@@ -2601,7 +2601,7 @@ function exitFilm(quiet){
   if (!quiet) { showAll = false; renderList(); mapRefresh(); buildDots(); }
 }
 $("filmback").addEventListener("click", () => exitFilm());
-$("filmchips").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fFilm = b.dataset.f; filmBar(); renderList(); mapRefresh(); buildDots(); });
+$("filmchips").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fFilm = b.dataset.f; filmBar(); renderList(); mapRefresh(); buildDots(); try { fit(); } catch (e) {} });
 function setMode(m){
   if (m === MODE) return;
   closeSheet(); MODE = m; syncVisits();
