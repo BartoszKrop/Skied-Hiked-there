@@ -1725,7 +1725,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v166";
+const APPV = "v167";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2342,7 +2342,7 @@ function mapInit(){
   $("mall").onclick = toggleAll; $("mall2").onclick = toggleAll;
   const goAdd = () => { show("lista"); setTimeout(() => $("q").focus(), 60); };
   $("zin").onclick = () => zoomAt(0.6, null); $("zout").onclick = () => zoomAt(1 / 0.6, null);
-  { const nb = $("znames"); const sync = () => { nb.classList.toggle("on", !!showNames); }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
+  { const nb = $("znames"); const sync = () => { nb.classList.remove("on"); nb.style.textDecoration = showNames ? "" : "line-through"; nb.style.opacity = showNames ? "" : ".6"; }; sync(); nb.onclick = () => { showNames = !showNames; try { localStorage.setItem("skibeen.names", showNames ? "1" : "0"); } catch(e){} sync(); applyVB(); }; }
   $("mfilt").onclick = openMapFilters; $("mlist").onclick = () => show("lista"); $("madd2").onclick = () => openQuickVisit(); $("qvadd").onclick = () => { if (!RO && SBC) openSuggest($("q").value || ""); else openQuickVisit(); };
   bindMapGestures();
 }
