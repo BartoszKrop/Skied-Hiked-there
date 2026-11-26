@@ -1134,11 +1134,13 @@ function buildCountrySelect(){
 function buildGroupSelect(){ $("fgroup").innerHTML = `<option value="">Grupa</option>` + G.map((g, i) => g.m.length >= 2 ? `<option value="${i}">${esc(g.n)}</option>` : "").join(""); $("fgroup").value = fGroup; $("frow3").style.display = MODE === "w" && G.length ? "" : "none"; }
 function setFStat(v){ fStat = v; $("fstat").value = v; }
 function updMore(){}
+function ownTxt(id){ const v = visits[id]; if (!v) return ""; return norm([v.n].concat(Object.values(v.hn || {})).filter(Boolean).join(" ")); }
+function matchR(r, q){ return matchT(r.s, q) || (!!visits[r.id] && matchT(ownTxt(r.id), q)); }
 function qSug(){
   const bx = $("qsug"), q = fQ || ""; if (q.length < 2) { bx.style.display = "none"; return; }
   const out = [], seen = new Set();
   const sc = (t, w) => { t = norm(t); return t.startsWith(q) ? 0 : t.split(/\s+/).some(x => x.startsWith(q.split(/\s+/)[0])) ? 1 : 2; };
-  R.filter(r => matchT(r.s, q)).sort((a, b) => sc(a.n) - sc(b.n) || b.k - a.k).slice(0, 4).forEach(r => { out.push({id: r.id, t: r.n, sub: r.c.split(",").map(cname).join(", "), hub: 1}); seen.add(r.id); });
+  R.filter(r => matchR(r, q)).sort((a, b) => sc(a.n) - sc(b.n) || b.k - a.k).slice(0, 4).forEach(r => { out.push({id: r.id, t: r.n, sub: r.c.split(",").map(cname).join(", "), hub: 1}); seen.add(r.id); });
   let nt = 0; for (const r of R) { if (nt >= 3) break; for (const h of (r.hikes || [])) { if (h.del) continue; if (matchT(norm(h.n), q)) { out.push({id: r.id, t: h.n, sub: r.n}); nt++; break; } } }
   if (!out.length) { bx.style.display = "none"; return; }
   bx.innerHTML = out.slice(0, 7).map(o => `<div class="qr"><button type="button" class="qs" data-id="${esc(o.id)}"><b>${esc(o.t)}</b><span>${esc(o.sub)}</span></button>${o.hub ? `<button type="button" class="qt ${isVis(o.id) ? "on" : ""}" data-id="${esc(o.id)}" aria-label="Byłem">✓</button>` : ""}</div>`).join("");
@@ -1182,7 +1184,7 @@ function initListControls(){
 }
 function emptyFix(){
   const F = {fstat:[() => fStat, v => { fStat = v; }, "all"], fcountry:[() => fCountry, v => { fCountry = v; }, ""], fgroup:[() => fGroup, v => { fGroup = v; }, ""], fminr:[() => fMinR, v => { fMinR = v; }, 0], fminkm:[() => fMinKm, v => { fMinKm = v; }, 0], fminel:[() => fMinEl, v => { fMinEl = v; }, 0], fprice:[() => fPrice, v => { fPrice = v; }, 0], fwx:[() => fWx, v => { fWx = v; }, ""], fws:[() => fWs, v => { fWs = v; }, 0], fwc:[() => fWc, v => { fWc = v; }, 0]};
-  let best = null; const cnt = () => R.filter(r => passF(r) && matchT(r.s, fQ)).length;
+  let best = null; const cnt = () => R.filter(r => passF(r) && matchR(r, fQ)).length;
   Object.keys(F).forEach(id => { const [g, st, d] = F[id], cur = g(); if (cur === d || cur === "" || cur == null) return; const el = $(id), o = el && [...el.options].find(x => x.value === String(cur)); st(d); const n = cnt(); st(cur); if (n > 0 && (!best || n > best.n)) best = {n, id, d, t: o ? o.textContent.trim() : id}; });
   if (fQ) { const q = fQ; fQ = ""; const n = cnt(); fQ = q; if (n > 0 && (!best || n > best.n)) best = {n, q: 1, t: "„" + q + "\""}; }
   if (!best) return "";
@@ -1193,7 +1195,7 @@ function renderList(){
   if (wxOn() && !WXL && Date.now() - WXFAIL > 6e4 && R.some(r => r.y != null && !wxa(r.id))) wxAllLoad().then(() => {});
   try { updMore(); } catch(e){}
   try { fChips(); } catch(e){}
-  let a = R.filter(r => passF(r) && matchT(r.s, fQ)); LISTIDS = a.map(r => r.id);
+  let a = R.filter(r => passF(r) && matchR(r, fQ)); LISTIDS = a.map(r => r.id);
   const pr = id => (visits[id] && visits[id].s === "p") ? visits[id].pr : -1;
   if (fSort==="k") a.sort((x,y)=>y.k-x.k);
   else if (fSort==="n") a.sort((x,y)=>x.n.localeCompare(y.n,"pl"));
@@ -1237,7 +1239,7 @@ function hikeFriendsRow(r, i){
 }
 function renderHikeList(){
   const E = [];
-  R.filter(r => passF(r)).forEach(r => { const v = visits[r.id] || {}; (r.hikes || []).forEach((h, i) => { if (h.del) return; if (fCat && (h.ct || "g") !== fCat) return; if (filmMode && !(h.fm || []).length) return; if (fFilm && !(h.fm || []).includes(fFilm)) return; if (fQ && !matchT(r.s, fQ) && !matchT(norm(h.n), fQ)) return; const g = RATEH[r.id] && RATEH[r.id][i]; E.push({r, h, i, my: (v.hr && v.hr[i]) || 0, g: g && g.n ? g : null, done: !!(v.done && v.done[i])}); }); });
+  R.filter(r => passF(r)).forEach(r => { const v = visits[r.id] || {}; (r.hikes || []).forEach((h, i) => { if (h.del) return; if (fCat && (h.ct || "g") !== fCat) return; if (filmMode && !(h.fm || []).length) return; if (fFilm && !(h.fm || []).includes(fFilm)) return; if (fQ && !matchR(r, fQ) && !matchT(norm(h.n), fQ)) return; const g = RATEH[r.id] && RATEH[r.id][i]; E.push({r, h, i, my: (v.hr && v.hr[i]) || 0, g: g && g.n ? g : null, done: !!(v.done && v.done[i])}); }); });
   const ga = e => e.g ? e.g.a : -1, gn = e => e.g ? e.g.n : 0;
   if (fSort === "ws" || fSort === "wd" || fSort === "wp" || fSort === "wc") { const mt = e => { const x = wxMetric(e.r, fSort); return x == null ? -1e9 : x; }; E.sort((x, y) => mt(y) - mt(x)); }
   else if (fSort === "mr") E.sort((x, y) => y.my - x.my || ga(y) - ga(x) || gn(y) - gn(x));
@@ -1753,7 +1755,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v198";
+const APPV = "v200";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2728,7 +2730,8 @@ function toastUndo(msg, fn){ toast(msg); const t = $("toast"); t.classList.add("
 function burst(){ if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const p = document.createElement("i"); p.className = "vring"; p.style.cssText = `left:${lastPt.x}px;top:${lastPt.y}px`; document.body.appendChild(p); setTimeout(() => p.remove(), 700); }
 function buildFx(){ const h = document.querySelector("header"); if (!h) return; let f = $("fx"); if (!f) { f = document.createElement("div"); f.id = "fx"; h.prepend(f); } f.replaceChildren(); const W = MODE === "w"; if (matchMedia("(prefers-reduced-motion: reduce)").matches) { f.className = W ? "snow" : "sun"; return; } for (let i = 0; i < (W ? 16 : 0); i++) { const p = document.createElement("i"), sz = W ? 6 + Math.random() * 6 : 2 + Math.random() * 2.5; p.style.cssText = `left:${Math.random() * 100}%;width:${sz}px;height:${sz}px;animation-duration:${(W ? 9 : 14) + Math.random() * 9}s;animation-delay:-${Math.random() * 18}s;opacity:${.25 + Math.random() * .4}`; f.appendChild(p); } f.className = W ? "snow" : "sun"; if (!W) { const w = f.offsetWidth + 180; for (let i = 0; i < 4; i++) { const c = document.createElement("b"), d = 80 + Math.random() * 60; c.style.cssText = `top:${8 + Math.random() * 62}%;--w:${w}px;transform:scale(${.7 + Math.random() * .7});animation-duration:${d}s;animation-delay:-${Math.random() * d}s;opacity:${.55 + Math.random() * .4}`; f.appendChild(c); } } }
 function modeFx(){ if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const o = $("modefx"); if (o) o.remove(); const e = document.createElement("div"); e.id = "modefx"; e.style.background = MODE === "w" ? "radial-gradient(circle at 50% 0%, #2a6ab0, #0b1b34 70%)" : "radial-gradient(circle at 50% 0%, #e0944a, #2b1d12 70%)"; document.body.appendChild(e); setTimeout(() => e.remove(), 800); }
-function dotsIn(){ try { gDots.classList.remove("din"); void gDots.getBoundingClientRect(); gDots.classList.add("din"); } catch (e) {} }
+let _din = 0;
+function dotsIn(){ try { gDots.classList.remove("din"); cancelAnimationFrame(_din); _din = requestAnimationFrame(() => { _din = requestAnimationFrame(() => { try { gDots.classList.add("din"); } catch (e) {} }); }); } catch (e) {} }
 function skel(n){ return Array.from({length: n || 4}, (_, i) => `<span class="sk${i % 3 === 0 ? " l" : ""}" style="width:${88 - (i * 11) % 40}%"></span>`).join(""); }
 function flipUI(){ buildFx(); dotsIn(); const a = document.querySelector("main"), h = document.querySelector("header"); [a, h].forEach(e => { if (!e) return; e.classList.remove("flip"); void e.offsetWidth; e.classList.add("flip"); }); setTimeout(() => [a, h].forEach(e => e && e.classList.remove("flip")), 600); }
 function countUp(){ document.querySelectorAll("#hstats b").forEach(b => { const to = parseFloat(b.textContent); if (!isFinite(to) || to <= 0 || to > 99999 || b.dataset.cu === String(to)) return; const from = parseFloat(b.dataset.cu) || 0; b.dataset.cu = String(to); if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), dur = 700, txt = b.textContent; (function f(t){ const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); b.textContent = k < 1 ? String(Math.round(from + (to - from) * e)) : txt; if (k < 1) requestAnimationFrame(f); })(t0); }); }
@@ -3343,7 +3346,7 @@ function openQuickVisit(pre){
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="qvx" style="flex:1">Anuluj</button><button class="btn pri" id="qvok" style="flex:2">Dodaj</button></div></div>`;
   const chip = () => { $("qvch").innerHTML = sel ? `<div class="frow" style="margin-bottom:6px"><span>${flag(sel.c.split(",")[0])} <b>${esc(sel.n)}</b></span><button class="btn sm" id="qvchg">Zmień</button></div>` : ""; $("qvq").style.display = sel ? "none" : ""; $("qvr").innerHTML = ""; if (sel) $("qvchg").onclick = () => { sel = null; chip(); $("qvq").focus(); }; };
   const find = () => { const q = norm($("qvq").value.trim()); if (q.length < 2) { $("qvr").innerHTML = ""; return; }
-    const m = R.filter(r => matchT(r.s, q)).sort((a, b) => (norm(a.n).startsWith(q) ? 0 : 1) - (norm(b.n).startsWith(q) ? 0 : 1) || b.k - a.k).slice(0, 6);
+    const m = R.filter(r => matchR(r, q)).sort((a, b) => (norm(a.n).startsWith(q) ? 0 : 1) - (norm(b.n).startsWith(q) ? 0 : 1) || b.k - a.k).slice(0, 6);
     $("qvr").innerHTML = m.map(r => `<button type="button" class="btn sm qvit" data-id="${esc(r.id)}" style="text-align:left;justify-content:flex-start">${flag(r.c.split(",")[0])} ${esc(r.n)} <span class="small" style="margin-left:6px">${esc(r.c.split(",").map(cname).join(", "))}</span></button>`).join("") || `<div class="small">Nic nie znaleziono.</div>`;
     $("qvr").querySelectorAll(".qvit").forEach(b => b.onclick = () => { sel = R.find(x => x.id === b.dataset.id); chip(); }); };
   $("qvq").oninput = find; chip(); if (!sel) setTimeout(() => $("qvq").focus(), 60);
@@ -3560,7 +3563,7 @@ try { if (localStorage.getItem(LSM) !== "w") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
 
-try { applyTheme(); buildFx(); matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); } catch(e){}
+try { applyTheme(); setTimeout(buildFx, 0); matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); } catch(e){}
 </script>
 <div id="splash"><div class="spi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="sbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14263f"/><stop offset="1" stop-color="#08111f"/></linearGradient><clipPath id="sm"><path d="M40 410 L196 120 L292 268 L350 186 L472 410 Z"/></clipPath><clipPath id="sl"><path d="M0 0H300L252 512H0Z"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#sbg)"/><g transform="translate(256 266) scale(.9) translate(-256 -266)"><g clip-path="url(#sm)"><rect width="512" height="512" fill="#f4a259"/><rect width="512" height="512" fill="#5ad1ff" clip-path="url(#sl)"/><path d="M196 120 L148 230 L190 214 L214 262 L246 196 Z" fill="#fff" opacity=".9" clip-path="url(#sl)"/><path d="M286 20 L330 20 L238 512 L194 512 Z" fill="#fff" opacity=".95"/></g><path d="M40 428H472" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity=".92"/></g></svg></div><div class="spt"><b>Mountained</b> there</div></div><script>try{ const sp=document.getElementById("splash"); if(sp){ if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){ document.body.classList.add("spl"); setTimeout(()=>{sp.classList.add("out"); setTimeout(()=>sp.remove(),500);},900); } else sp.remove(); } }catch(e){}</script><script>if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) window.addEventListener("load",()=>{const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload();}});navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});});</script></body>
 </html>
