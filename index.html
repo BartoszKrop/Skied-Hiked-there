@@ -1719,7 +1719,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v174";
+const APPV = "v176";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2690,15 +2690,16 @@ const tripIsNew = t => t.shared && t.ed && t.ed !== meName() && t._upd && new Da
 const km2 = (a, b) => { const R0 = 6371, rad = Math.PI / 180, dl = (b.y - a.y) * rad, dn = (b.x - a.x) * rad, h = Math.sin(dl / 2) ** 2 + Math.cos(a.y * rad) * Math.cos(b.y * rad) * Math.sin(dn / 2) ** 2; return 2 * R0 * Math.asin(Math.sqrt(h)); };
 const votes = it => { const v = it.v || {}; let up = 0, dn = 0; Object.values(v).forEach(x => { if (x > 0) up++; else if (x < 0) dn++; }); return {up, dn, sc: up - dn}; };
 const WX = {}; const WXI = c => c === 0 ? "☀️" : c <= 2 ? "🌤" : c === 3 ? "☁️" : c <= 48 ? "🌫" : c <= 57 ? "🌦" : c <= 67 ? "🌧" : c <= 77 ? "🌨" : c <= 82 ? "🌦" : c <= 86 ? "🌨" : "⛈";
-async function wxFor(lat, lon, iso){
-  const k = lat.toFixed(2) + "|" + lon.toFixed(2) + "|" + iso; if (k in WX) return WX[k];
+async function wxFor(lat, lon, iso, elv){
+  const k = lat.toFixed(2) + "|" + lon.toFixed(2) + "|" + iso + (elv ? "|" + elv : ""); if (k in WX) return WX[k];
+  const EL = elv ? "&elevation=" + elv : "";
   const diff = (new Date(iso + "T12:00:00") - new Date()) / 864e5;
   const q = "&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max&timezone=auto";
   try {
-    if (diff >= -1 && diff <= 15) { const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}${q}&start_date=${iso}&end_date=${iso}`); const j = await r.json(); const d = j && j.daily;
-      if (d && d.time && d.time.length) return (WX[k] = {c: d.weathercode[0], hi: d.temperature_2m_max[0], lo: d.temperature_2m_min[0], p: d.precipitation_probability_max[0], w: d.windspeed_10m_max[0]}); return (WX[k] = null); }
-    if (diff > 15) { const y = String(+iso.slice(0, 4) - 1 - Math.max(0, Math.floor((diff - 15) / 365))) + iso.slice(4); const r = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=auto&start_date=${y}&end_date=${y}`); const j = await r.json(); const d = j && j.daily;
-      if (d && d.time && d.time.length && d.temperature_2m_max[0] != null) return (WX[k] = {c: d.weathercode[0], hi: d.temperature_2m_max[0], lo: d.temperature_2m_min[0], p: null, mm: d.precipitation_sum[0], w: d.windspeed_10m_max[0], est: 1}); }
+    if (diff >= -1 && diff <= 15) { const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}${q}${EL}&start_date=${iso}&end_date=${iso}`); const j = await r.json(); const d = j && j.daily;
+      if (d && d.time && d.time.length) return (WX[k] = {el: j.elevation, c: d.weathercode[0], hi: d.temperature_2m_max[0], lo: d.temperature_2m_min[0], p: d.precipitation_probability_max[0], w: d.windspeed_10m_max[0]}); return (WX[k] = null); }
+    if (diff > 15) { const y = String(+iso.slice(0, 4) - 1 - Math.max(0, Math.floor((diff - 15) / 365))) + iso.slice(4); const r = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=auto${EL}&start_date=${y}&end_date=${y}`); const j = await r.json(); const d = j && j.daily;
+      if (d && d.time && d.time.length && d.temperature_2m_max[0] != null) return (WX[k] = {el: j.elevation, c: d.weathercode[0], hi: d.temperature_2m_max[0], lo: d.temperature_2m_min[0], p: null, mm: d.precipitation_sum[0], w: d.windspeed_10m_max[0], est: 1}); }
     return (WX[k] = null);
   } catch(e){ return null; }
 }
@@ -2913,10 +2914,13 @@ function renderTrips(){
     const w = await wxFor(+base.y, +base.x, iso); if (!w || !el.isConnected) return; const bad = !w.est && (w.c >= 95 || w.p >= 60 || w.w >= 50);
     el.innerHTML = `${WXI(w.c)} ${Math.round(w.lo)}–${Math.round(w.hi)}°C${w.est ? (w.mm != null ? " · opady " + w.mm + " mm" : "") : " · opady " + (w.p == null ? "?" : w.p) + "%"} · wiatr ${Math.round(w.w)} km/h${w.est ? ` <span style="opacity:.65">(rok temu)</span>` : ""}${bad ? ` <span style="color:var(--warn)">⚠ ${w.c >= 95 ? "ryzyko burzy" : w.p >= 60 ? "duże ryzyko opadów" : "silny wiatr"}</span>` : ""}`; });
   if ($("tbase")) $("tbase").onclick = () => pickTripBase(t);
-  box.querySelectorAll(".hwx").forEach(async el => { const it = t.items[+el.dataset.ti], r = it && tripHike(it).r, iso = it && dayISO(t.from, it.day); if (!r || r.y == null || !iso) return;
+  box.querySelectorAll(".hwx").forEach(async el => { const it = t.items[+el.dataset.ti], hk = it && tripHike(it), r = hk && hk.r, iso = it && dayISO(t.from, it.day); if (!r || r.y == null || !iso) return;
+    const fmt = w => { const bad = !w.est && (w.c >= 95 || w.p >= 60 || w.w >= 50), pr = w.est ? (w.mm != null ? "opady " + w.mm + " mm" : "") : "opady " + (w.p == null ? "?" : w.p) + "%"; return `${WXI(w.c)} ${Math.round(w.lo)}–${Math.round(w.hi)}°C${pr ? " · " + pr : ""} · wiatr ${Math.round(w.w)} km/h${bad ? ` <span style="color:var(--warn)">⚠ ${w.c >= 95 ? "ryzyko burzy" : w.p >= 60 ? "duże ryzyko deszczu" : "silny wiatr"}</span>` : ""}`; };
     const w = await wxFor(+r.y, +r.x, iso); if (!el.isConnected) return; if (!w) { const df = (new Date(iso + "T12:00:00") - new Date()) / 864e5; el.innerHTML = df < -1 ? "" : `<span style="opacity:.6">Pogoda: brak danych</span>`; return; }
-    const bad = !w.est && (w.c >= 95 || w.p >= 60 || w.w >= 50), pr = w.est ? (w.mm != null ? "opady " + w.mm + " mm" : "") : "opady " + (w.p == null ? "?" : w.p) + "%";
-    el.innerHTML = `${WXI(w.c)} ${Math.round(w.lo)}–${Math.round(w.hi)}°C${pr ? " · " + pr : ""} · wiatr ${Math.round(w.w)} km/h${w.est ? ` <span style="opacity:.65">(rok temu, prognoza dopiero ~2 tyg. przed)</span>` : ""}${bad ? ` <span style="color:var(--warn)">⚠ ${w.c >= 95 ? "ryzyko burzy" : w.p >= 60 ? "duże ryzyko deszczu" : "silny wiatr"}</span>` : ""}`; });
+    const tm = hk.h && ((hk.h.n || "") + " " + (hk.h.o || "")).match(/(\d[\d ]{2,4})\s*m\b/), tel = tm ? parseInt(tm[1].replace(/\s/g, ""), 10) : 0;
+    const note = w.est ? ` <span style="opacity:.65">(rok temu, prognoza dopiero ~2 tyg. przed)</span>` : "";
+    if (tel >= 1000 && w.el != null && tel - w.el > 400 && tel < 6000) { const wt = await wxFor(+r.y, +r.x, iso, tel); if (!el.isConnected) return; if (wt) { el.innerHTML = `<div><b>Dół</b> (${Math.round(w.el)} m): ${fmt(w)}</div><div><b>Góra</b> (${tel} m): ${fmt(wt)}</div>${note}`; return; } }
+    el.innerHTML = fmt(w) + note; });
 }
 function renderPacks(box, segH){
   const save = () => scheduleSave(), p = PACKS.find(x => x.id === packOpen), rr = () => { const st = $("v-wyjazdy").scrollTop; renderTrips(); $("v-wyjazdy").scrollTop = st; };
@@ -3110,13 +3114,14 @@ function curTrip(){
   return tripAuto();
 }
 function goTrip(t){ fabClose(); if (MODE !== (t.mode || "s")) setMode(t.mode || "s"); show("wyjazdy"); openTrip(t.id); }
+function jumpSec(t, sel){ if (tripOpen !== t.id || !$("v-wyjazdy").classList.contains("on")) return; setTimeout(() => { const d = document.querySelector("#v-wyjazdy " + sel); if (d) { d.open = true; d.scrollIntoView({behavior: "smooth", block: "center"}); } }, 80); }
 function openQuickShop(t){
   t.shop = t.shop || [];
   ovBox().innerHTML = `<div class="card" style="width:min(420px,94vw)"><h3>Dodaj rzecz do sklepu</h3><div class="sub">${esc(t.name || "Wyjazd")}</div>
     <div class="fld"><label>CO KUPIĆ</label><input id="qsn" class="lin" maxlength="60" placeholder="np. makaron, woda, kremy"></div>
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="qsx" style="flex:1">Anuluj</button><button class="btn pri" id="qsa" style="flex:2">Dodaj</button></div></div>`;
   const go = () => { const n = $("qsn").value.trim().slice(0, 60); if (!n) { $("qsn").focus(); return; } if (t.shop.some(x => x.n.toLowerCase() === n.toLowerCase())) { toast("Już jest na liście"); return; }
-    t.shop.push({id: newTripId(), n, by: meName() || "ja", ok: false}); tripSave(); closeAccount(); toast("Dodano do listy zakupów: " + n); renderTrips(); };
+    t.shop.push({id: newTripId(), n, by: meName() || "ja", ok: false}); tripSave(); closeAccount(); toast("Dodano do listy zakupów: " + n); renderTrips(); jumpSec(t, ".tsd"); };
   $("qsx").onclick = closeAccount; $("qsa").onclick = go; $("qsn").onkeydown = e => { if (e.key === "Enter") go(); }; setTimeout(() => $("qsn").focus(), 60);
 }
 const fabRound = () => { const v = $("v-wyjazdy"); return !!(v && v.classList.contains("on") && tripOpen && allTrips().some(x => x.id === tripOpen && !x.ar)); };
@@ -3142,7 +3147,7 @@ function openQuickPack(t){
     ${shared ? `<div class="fld"><label>KTO ZAPEWNIA</label><select id="qpw" class="sel"><option value="">Wspólne / ktokolwiek</option>${ppl.map(p => `<option value="${esc(p)}">@${esc(p)}${p === me ? " (ja)" : ""}</option>`).join("")}</select></div>` : ""}
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="qpx" style="flex:1">Anuluj</button><button class="btn pri" id="qpa" style="flex:2">Dodaj</button></div></div>`;
   const go = () => { const n = $("qpn").value.trim().slice(0, 60); if (!n) { $("qpn").focus(); return; } if (t.pack.some(x => x.n === n)) { toast("Już jest na liście"); return; }
-    t.pack.push({id: newTripId(), n, by: shared ? me : undefined, who: shared ? ($("qpw").value || "") : "", ok: false}); try { localStorage.setItem("sht_qt", t.id); } catch (e) {} tripSave(); closeAccount(); toast("Dodano: " + n); renderTrips(); };
+    t.pack.push({id: newTripId(), n, by: shared ? me : undefined, who: shared ? ($("qpw").value || "") : "", ok: false}); try { localStorage.setItem("sht_qt", t.id); } catch (e) {} tripSave(); closeAccount(); toast("Dodano: " + n); renderTrips(); jumpSec(t, ".tpd"); };
   $("qpx").onclick = closeAccount; $("qpa").onclick = go; $("qpn").onkeydown = e => { if (e.key === "Enter") go(); }; setTimeout(() => $("qpn").focus(), 60);
 }
 function updateFab() {
