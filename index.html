@@ -819,6 +819,7 @@ const TIERS = [["S","linear-gradient(135deg,#ff7b8a,#ff9f7b)"],["A","linear-grad
 // wpis: {s:"v"|"p", stays:[{y,m}], pd:"RRRR[-MM]", pr:0..5, r:0..5, t:"S".."D"|"", n:"", done:{idxSzlaku:1}}
 let wVisits = {}, sVisits = {}, visits = wVisits;
 const LS = "skibeen.v1", LSH = "skibeen.h1", LSM = "skibeen.mode", LST = "skibeen.trips";
+let TOURME = "", TOURDEMO = null;
 let TRIPS = [], tripOpen = null, PACKS = [], packOpen = null, tripsTab = "trips";
 try { PACKS = JSON.parse(localStorage.getItem("skibeen.packs") || "[]") || []; } catch(e){ PACKS = []; }
 try { TRIPS = JSON.parse(localStorage.getItem(LST) || "[]") || []; } catch(e){ TRIPS = []; }
@@ -1736,7 +1737,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v187";
+const APPV = "v188";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1745,17 +1746,49 @@ function ovBox(){
   ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; return ov;
 }
 const tripsPre = () => { tripOpen = null; tripsTab = "trips"; renderTrips(); };
+function tourDemo(){
+  const W = MODE === "w", iso = k => { const d = new Date(); d.setDate(d.getDate() + k); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const pool = R.filter(r => r.y != null && (W || (r.hikes || []).some(h => !h.del))).sort((x, y) => y.k - x.k), b0 = pool[0];
+  const near = pool.filter(r => r !== b0 && km2(b0, r) < 60).slice(0, 3), far = pool.find(r => km2(b0, r) > 120);
+  const mkI = (r, day, v, cm) => { const h = W ? null : (r.hikes || []).find(z => !z.del); return {id: newTripId(), p: r.id, n: W ? r.n : h.n, m: W ? "w" : undefined, day, by: "test2", v, cm: cm || []}; };
+  const items = [];
+  if (b0) items.push(mkI(b0, 1, {test1: 1, test2: 1, test3: 1}, [{u: "test3", t: W ? "Tu jest najlepszy śnieg!" : "Ten szlak koniecznie!"}]));
+  if (near[0]) items.push(mkI(near[0], 1, {test1: 1, test3: -1}));
+  if (near[1]) items.push(mkI(near[1], 2, {test2: 1}));
+  if (far) items.push(mkI(far, 3, {}));
+  if (near[2]) items.push(mkI(near[2], 0, {test1: 1, test2: 1}));
+  const cs = [
+    {id: newTripId(), w: "Nocleg", a: 1260, cu: "PLN", by: "test1", at: Date.now()},
+    {id: newTripId(), w: W ? "Skipassy" : "Bilety i parking", a: 96, cu: "EUR", fr: 4.3, by: "test2", sp: ["test1", "test2"], at: Date.now()},
+    {id: newTripId(), w: W ? "Obiad na stoku" : "Obiad w schronisku", a: 78, cu: "CHF", fr: 4.6, by: "test3", at: Date.now()}
+  ];
+  return {id: "tour-demo", name: "Przykładowy wyjazd", from: iso(3), to: iso(5), note: "Nocleg w pensjonacie, dojazd dwoma autami.", items, dn: {1: "Wyjście o 7:00, śniadanie wcześniej."}, costs: cs, pack: [{id: newTripId(), n: "Rezerwacja noclegu", ok: true, who: "test1"}, {id: newTripId(), n: "Ubezpieczenie", ok: false, who: "test3"}], shop: [{id: newTripId(), n: "Makaron", ok: true}, {id: newTripId(), n: "Woda i batony", ok: false}], settle: [], cc: [], cur: "zł", rt: {EUR: 4.3, CHF: 4.6, USD: 4}, rs: {EUR: "m", CHF: "m", USD: "m"}, rd: Date.now(), mode: MODE, shared: true, owner_name: "test1", members: ["test2", "test3"], rsvp: {test1: "y", test2: "y", test3: "m"}, demo: true};
+}
 const TOUR = [
-  {t: "Witaj", x: "Pokażę tylko to, czego nie widać na pierwszy rzut oka. Zajmie to chwilę, a w każdej chwili możesz pominąć."},
+  {t: "Witaj", x: "Pokażę to, czego nie widać na pierwszy rzut oka, przede wszystkim planer wyjazdów. Możesz pominąć w każdej chwili."},
   {v: "mapa", s: ".legend", t: "Punkty i karta miejsca", x: "Zielony to miejsca, w których byłeś, żółty to planowane, niebieski to jeszcze nie. Dotknij punktu, a otworzy się karta: oznaczysz wizytę, odhaczysz pojedyncze szlaki, ocenisz miejsce i przeczytasz opinie innych. Wszystkie opinie są publiczne, więc Twoja pomaga następnym."},
-  {v: "mapa", s: "#mfilt", t: "Trzy tryby mapy", x: "W filtrach znajdziesz pole Tryb.<br>• <b>Zwykły</b>: Twoje miejsca, wizyty i plany.<br>• <b>Znajomi</b>: mapa ze znajomymi, gdzie byli i co planują.<br>• Trzeci tryb zostawiam Tobie do odkrycia."},
+  {v: "mapa", pre: () => openMapFilters(), s: "#mfv", t: "Trzy tryby mapy", x: "To pole Tryb w filtrach mapy.<br>• <b>Zwykły</b>: Twoje miejsca, wizyty i plany.<br>• <b>Znajomi</b>: mapa ze znajomymi, gdzie byli i co planują.<br>• Trzeci tryb zostawiam Tobie do odkrycia."},
+  {v: "mapa", pre: () => openMapFilters(), s: ".mfg2", t: "Pozostałe filtry", x: "Kraj, ocena, wielkość i wysokość (zima) albo grupa (lato), a także pogoda: opady, chmury i dzień prognozy. Aktywne filtry pokazują się potem jako małe żetony na mapie. Wyczyść resetuje je i wraca do trybu zwykłego."},
   {v: "mapa", s: "#frbtn", t: "Znajomi", x: "Dodaj znajomych po nicku. Dzięki temu działa tryb znajomi, a w wyjazdach możesz planować razem z nimi."},
-  {v: "wyjazdy", pre: tripsPre, s: '#nav button[data-t="wyjazdy"]', t: "Wyjazdy", x: "Planer wyjazdów: z listy miejsc robisz konkretny plan, a dalej pokażę, co w nim jest."},
-  {v: "wyjazdy", pre: tripsPre, s: "#tnew", t: "Nowy wyjazd", x: "Nadaj nazwę, ustaw daty i dodawaj miejsca albo szlaki. Zimą wybierasz ośrodek bazowy, latem zbierasz trasy z różnych miejsc."},
-  {v: "wyjazdy", pre: tripsPre, t: "Plan dzień po dniu", x: "• Miejsca przeciągasz uchwytem między dniami, nowe lądują w sekcji Do rozplanowania.<br>• Każdy dzień ma własne notatki, a godziny tras sumują się same.<br>• Wyjazd ma własną mapę z trasą, a plan wyeksportujesz do kalendarza (.ics)."},
-  {v: "wyjazdy", pre: tripsPre, t: "Planowanie ze znajomymi", x: "• Udostępnij wyjazd, a zaproszeni zobaczą go u siebie.<br>• Każdy może głosować za albo przeciw miejscom i je komentować, a najlepiej oceniane są na górze.<br>• Wszyscy odpowiadają Jadę, Może albo Nie jadę, a nowości od innych są podświetlone."},
-  {v: "wyjazdy", pre: tripsPre, t: "Koszty i rozliczenia", x: "• Wpisuj wydatki w wyjeździe, także w różnych walutach, i wskazuj, kto za co zapłacił.<br>• Aplikacja podlicza, kto komu ile oddaje, żeby nie liczyć tego w głowie."},
-  {v: "wyjazdy", pre: tripsPre, s: "#tseg", t: "Pakowanie i zakupy", x: "Przełącznik Pakowanie to gotowe listy rzeczy do zabrania, które możesz odhaczać. W wyjeździe jest też wspólna lista zakupów."},
+  {v: "wyjazdy", s: '#nav button[data-t="wyjazdy"]', t: "Wyjazdy", x: "Planer wyjazdów. Z listy miejsc robisz konkretny plan z dniami, kosztami i wspólnymi ustaleniami. Pokażę go na przykładowym wyjeździe."},
+  {v: "wyjazdy", s: "#tnew", t: "Nowy wyjazd", x: "Zaczynasz od nazwy i dat, potem dodajesz cele. Zimą wybierasz też ośrodek bazowy."},
+  {v: "wyjazdy", s: "#tseg", t: "Pakowanie", x: "Druga zakładka to osobne listy rzeczy do zabrania, z gotowymi podpowiedziami. Odhaczasz spakowane rzeczy bez planowania wyjazdu, a listę możesz zduplikować na kolejny raz."},
+  {v: "wyjazdy", demo: 1, s: "#tname", t: "Przykładowy wyjazd", x: "Otwieram demo z trzema osobami: test1, test2 i test3. To tylko pokaz, nic z niego nie zapisuje się na Twoim koncie."},
+  {v: "wyjazdy", demo: 1, s: "#tfrom", t: "Daty", x: "Po ustawieniu dat wyjazd dzieli się na dni, a przy miejscach przypisanych do dnia pojawia się prognoza pogody na ten dzień."},
+  {v: "wyjazdy", demo: 1, s: ".tit", t: "Karta celu", x: "Znacznik po lewej oznacza zrobione. Nazwa otwiera wyszukiwanie w Google, pod nią widać pogodę na dany dzień. Listą obok wybierasz dzień, a krzyżyk usuwa cel z wyjazdu."},
+  {v: "wyjazdy", demo: 1, s: ".thandle", t: "Układanie dni", x: "Chwyć uchwyt i przeciągnij cel na inny dzień albo w inne miejsce w dniu. Cele bez dnia czekają w sekcji Do rozplanowania. Jeśli dzień jest zbyt długi albo miejsca są daleko od siebie, pojawi się ostrzeżenie."},
+  {v: "wyjazdy", demo: 1, s: ".tvg", t: "Głosy i komentarze", x: "Gdy wyjazd jest wspólny, każdy może dać plus albo minus celowi i go skomentować. Cele bez dnia ustawiają się według wyniku głosowania, więc najlepsze są na górze."},
+  {v: "wyjazdy", demo: 1, s: "#rsvseg", t: "Kto jedzie", x: "Każdy uczestnik odpowiada Jadę, Może albo Nie jadę. Pod spodem widać podsumowanie, ile osób jedzie i kto jeszcze nie odpowiedział."},
+  {v: "wyjazdy", demo: 1, s: ".tact", t: "Kalendarz, mapa, znajomi", x: "Kalendarz eksportuje dni do pliku .ics. Mapa pokazuje trasę wyjazdu dzień po dniu. Przycisk współdzielenia zaprasza znajomych po nicku, a oni widzą i edytują ten sam plan."},
+  {v: "wyjazdy", demo: 1, s: ".tcd > summary", t: "Koszty", x: "Tu są wydatki wyjazdu, tu trzy w różnych walutach: złote, euro i franki. Każdy wydatek ma osobę, która zapłaciła, oraz osoby, na które się dzieli. Plus obok nagłówka dodaje nowy."},
+  {v: "wyjazdy", demo: 1, s: ".tcd > .card", t: "Rozliczenie", x: "Aplikacja sama liczy, kto komu ile oddaje, po przeliczeniu wszystkich walut. Gdy ktoś odda pieniądze, klika Rozliczone i dług znika z listy."},
+  {v: "wyjazdy", demo: 1, s: ".swr", t: "Własne wydatki", x: "Wydatki, które sam dodałeś, możesz edytować (kwota, data, kurs, podział) albo usunąć ikonami obok kwoty. Cudzych wydatków nie zmienisz."},
+  {v: "wyjazdy", demo: 1, s: ".tfx > summary", t: "Waluty i kursy", x: "Rozliczasz w jednej walucie. Kursy EUR, USD i CHF pobierają się same z dnia zakupu, a własną walutę dodasz z ręcznym kursem."},
+  {v: "wyjazdy", demo: 1, s: ".tsd > summary", t: "Lista zakupów", x: "Wspólna lista do kupienia. Po odhaczeniu możesz wpisać, ile to kosztowało, a kwota trafi do kosztów i rozliczenia."},
+  {v: "wyjazdy", demo: 1, s: ".tpd > summary", t: "Do ogarnięcia", x: "Sprawy przed wyjazdem, za które odpowiada konkretna osoba, na przykład rezerwacja albo ubezpieczenie. Własne rzeczy do zabrania odhaczasz w zakładce Pakowanie."},
+  {v: "wyjazdy", demo: 1, s: "#tact", t: "Obecny wyjazd", x: "W trakcie terminu wyjazd włącza się sam jako obecny, a tym przyciskiem ustawisz to ręcznie. Dzięki temu skróty do dodawania działają od razu na nim."},
+  {v: "wyjazdy", demo: 1, s: "#tfin", t: "Zakończ wyjazd", x: "Po powrocie kliknij to, a miejsca z wyjazdu zapiszą się na mapie jako odwiedzone. Nie musisz zaznaczać ich po kolei."},
+  {v: "wyjazdy", demo: 1, s: "#fabx", t: "Szybkie akcje", x: "Okrągły przycisk w rogu, gdy masz wyjazd. Dodaje wydatek, rzecz do sklepu, rzecz do zabrania albo znajomego bez wchodzenia w szczegóły wyjazdu."},
   {v: "statystyki", s: '#nav button[data-t="statystyki"]', t: "Staty i ranking", x: "Staty to ogólne podsumowanie Twoich miejsc, krajów i szlaków. Ranking pokazuje najlepsze miejsca według ocen."},
   {t: "Gotowe", x: "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."}
 ];
@@ -1764,13 +1797,20 @@ function startTour(force){
   if ($("tour")) return;
   let i = 0; const ov = document.createElement("div"); ov.id = "tour";
   ov.style.cssText = "position:fixed;inset:0;z-index:9998";
-  const end = () => { try { localStorage.setItem("skibeen.tour", "1"); } catch(e){} ov.remove(); try { show("mapa"); } catch(e){} };
+  const end = () => { try { localStorage.setItem("skibeen.tour", "1"); } catch(e){} ov.remove(); TOURDEMO = null; TOURME = ""; tripOpen = null; try { closeAccount(); show("mapa"); updateFab(); } catch(e){} };
   const draw = () => {
     const t = TOUR[i], last = i === TOUR.length - 1, W = innerWidth, H = innerHeight;
-    if (t.v) { try { show(t.v); } catch(e){} } if (t.pre) { try { t.pre(); } catch(e){} }
+    try { closeAccount(); } catch(e){}
+    TOURDEMO = t.demo ? (TOURDEMO || tourDemo()) : null; TOURME = t.demo ? "test1" : "";
+    if (t.v) { try { show(t.v); } catch(e){} }
+    if (t.v === "wyjazdy") { try { if (t.demo) { tripOpen = "tour-demo"; tripsTab = "trips"; renderTrips(); } else tripsPre(); } catch(e){} }
+    else if (!t.v) { tripOpen = null; }
+    if (t.pre) { try { t.pre(); } catch(e){} }
     setTimeout(() => {
       if (!$("tour")) return;
-      const el = t.s ? document.querySelector(t.s) : null; let r = el ? el.getBoundingClientRect() : null;
+      let el = t.s ? document.querySelector(t.s) : null; for (let u = 0; el && u < 4 && el.getBoundingClientRect().width < 4; u++) el = el.parentElement;
+      if (el && t.demo) { const sc = $("v-wyjazdy"), rr0 = el.getBoundingClientRect(); sc.scrollTop += rr0.top - H * 0.25; }
+      let r = el ? el.getBoundingClientRect() : null;
       if (r && (r.width < 4 || r.height < 4)) r = null;
       const cw = Math.min(330, W - 24), cx = r ? r.left + r.width / 2 : W / 2;
       const cl = Math.max(12, Math.min(W - cw - 12, cx - cw / 2));
@@ -1781,7 +1821,7 @@ function startTour(force){
       const arrow = r ? `<div style="position:absolute;${below ? "top:-7px" : "bottom:-7px"};left:${ax}px;width:14px;height:14px;background:var(--bg2);transform:rotate(45deg);border:1px solid var(--line);border-${below ? "right" : "left"}:0;border-${below ? "bottom" : "top"}:0"></div>` : "";
       ov.innerHTML = hole + `<div class="card" style="position:fixed;left:${cl}px;width:${cw}px;${pos};text-align:left;padding:16px;margin:0;background:var(--bg2);backdrop-filter:none"><div class="small" style="margin-bottom:4px">${i + 1} / ${TOUR.length}</div><h3 style="margin:0 0 6px">${t.t}</h3><p style="color:var(--mute);margin:0 0 14px;line-height:1.45;font-size:14px">${t.x}</p><div style="display:flex;gap:8px"><button class="btn" id="tskip" style="flex:1">${last ? "Zamknij" : "Pomiń"}</button><button class="btn pri" id="tnext" style="flex:2">${last ? "Zaczynamy" : "Dalej"}</button></div>${arrow}</div>`;
       $("tskip").onclick = end; $("tnext").onclick = () => { if (last) end(); else { i++; draw(); } };
-    }, t.v ? 380 : 0);
+    }, t.v ? 420 : 0);
   };
   document.body.append(ov); draw();
 }
@@ -2697,9 +2737,9 @@ document.querySelectorAll(".brand .tg").forEach(el => el.addEventListener("click
 $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); });
 /* ---------- planer wyjazdów (lato) ---------- */
 let SHT = [], shTimer = 0, shBusy = false;
-const meName = () => String((store.prof && store.prof.username) || "").toLowerCase();
+const meName = () => TOURME || String((store.prof && store.prof.username) || "").toLowerCase();
 const newTripId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-const allTrips = () => [...SHT, ...TRIPS];
+const allTrips = () => [...SHT, ...TRIPS, ...(TOURDEMO ? [TOURDEMO] : [])];
 const shData = t => ({name: t.name || "", from: t.from || "", to: t.to || "", note: t.note || "", items: t.items || [], dn: t.dn || {}, dnb: t.dnb || {}, costs: t.costs || [], pack: t.pack || [], settle: t.settle || [], shop: t.shop || [], dest: t.dest || "", cur: t.cur || "PLN", cc: t.cc || [], rt: t.rt || {}, rs: t.rs || {}, rd: t.rd || 0, rsvp: t.rsvp || {}, cover: t.cover || null, ar: t.ar ? 1 : 0, mode: t.mode === "w" ? "w" : "s", base: t.base || ""});
 const shNorm = r => { const d = r.data || {}, t = {id: r.id, shared: true, owner: r.owner, owner_name: r.owner_name || "", members: r.members || [], invite: r.invite || "", ed: d.ed || "", _upd: r.updated_at || "", name: d.name || "Wyjazd", from: d.from || "", to: d.to || "", note: d.note || "", items: d.items || [], dn: d.dn || {}, dnb: d.dnb || {}, costs: d.costs || [], pack: d.pack || [], settle: d.settle || [], shop: d.shop || [], dest: d.dest || "", cur: d.cur || "PLN", cc: d.cc || [], rt: d.rt || {}, rs: d.rs || {}, rd: d.rd || 0, rsvp: d.rsvp || {}, cover: d.cover || null, ar: d.ar ? 1 : 0, mode: d.mode === "w" ? "w" : "s", base: d.base || ""}; t._snap = JSON.stringify(shData(t)); return t; };
 async function loadShared(force){
