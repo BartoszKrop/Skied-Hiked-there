@@ -1709,7 +1709,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v168";
+const APPV = "v169";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2444,7 +2444,7 @@ function openMapFilters(){
     $("mfwc").onchange = e => { fWc = +e.target.value; $("fwc").value = e.target.value; upd(); };
     $("mfc").onchange = e => { fCountry = e.target.value; $("fcountry").value = fCountry; upd(); };
     if (W) { $("mfg").onchange = e => { fGroup = e.target.value; $("fgroup").value = fGroup; upd(); }; $("mfk").onchange = e => { fMinKm = +e.target.value; $("fminkm").value = String(fMinKm); upd(); }; $("mfe").onchange = e => { fMinEl = +e.target.value; $("fminel").value = String(fMinEl); upd(); }; }
-    $("mfclr").onclick = () => { fCountry = ""; fGroup = ""; fMinKm = 0; fMinEl = 0; $("fcountry").value = ""; $("fgroup").value = ""; $("fminkm").value = "0"; $("fminel").value = "0"; fMinR = 0; $("fminr").value = "0"; fCat = ""; $("fcat").value = ""; fWx = ""; $("fwx").value = ""; fWd = 0; $("fwd").value = "0"; fWc = 0; $("fwc").value = "0"; setFStat("all"); upd(); draw(); };
+    $("mfclr").onclick = () => { setView("n"); fCountry = ""; fGroup = ""; fMinKm = 0; fMinEl = 0; $("fcountry").value = ""; $("fgroup").value = ""; $("fminkm").value = "0"; $("fminel").value = "0"; fMinR = 0; $("fminr").value = "0"; fCat = ""; $("fcat").value = ""; fWx = ""; $("fwx").value = ""; fWd = 0; $("fwd").value = "0"; fWc = 0; $("fwc").value = "0"; setFStat("all"); upd(); draw(); };
     $("mfok").onclick = closeAccount;
   };
   draw();
@@ -2546,7 +2546,7 @@ function show(t){
   if (t === "mapa") requestAnimationFrame(() => { if (mapFitted) applyVB(); else fit(); });
   if (t === "wyjazdy") loadShared(false);
 }
-$("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const t = b.dataset.t, same = show._t === t || (t === "mapa" && show._t === "lista");
+$("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const t = b.dataset.t, same = show._t === t || (t === "mapa" && show._t === "lista"); if (t === "mapa" && (filmMode || frMode)) setView("n");
   if (same) { try {
     if (t === "wyjazdy") { tripOpen = null; packOpen = null; tripsTab = "trips"; costEditId = null; renderTrips(); }
     else if (t === "mapa" && show._t === "lista") { /* z listy wraca na mapę */ }
