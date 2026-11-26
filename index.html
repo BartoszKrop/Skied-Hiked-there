@@ -1737,7 +1737,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v192";
+const APPV = "v193";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1779,10 +1779,10 @@ const TOUR = [
   {v: "wyjazdy", demo: 1, s: ".tvg", t: "Głosy i komentarze", x: "Gdy wyjazd jest wspólny, każdy może dać plus albo minus celowi i go skomentować. Cele bez dnia ustawiają się według wyniku głosowania, więc najlepsze są na górze."},
   {v: "wyjazdy", demo: 1, s: "#rsvseg", t: "Kto jedzie", x: "Każdy uczestnik odpowiada Jadę, Może albo Nie jadę. Pod spodem widać podsumowanie, ile osób jedzie i kto jeszcze nie odpowiedział."},
   {v: "wyjazdy", demo: 1, s: ".tact", t: "Kalendarz, mapa, znajomi", x: "Kalendarz dodaje dni z przypisanymi celami do kalendarza na Twoim urządzeniu. Mapa pokazuje trasę wyjazdu dzień po dniu. Przycisk współdzielenia zaprasza znajomych po nicku, a oni widzą i edytują ten sam plan."},
-  {v: "wyjazdy", demo: 1, s: ".tcd > summary", t: "Koszty", x: "Wydatki wyjazdu, także w różnych walutach. Każdy ma osobę, która zapłaciła, i osoby, na które się dzieli. Plus obok nagłówka dodaje nowy."},
-  {v: "wyjazdy", demo: 1, s: ".tcd > .card", t: "Rozliczenie", x: "Aplikacja sama liczy, kto komu ile oddaje, po przeliczeniu wszystkich walut. Gdy ktoś odda pieniądze, klika Rozliczone i dług znika z listy."},
-  {v: "wyjazdy", demo: 1, s: ".swr", t: "Własne wydatki", x: "Wydatki, które sam dodałeś, możesz edytować (kwota, data, kurs, podział) albo usunąć ikonami obok kwoty. Cudzych wydatków nie zmienisz."},
+  {v: "wyjazdy", demo: 1, el: () => { const rows = []; (TOURDEMO ? TOURDEMO.costs : []).forEach(c => { const card = [...document.querySelectorAll(".tcd .card")].find(x => x.textContent.includes(c.w) && !x.style.cssText.includes("--acc")); if (card) rows.push(card.closest(".swr") || card); }); if (!rows.length) return null; return {getBoundingClientRect: () => { const q = rows.map(x => x.getBoundingClientRect()), l = Math.min(...q.map(x => x.left)), tp = Math.min(...q.map(x => x.top)), rt = Math.max(...q.map(x => x.right)), bt = Math.max(...q.map(x => x.bottom)); return {left: l, top: tp, right: rt, bottom: bt, width: rt - l, height: bt - tp}; }, scrollRef: rows[0]}; }, t: "Wydatki", x: "Tu trzy wydatki, każdy w innej walucie: złotych, euro i frankach. Każdy ma osobę, która zapłaciła, i osoby, na które się dzieli. Obcą walutę aplikacja przelicza na walutę rozliczenia, a kurs widać pod kwotą. Nowy wydatek dodajesz plusem przy nagłówku Koszty."},
   {v: "wyjazdy", demo: 1, s: ".tfx > summary", t: "Waluty i kursy", x: "Rozliczasz w jednej walucie, a wydatki mogą być w różnych: euro, funty, dolary, franki, korony i inne. Kursy większości walut ustawiają się same, a własną walutę dodasz ręcznie."},
+  {v: "wyjazdy", demo: 1, s: ".swr", t: "Własne wydatki", x: "Wydatki, które sam dodałeś, możesz edytować (kwota, data, kurs, podział) albo usunąć ikonami obok kwoty. Cudzych wydatków nie zmienisz."},
+  {v: "wyjazdy", demo: 1, s: ".tcd > .card", t: "Rozliczenie", x: "Aplikacja sama liczy, kto komu ile oddaje, po przeliczeniu wszystkich walut. Gdy ktoś odda pieniądze, klika Rozliczone i dług znika z listy."},
   {v: "wyjazdy", demo: 1, s: ".tsd > summary", t: "Lista zakupów", x: "Wspólna lista do kupienia. Po odhaczeniu możesz wpisać, ile to kosztowało, a kwota trafi do kosztów i rozliczenia."},
   {v: "wyjazdy", demo: 1, s: ".tpd > summary", t: "Do ogarnięcia", x: "Sprawy przed wyjazdem, za które odpowiada konkretna osoba, na przykład rezerwacja albo ubezpieczenie. Własne rzeczy do zabrania odhaczasz w zakładce Pakowanie."},
   {v: "wyjazdy", demo: 1, s: "#tact", t: "Obecny wyjazd", x: "W trakcie terminu wyjazd włącza się sam jako obecny, a tym przyciskiem ustawisz to ręcznie. Dzięki temu skróty do dodawania działają od razu na nim."},
@@ -1809,10 +1809,11 @@ function startTour(force){
     if (t.v === "wyjazdy") { try { if (t.demo) { tripOpen = "tour-demo"; tripsTab = "trips"; renderTrips(); } else tripsPre(); } catch(e){} }
     else if (!t.v) { tripOpen = null; }
     if (t.pre) { try { t.pre(); } catch(e){} }
-    setTimeout(() => {
-      if (!$("tour")) return;
+    ov.innerHTML = '<div style="position:fixed;inset:0;background:rgba(5,10,20,.78)"></div>';
+    const place = first => {
+      if (!$("tour") || STEPS[i] !== t) return;
       let el = t.el ? t.el() : t.s ? document.querySelector(t.s) : null; for (let u = 0; el && u < 4 && el.getBoundingClientRect().width < 4; u++) el = el.parentElement;
-      if (el && t.demo) { const sc = $("v-wyjazdy"), rr0 = el.getBoundingClientRect(); sc.scrollTop += rr0.top - H * 0.25; }
+      if (el && t.demo && first) { const sc = $("v-wyjazdy"), rr0 = el.getBoundingClientRect(); sc.scrollTop += rr0.top - H * 0.25; }
       let r = el ? el.getBoundingClientRect() : null;
       if (r && (r.width < 4 || r.height < 4)) r = null;
       const cw = Math.min(330, W - 24), cx = r ? r.left + r.width / 2 : W / 2;
@@ -1824,7 +1825,8 @@ function startTour(force){
       const arrow = r ? `<div style="position:absolute;${below ? "top:-7px" : "bottom:-7px"};left:${ax}px;width:14px;height:14px;background:var(--bg2);transform:rotate(45deg);border:1px solid var(--line);border-${below ? "right" : "left"}:0;border-${below ? "bottom" : "top"}:0"></div>` : "";
       ov.innerHTML = hole + `<div class="card" style="position:fixed;left:${cl}px;width:${cw}px;${pos};text-align:left;padding:16px;margin:0;background:var(--bg2);backdrop-filter:none"><div class="small" style="margin-bottom:4px">${i + 1} / ${STEPS.length}</div><h3 style="margin:0 0 6px">${t.t}</h3><p style="color:var(--mute);margin:0 0 14px;line-height:1.45;font-size:14px">${typeof t.x === "function" ? t.x() : t.x}</p><div style="display:flex;gap:8px"><button class="btn" id="tskip" style="flex:1">${last ? "Zamknij" : "Pomiń"}</button><button class="btn pri" id="tnext" style="flex:2">${last ? (t.btn || "Zaczynamy") : "Dalej"}</button></div>${arrow}</div>`;
       $("tskip").onclick = end; $("tnext").onclick = () => { if (last) end(); else { i++; draw(); } };
-    }, t.v ? 420 : 0);
+    };
+    setTimeout(() => place(true), t.v ? 420 : 0); setTimeout(() => place(false), (t.v ? 420 : 0) + 500);
   };
   document.body.append(ov); draw();
 }
