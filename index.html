@@ -1736,7 +1736,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v186";
+const APPV = "v187";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1744,18 +1744,19 @@ function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
   ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; return ov;
 }
+const tripsPre = () => { tripOpen = null; tripsTab = "trips"; renderTrips(); };
 const TOUR = [
-  {t: "Witaj", x: "Pokażę Ci w skrócie, co gdzie jest. Zajmie to chwilę, a możesz pominąć w każdej chwili."},
-  {v: "mapa", s: "#mode", t: "Lato i zima", x: "Tu przełączasz aplikację: Skied there to ośrodki narciarskie, Hiked there to szlaki i miejsca w górach."},
-  {v: "mapa", s: ".legend", t: "Kolory punktów", x: "Zielony to miejsca, w których byłeś, żółty to planowane, niebieski to jeszcze nie odwiedzone. Dotknij punktu na mapie, żeby zobaczyć szczegóły, opinie i dodać wizytę."},
-  {v: "mapa", s: "#mfilt", t: "Filtry", x: "Kraj, wielkość, ocena, pogoda, kategoria i tryb filmowy. Aktywne filtry pokażą się jako małe żetony na mapie, każdy zdejmiesz krzyżykiem."},
-  {v: "mapa", s: "#znames", t: "Nazwy na mapie", x: "Włącza i wyłącza podpisy miejsc. Przekreślone Aa oznacza, że nazwy są ukryte."},
-  {v: "mapa", s: ".zoom", t: "Przybliżanie", x: "Przyciskami albo palcami. Mapą możesz przesuwać bez końca, bo zawija się dookoła globu. Ostatni widok zapamiętuje się sam."},
-  {v: "mapa", s: "#mlist", t: "Lista miejsc", x: "Ten sam zestaw miejsc w formie listy. Zobaczmy, jak wygląda."},
-  {v: "lista", s: "#q", t: "Wyszukiwarka", x: "Wpisz dowolny fragment nazwy, miejscowości albo regionu. Wystarczy druga część nazwy, a pod polem pojawią się podpowiedzi."},
-  {v: "lista", s: ".frowm", t: "Status i sortowanie", x: "Pokaż tylko miejsca, w których byłeś, które planujesz albo których jeszcze nie znasz. Obok możesz zmienić sortowanie."},
-  {v: "lista", s: "#fmore", t: "Więcej filtrów", x: "Kraj, region, wielkość, pogoda i reszta. To te same filtry, co na mapie, więc ustawienia działają w obu miejscach."},
-  {v: "mapa", s: "#nav", t: "Reszta w skrócie", x: "Ranking to najlepsze miejsca według ocen. Staty to Twoje podsumowanie, a Wyjazdy służą do planowania z ekipą: pakowanie, koszty, pogoda."},
+  {t: "Witaj", x: "Pokażę tylko to, czego nie widać na pierwszy rzut oka. Zajmie to chwilę, a w każdej chwili możesz pominąć."},
+  {v: "mapa", s: ".legend", t: "Punkty i karta miejsca", x: "Zielony to miejsca, w których byłeś, żółty to planowane, niebieski to jeszcze nie. Dotknij punktu, a otworzy się karta: oznaczysz wizytę, odhaczysz pojedyncze szlaki, ocenisz miejsce i przeczytasz opinie innych. Wszystkie opinie są publiczne, więc Twoja pomaga następnym."},
+  {v: "mapa", s: "#mfilt", t: "Trzy tryby mapy", x: "W filtrach znajdziesz pole Tryb.<br>• <b>Zwykły</b>: Twoje miejsca, wizyty i plany.<br>• <b>Znajomi</b>: mapa ze znajomymi, gdzie byli i co planują.<br>• Trzeci tryb zostawiam Tobie do odkrycia."},
+  {v: "mapa", s: "#frbtn", t: "Znajomi", x: "Dodaj znajomych po nicku. Dzięki temu działa tryb znajomi, a w wyjazdach możesz planować razem z nimi."},
+  {v: "wyjazdy", pre: tripsPre, s: '#nav button[data-t="wyjazdy"]', t: "Wyjazdy", x: "Planer wyjazdów: z listy miejsc robisz konkretny plan, a dalej pokażę, co w nim jest."},
+  {v: "wyjazdy", pre: tripsPre, s: "#tnew", t: "Nowy wyjazd", x: "Nadaj nazwę, ustaw daty i dodawaj miejsca albo szlaki. Zimą wybierasz ośrodek bazowy, latem zbierasz trasy z różnych miejsc."},
+  {v: "wyjazdy", pre: tripsPre, t: "Plan dzień po dniu", x: "• Miejsca przeciągasz uchwytem między dniami, nowe lądują w sekcji Do rozplanowania.<br>• Każdy dzień ma własne notatki, a godziny tras sumują się same.<br>• Wyjazd ma własną mapę z trasą, a plan wyeksportujesz do kalendarza (.ics)."},
+  {v: "wyjazdy", pre: tripsPre, t: "Planowanie ze znajomymi", x: "• Udostępnij wyjazd, a zaproszeni zobaczą go u siebie.<br>• Każdy może głosować za albo przeciw miejscom i je komentować, a najlepiej oceniane są na górze.<br>• Wszyscy odpowiadają Jadę, Może albo Nie jadę, a nowości od innych są podświetlone."},
+  {v: "wyjazdy", pre: tripsPre, t: "Koszty i rozliczenia", x: "• Wpisuj wydatki w wyjeździe, także w różnych walutach, i wskazuj, kto za co zapłacił.<br>• Aplikacja podlicza, kto komu ile oddaje, żeby nie liczyć tego w głowie."},
+  {v: "wyjazdy", pre: tripsPre, s: "#tseg", t: "Pakowanie i zakupy", x: "Przełącznik Pakowanie to gotowe listy rzeczy do zabrania, które możesz odhaczać. W wyjeździe jest też wspólna lista zakupów."},
+  {v: "statystyki", s: '#nav button[data-t="statystyki"]', t: "Staty i ranking", x: "Staty to ogólne podsumowanie Twoich miejsc, krajów i szlaków. Ranking pokazuje najlepsze miejsca według ocen."},
   {t: "Gotowe", x: "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."}
 ];
 function startTour(force){
@@ -1766,7 +1767,7 @@ function startTour(force){
   const end = () => { try { localStorage.setItem("skibeen.tour", "1"); } catch(e){} ov.remove(); try { show("mapa"); } catch(e){} };
   const draw = () => {
     const t = TOUR[i], last = i === TOUR.length - 1, W = innerWidth, H = innerHeight;
-    if (t.v) { try { show(t.v); } catch(e){} }
+    if (t.v) { try { show(t.v); } catch(e){} } if (t.pre) { try { t.pre(); } catch(e){} }
     setTimeout(() => {
       if (!$("tour")) return;
       const el = t.s ? document.querySelector(t.s) : null; let r = el ? el.getBoundingClientRect() : null;
