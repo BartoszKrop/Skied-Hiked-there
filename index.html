@@ -605,7 +605,7 @@ table tr{transition:background .12s}
       <div class="row2" id="frow4"><select id="fminr" aria-label="Ocena"><option value="0">Ocena</option><option value="3">★ 3,0 i więcej</option><option value="3.5">★ 3,5 i więcej</option><option value="4">★ 4,0 i więcej</option><option value="4.5">★ 4,5 i więcej</option></select></div>
       <div class="row2" id="frow2"><select id="fminkm"><option value="0">Wielkość</option><option value="30">od 30 km tras</option><option value="50">od 50 km</option><option value="100">od 100 km</option><option value="150">od 150 km</option><option value="200">od 200 km</option><option value="300">od 300 km</option></select><select id="fminel"><option value="0">Wysokość</option><option value="1000">powyżej 1000 m</option><option value="1500">powyżej 1500 m</option><option value="2000">powyżej 2000 m</option><option value="2500">powyżej 2500 m</option><option value="3000">powyżej 3000 m</option></select></div>
       <div id="frow6" style="display:none"><select id="fcat" aria-label="Rodzaj"><option value="">Rodzaj: wszystkie</option><option value="g">🥾 Szlaki i szczyty</option><option value="j">🏞️ Jeziora</option><option value="w">💧 Wodospady</option><option value="k">🪨 Kaniony i formacje</option></select></div>
-      <div class="row2" id="frow7"><button class="ddb" id="filmgo" type="button"><span>🎬 Tryb filmowy</span><span>›</span></button></div>
+      <div class="row2" id="frow7"><select id="fview" aria-label="Tryb"><option value="n">🗺️ Tryb zwykły</option><option value="f">👥 Tryb znajomi</option><option value="m">🎬 Tryb filmowy</option></select></div>
       <div id="frow5"><div class="wxh">🌨 Pogoda</div><select id="fwd" aria-label="Dzień"><option value="0">Dziś</option><option value="1">Jutro</option><option value="2">Pojutrze</option><option value="7">Średnio 7 dni</option></select><select id="fwx" aria-label="Opady"><option value="">Opady: dowolne</option><option value="dry">Bez opadów</option><option value="snow">Śnieg ≥1 cm</option></select><select id="fwc" aria-label="Zachmurzenie"><option value="0">Chmury: dowolne</option><option value="30">Chmury ≤30%</option><option value="60">Chmury ≤60%</option></select><select id="fws" aria-label="Pokrywa śniegu"><option value="0">Pokrywa: dowolna</option><option value="20">Pokrywa od 20 cm</option><option value="50">Pokrywa od 50 cm</option><option value="100">Pokrywa od 100 cm</option><option value="150">Pokrywa od 150 cm</option></select><select id="fwsort" aria-label="Sortuj wg pogody"><option value="">Sortuj wg pogody</option><option value="ws">❄ Najwięcej świeżego śniegu</option><option value="wd">❄ Największa pokrywa</option><option value="wp">🌨 Najmniejsza szansa opadów</option><option value="wc">☀ Najmniej chmur</option></select></div>
       </div>
     </div>
@@ -1117,7 +1117,7 @@ function initListControls(){
   $("fgroup").addEventListener("change", e => { fGroup = e.target.value; renderList(); mapRefresh(); });
   $("q").addEventListener("input", e => { fQ = norm(e.target.value.trim()); renderList(); });
   $("fcat").addEventListener("change", e => { fCat = e.target.value; renderList(); mapRefresh(); });
-  $("filmgo").addEventListener("click", () => enterFilm());
+  $("fview").addEventListener("change", e => setView(e.target.value));
   $("fcountry").addEventListener("change", e => { fCountry = e.target.value; renderList(); mapRefresh(); });
   $("fsort").addEventListener("change", e => { fSort = e.target.value; $("fwsort").value = ""; renderList(); });
   $("fwsort").addEventListener("change", e => { const v = e.target.value; fSort = v || "k"; $("fsort").value = v ? "_w" : "k"; renderList(); });
@@ -1725,7 +1725,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v161";
+const APPV = "v162";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2445,16 +2445,16 @@ function openMapFilters(){
       ${hasF ? F("mfs", "ZNAJOMI", [["all", "Wszyscy"], ["fp", "👥 Znajomi planują"], ["tog", "🤝 Planujemy razem"], ["pfv", "📍 Chcę, byli znajomi"], ["fv", "👥 Znajomi byli"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")) : ""}
       ${W ? F("mfg", "GRUPA", $("fgroup").innerHTML) : ""}
       ${F("mfr", "OCENA", $("fminr").innerHTML)}
-      ${W ? F("mfk", "WIELKOŚĆ", $("fminkm").innerHTML) + F("mfe", "WYSOKOŚĆ", $("fminel").innerHTML) : F("mfct", "RODZAJ", $("fcat").innerHTML)}<div class="fld"><label>TRYB</label><button class="ddb" id="mffilm" type="button"><span>🎬 Tryb filmowy</span><span>›</span></button></div>
+      ${W ? F("mfk", "WIELKOŚĆ", $("fminkm").innerHTML) + F("mfe", "WYSOKOŚĆ", $("fminel").innerHTML) : F("mfct", "RODZAJ", $("fcat").innerHTML)}${F("mfv", "TRYB", `<option value="n">🗺️ Tryb zwykły</option><option value="f">👥 Tryb znajomi</option><option value="m">🎬 Tryb filmowy</option>`)}
       ${F("mfwd", "POGODA · KIEDY", $("fwd").innerHTML)}${F("mfwx", "OPADY", $("fwx").innerHTML)}${F("mfwc", "CHMURY", $("fwc").innerHTML)}
       </div>
       <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="mfclr" style="flex:1">Wyczyść</button><button class="btn pri" id="mfok" style="flex:2">Pokaż (${cnt()})</button></div></div>`;
-    if ($("mfs")) $("mfs").value = fStat; $("mfr").value = String(fMinR); if ($("mfct")) $("mfct").value = fCat; $("mfwd").value = String(fWd); $("mfwx").value = fWx; $("mfwc").value = String(fWc); $("mfc").value = fCountry; if (W) { $("mfg").value = fGroup; $("mfk").value = String(fMinKm); $("mfe").value = String(fMinEl); }
+    $("mfv").value = viewVal(); if ($("mfs")) $("mfs").value = fStat; $("mfr").value = String(fMinR); if ($("mfct")) $("mfct").value = fCat; $("mfwd").value = String(fWd); $("mfwx").value = fWx; $("mfwc").value = String(fWc); $("mfc").value = fCountry; if (W) { $("mfg").value = fGroup; $("mfk").value = String(fMinKm); $("mfe").value = String(fMinEl); }
     const upd = () => { renderList(); mapRefresh(); setTimeout(() => { fit(); }, 0); $("mfok").textContent = "Pokaż (" + cnt() + ")"; };
     if ($("mfs")) $("mfs").onchange = e => { setFStat(e.target.value); upd(); };
     $("mfr").onchange = e => { fMinR = +e.target.value; $("fminr").value = e.target.value; upd(); };
     if ($("mfct")) $("mfct").onchange = e => { fCat = e.target.value; $("fcat").value = fCat; upd(); };
-    if ($("mffilm")) $("mffilm").onclick = () => { closeAccount(); enterFilm(); };
+    $("mfv").onchange = e => { const v = e.target.value; setView(v); if (v === "m") closeAccount(); else { $("mfv").value = viewVal(); upd(); } };
     $("mfwd").onchange = e => { fWd = +e.target.value; $("fwd").value = e.target.value; upd(); };
     $("mfwx").onchange = e => { fWx = e.target.value; $("fwx").value = fWx; upd(); };
     $("mfwc").onchange = e => { fWc = +e.target.value; $("fwc").value = e.target.value; upd(); };
@@ -2465,7 +2465,7 @@ function openMapFilters(){
   };
   draw();
 }
-function mapRefresh(){ legSync(); { if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
+function mapRefresh(){ legSync(); viewSync(); { if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){
   const rc = svg.getBoundingClientRect();
   const cx = ctr ? vb.x + (ctr.x - rc.left) / rc.width * vb.w : vb.x + vb.w / 2;
@@ -2581,6 +2581,13 @@ function flipUI(){ buildFx(); const a = document.querySelector("main"), h = docu
 function countUp(){ document.querySelectorAll("#hstats b").forEach(b => { const to = parseFloat(b.textContent); if (!isFinite(to) || to <= 0 || to > 99999 || b.dataset.cu === String(to)) return; const from = parseFloat(b.dataset.cu) || 0; b.dataset.cu = String(to); if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), dur = 700, txt = b.textContent; (function f(t){ const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); b.textContent = k < 1 ? String(Math.round(from + (to - from) * e)) : txt; if (k < 1) requestAnimationFrame(f); })(t0); }); }
 const FILMS = [["", "Wszystkie"], ["sw", "Star Wars"], ["lotr", "Władca Pierścieni"], ["hob", "Hobbit"], ["got", "Gra o tron"], ["hp", "Harry Potter"], ["bond", "James Bond"], ["ij", "Indiana Jones"], ["mi", "Mission: Impossible"], ["dune", "Diuna"], ["nar", "Narnia"], ["int", "Interstellar"], ["sm", "Dźwięki muzyki"]];
 function dname(r){ if (!filmMode || !r.fl) return r.n; const k = fFilm && r.fl[fFilm] ? fFilm : Object.keys(r.fl).find(x => (r.fm || []).includes(x)) || Object.keys(r.fl)[0]; const f = r.fl[k]; return f ? f + " (" + r.n.replace(/\s*\(.*\)$/, "") + ")" : r.n; }
+function viewVal(){ return filmMode ? "m" : frMode ? "f" : "n"; }
+function setView(v){
+  if (v === "m") { if (filmMode) return; setFrMode(false); enterFilm(); return; }
+  if (v === "f") { if (!Object.keys(FRD).length) { toast("Brak znajomych do pokazania"); viewSync(); return; } exitFilm(); setFrMode(true); viewSync(); return; }
+  exitFilm(); setFrMode(false); viewSync();
+}
+function viewSync(){ ["fview", "mfv"].forEach(i => { const e = $(i); if (e) e.value = viewVal(); }); }
 function filmBar(){ $("filmchips").innerHTML = FILMS.map(([v, l]) => `<button data-f="${v}" class="${fFilm === v ? "on" : ""}">${l}</button>`).join(""); }
 function enterFilm(){
   if (MODE === "w") setMode("s");
