@@ -1416,23 +1416,7 @@ function shareCanvasBase(kind, per){
   const st = PD ? (W ? [[PD.places.length, "ośrodków"], [PD.countries.size, "krajów"], [Math.round(PD.km), "km tras"], PD.days > 0 ? [PD.days, "dni na nartach"] : [PD.stays, "wizyt"]] : [[PD.places.length, "miejsc"], [PD.countries.size, "krajów"]]) : W ? [[S.n, "ośrodków"], [S.countries.size, "krajów"], [Math.round(S.km), "km tras"], S.days > 0 ? [S.days, "dni na nartach"] : [S.stays, "wizyt"]] : [[S.n, "miejsc"], [S.countries.size, "krajów"], [S.hikes, "szlaków"]];
   st.forEach((x, i) => { const px0 = 60 + i * 240; c.fillStyle = "rgba(255,255,255,.07)"; c.beginPath(); c.roundRect(px0, 190, 225, 130, 22); c.fill(); c.fillStyle = acc; c.font = `800 66px ${FD}`; c.fillText(String(x[0]), px0 + 22, 262); c.fillStyle = "#9db0d0"; c.font = `500 24px ${F}`; c.fillText(tr(x[1]), px0 + 22, 295); });
   const vis = R.filter(r => isVis(r.id));
-  if (kind === "period") {
-    const pl = PD.places.slice().sort((a, b) => b.k - a.k);
-    if (!pl.length) { c.fillStyle = "rgba(255,255,255,.05)"; c.beginPath(); c.roundRect(60, 350, 960, 540, 26); c.fill(); c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText(tr(W ? "Brak wizyt w tym okresie." : "Brak miejsc w tym okresie."), 100, 420); }
-    else {
-      const shown = pl.slice(0, 14), rows = Math.ceil(shown.length / 2), mh = 560 + (7 - rows) * 44, ly = 350 + mh + 52;
-      drawMapPanel(c, pl, 60, 350, 960, mh, 10);
-      c.font = `700 22px ${F}`; c.fillStyle = acc; c.fillText(tr(W ? "OŚRODKI" : "MIEJSCA") + "  ·  " + pl.length, 60, ly);
-      shown.forEach((r, i) => {
-        const col = i % 2, row = Math.floor(i / 2), X = 60 + col * 490, Y = ly + 58 + row * 44;
-        const ms = visits[r.id].stays.filter(per.test).map(x => x.m ? shortM(+x.m - 1) : "").filter(Boolean).join(", ");
-        c.fillStyle = "#38e0a0"; c.beginPath(); c.arc(X + 8, Y - 9, 6, 0, 7); c.fill();
-        const nm = r.n.length > (ms ? 17 : 24) ? r.n.slice(0, ms ? 16 : 23) + "…" : r.n; c.font = `600 26px ${F}`; c.fillStyle = "#e8f0ff"; c.fillText(nm, X + 26, Y);
-        if (ms) { c.font = `500 21px ${F}`; c.fillStyle = "#8ea3c6"; c.textAlign = "right"; c.fillText(ms, X + 460, Y); c.textAlign = "left"; }
-      });
-      if (pl.length > shown.length) { c.font = `700 24px ${F}`; c.fillStyle = acc; c.fillText(tr("+" + (pl.length - shown.length) + " więcej"), 60, ly + 58 + rows * 44 + 6); }
-    }
-  } else if (kind === "ranking") {
+  if (kind === "ranking") {
     const rows = TIERS.map(([t, gr]) => ({t, col:(gr.match(/#[0-9a-f]{6}/i)||["#ccc"])[0], a: vis.filter(r => visits[r.id].t === t).sort((x, y) => (visits[y.id].r || 0) - (visits[x.id].r || 0) || y.k - x.k)}));
     const any = rows.some(r => r.a.length);
     if (!any) { c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText(tr("Ułóż miejsca w zakładce Ranking, a pojawią się tutaj."), 60, 420); }
@@ -1448,8 +1432,8 @@ function shareCanvasBase(kind, per){
       if (shown < row.a.length) { c.fillStyle = acc; c.fillText("+" + (row.a.length - shown), 960, y0 + 150); }
     });
   } else {
-    const pts = vis;
-    if (!pts.length) { c.fillStyle = "rgba(255,255,255,.05)"; c.beginPath(); c.roundRect(60, 350, 960, 880, 26); c.fill(); c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText(tr("Oznacz miejsca, a pojawią się tutaj na mapie."), 100, 420); }
+    const pts = kind === "period" ? PD.places : vis;
+    if (!pts.length) { c.fillStyle = "rgba(255,255,255,.05)"; c.beginPath(); c.roundRect(60, 350, 960, 880, 26); c.fill(); c.fillStyle = "#cdd8ee"; c.font = `500 30px ${F}`; c.fillText(kind === "period" ? tr(W ? "Brak wizyt w tym okresie." : "Brak miejsc w tym okresie.") : tr("Oznacz miejsca, a pojawią się tutaj na mapie."), 100, 420); }
     else {
       drawMapPanel(c, pts, 60, 350, 960, 770, 11, {labels: true});
       const cc = {}; pts.forEach(r => { const k = r.c.split(",")[0]; cc[k] = (cc[k] || 0) + 1; });
@@ -1725,7 +1709,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v167";
+const APPV = "v168";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
