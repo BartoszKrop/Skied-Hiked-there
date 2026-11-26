@@ -343,6 +343,7 @@ nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.
 /* ===== motyw jasny, cząsteczki, powitanie, przejścia ===== */
 :root{--lblf:#dbe8ff;--lbls:#07101e}
 body.summer{--lblf:#f6efe4;--lbls:#120d08}
+body.light{--lblf:#0e2140;--lbls:#f4f8ff}body.summer.light{--lblf:#2b1a07;--lbls:#fff9ee}
 body.light{--ridge:rgba(90,70,40,.6);--water:rgba(30,110,200,.7);--waterf:rgba(30,110,200,.14);--bg:#f2f6fc;--bg2:#ffffff;--glass:rgba(10,30,70,.045);--glass2:rgba(10,30,70,.08);--line:rgba(10,30,70,.14);--text:#0e1b2e;--mute:#4d5f7c;--faint:#7686a3;--accent:#1e7fe0;--accent2:#6c5ce7;--grad:linear-gradient(135deg,#2f9bf0,#6c5ce7);--halo:#dbe8fa;--maphalo:#e8f1fc;--mapend:#cfe0f5;--accentbg:rgba(30,127,224,.11);--pn:255,255,255;--pn2:244,248,253;--land:#dde8f5;--landline:#9fb6d5;--grat:#d3e0f0;--ok:#0f9e72;--warn:#b87400;--bad:#d1384a;--lblf:#12253f;--lbls:#f4f8fd;color-scheme:light}
 body.summer.light{--bg:#faf5ec;--bg2:#fffdf8;--glass:rgba(80,50,10,.05);--glass2:rgba(80,50,10,.09);--line:rgba(80,50,10,.15);--text:#2a2014;--mute:#6a5842;--faint:#9a8870;--accent:#d2601a;--accent2:#b23b2a;--grad:linear-gradient(135deg,#f0a04b,#d2601a);--halo:#f3e4cc;--maphalo:#f6ecda;--mapend:#e6d5b8;--accentbg:rgba(210,96,26,.1);--pn:255,252,245;--pn2:248,241,229;--land:#eadfc8;--landline:#b79f77;--grat:#e2d5ba;--ok:#4c8a1f;--lblf:#3a2a17;--lbls:#fbf5ea}
 body.light::before{background-image:radial-gradient(rgba(30,60,110,.07) 1.2px,transparent 1.8px),radial-gradient(rgba(30,60,110,.05) 1px,transparent 1.6px)}
@@ -402,6 +403,9 @@ details>summary svg,details>summary .chev{transition:transform .2s}
 .cve{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:6px 0 12px}.cve button{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);font-size:20px;cursor:pointer;padding:0}.cve button.on{border-color:var(--accent);background:var(--accentbg)}
 .mfm{padding-bottom:16px}.mfm h3{margin-bottom:10px}.mfg2{display:grid;grid-template-columns:1fr 1fr;gap:8px 8px}.mfm .fld{margin:0;min-width:0}.mfm .fld label{font-size:10px;margin-bottom:3px;letter-spacing:.4px}.mfm .ddb{min-height:36px;padding:6px 9px;font-size:13px}
 .legend.fm{display:grid;grid-template-columns:auto auto;gap:5px 7px;align-items:center;justify-items:start}.legend.fm .lgf{white-space:nowrap}
+.mapfc{position:absolute;left:62px;top:52px;right:12px;display:none;gap:4px;overflow-x:auto;scrollbar-width:none;z-index:2}.mapfc::-webkit-scrollbar{display:none}
+.fc2{flex:none;white-space:nowrap;font:600 11px/1 inherit;font-family:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:5px 7px 5px 9px;cursor:pointer;opacity:.95}.fc2 i{font-style:normal;margin-left:5px;color:var(--mute)}
+.qsug{display:none;position:absolute;left:14px;right:14px;top:52px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden;z-index:5}.qs{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:8px 12px;color:var(--text);font:inherit;cursor:pointer}.qs:last-child{border-bottom:0}.qs b{font-size:14px}.qs span{font-size:11px;color:var(--mute)}
 .mapchips2{position:absolute;left:12px;top:52px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.mapchips2 .btn.sm{white-space:nowrap;padding-left:8px;padding-right:8px;flex:none}.mapchips2 .btn{min-width:42px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}.mapchips2 .btn.on{color:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .legend .lgx.lgfr.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .legend .lgx.lgfr{display:inline-flex;align-items:center;gap:5px;color:var(--accent);border-color:var(--accent);background:var(--accentbg)}
@@ -598,6 +602,7 @@ table tr{transition:background .12s}
     <div id="mapwrap">
       <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button></div>
+      <div class="mapfc" id="mapfc"></div>
       <div class="mapchips2"><button class="btn sm" id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie" style="font-weight:800">Aa</button></div>
       <div class="mapchips"><button class="btn sm" id="mlist">☰ Lista</button><button class="btn sm" id="mfilt">⚙ Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
       <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
@@ -606,7 +611,7 @@ table tr{transition:background .12s}
     </div>
   </section>
   <section class="view" id="v-lista">
-    <div class="toolbar">
+    <div class="toolbar"><div id="qsug" class="qsug"></div>
       <div style="display:flex;gap:8px;align-items:center"><input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off" style="flex:1;min-width:0"><button id="qvadd" class="btn pri" aria-label="Zgłoś brakujące miejsce" title="Zgłoś brakujące miejsce" style="display:none;flex:none;width:44px;height:44px;padding:0;font-size:22px;line-height:1;border-radius:12px">＋</button></div>
       <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option><option value="fp">Znajomi planują</option><option value="tog">Planujemy razem</option><option value="pfv">Chcę, znajomi byli</option><option value="fv">Byli znajomi</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
       <button class="fmore" id="fmore" type="button">Więcej filtrów<span id="fmoren"></span></button>
@@ -762,6 +767,7 @@ const CATI = {g:"🥾",j:"🏞️",w:"💧",k:"🪨"};
 const CATN = {g:"Góry",j:"Jeziora",w:"Wodospady",k:"Kaniony i formacje",p:"Parki narodowe"};
 const cname = cc => CN[cc] || cc;
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const matchT = (t, q) => !q || String(q).split(/\s+/).every(w => t.includes(w));
 const norm = s => String(s||"").toLowerCase().replace(/ł/g,"l").normalize("NFD").replace(/[̀-ͯ]/g,"");
 [...WINTER.R, ...SUMMER.R].forEach(r => { r.s = norm([r.full, r.n, r.l, r.r, r.c.split(",").map(cname).join(" ")].join(" ")); });
 /* miejsca dodane z panelu admina (Supabase: extra_places) */
@@ -1122,10 +1128,22 @@ function buildCountrySelect(){
 function buildGroupSelect(){ $("fgroup").innerHTML = `<option value="">Grupa</option>` + G.map((g, i) => g.m.length >= 2 ? `<option value="${i}">${esc(g.n)}</option>` : "").join(""); $("fgroup").value = fGroup; $("frow3").style.display = MODE === "w" && G.length ? "" : "none"; }
 function setFStat(v){ fStat = v; $("fstat").value = v; }
 function updMore(){}
+function qSug(){
+  const bx = $("qsug"), q = fQ || ""; if (q.length < 2) { bx.style.display = "none"; return; }
+  const out = [], seen = new Set();
+  const sc = (t, w) => { t = norm(t); return t.startsWith(q) ? 0 : t.split(/\s+/).some(x => x.startsWith(q.split(/\s+/)[0])) ? 1 : 2; };
+  R.filter(r => matchT(r.s, q)).sort((a, b) => sc(a.n) - sc(b.n) || b.k - a.k).slice(0, 4).forEach(r => { out.push({id: r.id, t: r.n, sub: r.c.split(",").map(cname).join(", ")}); seen.add(r.id); });
+  let nt = 0; for (const r of R) { if (nt >= 3) break; for (const h of (r.hikes || [])) { if (h.del) continue; if (matchT(norm(h.n), q)) { out.push({id: r.id, t: h.n, sub: r.n}); nt++; break; } } }
+  if (!out.length) { bx.style.display = "none"; return; }
+  bx.innerHTML = out.slice(0, 7).map(o => `<button type="button" class="qs" data-id="${esc(o.id)}"><b>${esc(o.t)}</b><span>${esc(o.sub)}</span></button>`).join("");
+  bx.style.display = "block";
+  bx.querySelectorAll(".qs").forEach(b => b.onpointerdown = e => { e.preventDefault(); bx.style.display = "none"; $("q").blur(); openSheet(b.dataset.id); });
+}
 function initListControls(){
   buildCountrySelect(); buildGroupSelect();
   $("fgroup").addEventListener("change", e => { fGroup = e.target.value; renderList(); mapRefresh(); });
-  $("q").addEventListener("input", e => { fQ = norm(e.target.value.trim()); renderList(); });
+  $("q").addEventListener("input", e => { fQ = norm(e.target.value.trim()); renderList(); qSug(); });
+  $("q").addEventListener("focus", qSug); $("q").addEventListener("blur", () => setTimeout(() => { $("qsug").style.display = "none"; }, 180));
   $("fcat").addEventListener("change", e => { fCat = e.target.value; renderList(); mapRefresh(); });
   $("fview").addEventListener("change", e => setView(e.target.value));
   $("fcountry").addEventListener("change", e => { fCountry = e.target.value; renderList(); mapRefresh(); });
@@ -1159,7 +1177,7 @@ function renderList(){
   { const n = filtN() - (fStat !== "all") - !!fCountry; const m = $("fmoren"); if (m) m.textContent = n > 0 ? " · " + n : ""; const b = $("fmore"); if (b) b.classList.toggle("act", n > 0); }
   if (wxOn() && !WXL && Date.now() - WXFAIL > 6e4 && R.some(r => r.y != null && !wxa(r.id))) wxAllLoad().then(() => {});
   try { updMore(); } catch(e){}
-  let a = R.filter(r => passF(r) && (!fQ || r.s.includes(fQ)));
+  let a = R.filter(r => passF(r) && matchT(r.s, fQ));
   const pr = id => (visits[id] && visits[id].s === "p") ? visits[id].pr : -1;
   if (fSort==="k") a.sort((x,y)=>y.k-x.k);
   else if (fSort==="n") a.sort((x,y)=>x.n.localeCompare(y.n,"pl"));
@@ -1203,7 +1221,7 @@ function hikeFriendsRow(r, i){
 }
 function renderHikeList(){
   const E = [];
-  R.filter(r => passF(r)).forEach(r => { const v = visits[r.id] || {}; (r.hikes || []).forEach((h, i) => { if (h.del) return; if (fCat && (h.ct || "g") !== fCat) return; if (filmMode && !(h.fm || []).length) return; if (fFilm && !(h.fm || []).includes(fFilm)) return; if (fQ && !r.s.includes(fQ) && !norm(h.n).includes(fQ)) return; const g = RATEH[r.id] && RATEH[r.id][i]; E.push({r, h, i, my: (v.hr && v.hr[i]) || 0, g: g && g.n ? g : null, done: !!(v.done && v.done[i])}); }); });
+  R.filter(r => passF(r)).forEach(r => { const v = visits[r.id] || {}; (r.hikes || []).forEach((h, i) => { if (h.del) return; if (fCat && (h.ct || "g") !== fCat) return; if (filmMode && !(h.fm || []).length) return; if (fFilm && !(h.fm || []).includes(fFilm)) return; if (fQ && !matchT(r.s, fQ) && !matchT(norm(h.n), fQ)) return; const g = RATEH[r.id] && RATEH[r.id][i]; E.push({r, h, i, my: (v.hr && v.hr[i]) || 0, g: g && g.n ? g : null, done: !!(v.done && v.done[i])}); }); });
   const ga = e => e.g ? e.g.a : -1, gn = e => e.g ? e.g.n : 0;
   if (fSort === "ws" || fSort === "wd" || fSort === "wp" || fSort === "wc") { const mt = e => { const x = wxMetric(e.r, fSort); return x == null ? -1e9 : x; }; E.sort((x, y) => mt(y) - mt(x)); }
   else if (fSort === "mr") E.sort((x, y) => y.my - x.my || ga(y) - ga(x) || gn(y) - gn(x));
@@ -1719,17 +1737,35 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v183";
+const APPV = "v184";
 function settingsCard(){
-  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
+  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
 function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
   ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; return ov;
 }
+const TOUR = [
+  ["Witaj", "Zaznaczaj miejsca, w których byłeś, i planuj kolejne. Wszystko ląduje na jednej mapie."],
+  ["Mapa i lista", "Dotknij punktu na mapie, żeby zobaczyć szczegóły, szlaki i opinie. Szukaj i filtruj z listy albo przyciskiem Filtry."],
+  ["Lato i zima", "Przełącznik na górze zmienia aplikację na szlaki piesze albo ośrodki narciarskie. Tryb filmowy znajdziesz w filtrach."],
+  ["Zacznij", "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."]
+];
+function startTour(force){
+  try { if (!force && (localStorage.getItem("skibeen.tour") === "1" || RO || Object.keys(wVisits).length + Object.keys(sVisits).length)) return; } catch(e){}
+  if ($("tour")) return;
+  let i = 0; const ov = document.createElement("div"); ov.id = "tour";
+  ov.style.cssText = "position:fixed;inset:0;z-index:9998;background:rgba(5,10,20,.72);display:flex;align-items:center;justify-content:center;padding:20px";
+  const end = () => { try { localStorage.setItem("skibeen.tour", "1"); } catch(e){} ov.remove(); };
+  const draw = () => { const t = TOUR[i], last = i === TOUR.length - 1;
+    ov.innerHTML = `<div class="card" style="width:min(340px,92vw);text-align:center"><div class="small" style="margin-bottom:6px">${i + 1} / ${TOUR.length}</div><h3 style="margin-bottom:8px">${t[0]}</h3><p style="color:var(--mute);margin:0 0 16px;line-height:1.45">${t[1]}</p><div style="display:flex;gap:8px"><button class="btn" id="tskip" style="flex:1">Pomiń</button><button class="btn pri" id="tnext" style="flex:2">${last ? "Zaczynamy" : "Dalej"}</button></div></div>`;
+    $("tskip").onclick = end; $("tnext").onclick = () => { if (last) end(); else { i++; draw(); } }; };
+  document.body.append(ov); draw();
+}
 function openSettings(){ SOC.ov = ""; ovBox().innerHTML = settingsCard(); bindSettings(); const cl = $("lclose"); if (cl) cl.onclick = closeAccount; }
 function bindSettings(){
   { const sg = $("themeseg"); if (sg) { const cur = () => { let v = "auto"; try { v = localStorage.getItem("skibeen.theme") || "auto"; } catch(e){} return v; }, mark = () => sg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === cur())); mark(); sg.onclick = e => { const b = e.target.closest("button"); if (!b) return; try { localStorage.setItem("skibeen.theme", b.dataset.v); } catch(e){} applyTheme(); mark(); }; } }
+  { const tb = $("tourbtn"); if (tb) tb.onclick = () => { closeAccount(); startTour(true); }; }
   const ib = $("instset"); if (ib) ib.onclick = async () => { if (!(await doInstall())) $("instmsg").textContent = installText(); };
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
 }
@@ -2368,7 +2404,9 @@ function shownBounds(){
   const xs = pts.map(d => px(d.r.x)), ys = pts.map(d => py(d.r.y)), pad = 1.2;
   return {x0: Math.min(...xs) - pad, x1: Math.max(...xs) + pad, y0: Math.min(...ys) - pad, y1: Math.max(...ys) + pad};
 }
+let vbRestore = (() => { try { const a = JSON.parse(localStorage.getItem("skibeen.vb") || "null"); if (Array.isArray(a) && a.length === 4 && a.every(Number.isFinite) && a[2] > 0.05 && a[2] < 1e4 && a[3] > 0.05) return a; } catch(e){} return null; })(), _vbSave = 0;
 function fit(){ mapFitted = true;
+  if (vbRestore) { const a = vbRestore; vbRestore = null; const rc0 = svg.getBoundingClientRect(); if (rc0.width > 50 && rc0.height > 50) { const cx = a[0] + a[2] / 2, cy = a[1] + a[3] / 2; vb.w = a[2]; vb.h = a[2] * rc0.height / rc0.width; vb.x = cx - vb.w / 2; vb.y = cy - vb.h / 2; applyVB(); return; } }
   const rc = svg.getBoundingClientRect(); const W = rc.width || 360, H = rc.height || 500, b = shownBounds();
   const bw = b.x1 - b.x0, bh = b.y1 - b.y0, s = Math.min(W / bw, H / bh);
   vb.w = W / s; vb.h = H / s; vb.x = b.x0 - (vb.w - bw) / 2; vb.y = b.y0 - (vb.h - bh) / 2; applyVB();
@@ -2378,6 +2416,7 @@ let _vbq = 0, _vbFull = false;
 function applyVB(light){
   { const cc = vb.x + vb.w / 2; if (cc < px(-180)) vb.x += WW; else if (cc > px(180)) vb.x -= WW; const cy0 = vb.y + vb.h / 2; if (cy0 < py(90)) vb.y += WH; else if (cy0 > py(-90)) vb.y -= WH; }
   svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  if (mapFitted) { clearTimeout(_vbSave); _vbSave = setTimeout(() => { try { localStorage.setItem("skibeen.vb", JSON.stringify([vb.x, vb.y, vb.w, vb.h].map(n => +n.toFixed(3)))); } catch(e){} }, 500); }
   if (light !== true) _vbFull = true;
   if (_vbq) return;
   _vbq = requestAnimationFrame(() => { _vbq = 0; const f = _vbFull; _vbFull = false; vbHeavy(f); });
@@ -2413,7 +2452,7 @@ function vbHeavy(full){
       d._s = s;
       d.c.setAttribute("r", (d._on ? d.rad + 1.5 : d.rad) / s);
       d.h.setAttribute("r", (d.rad + 7) / s);
-      d.t.setAttribute("font-size", 11 / s); d.t.setAttribute("stroke-width", 3 / s); d.t.setAttribute("dy", -(d.rad + 6) / s);
+      d.t.setAttribute("font-size", 12 / s); d.t.setAttribute("stroke-width", 4.2 / s); d.t.setAttribute("dy", -(d.rad + 6) / s);
     }
     const lab = showNames && ((d._on || d._sel) ? z >= 4 : (z >= 12 || (MODE === "w" && z >= 8 && d.r.k > 100) || (MODE === "s" && z >= 6)));
     if (lab) cand.push(d); else if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; }
@@ -2429,7 +2468,16 @@ let emptyShown = false, hintDone = false;
 function hintSeen(){ try { return localStorage.getItem("skibeen.emptyseen") === "1"; } catch(e){ return hintDone; } }
 function hintDismiss(){ if (hintDone) return; hintDone = true; try { localStorage.setItem("skibeen.emptyseen", "1"); } catch(e){} setTimeout(() => { const m = $("mapempty"); if (m) m.style.display = "none"; }, 700); }
 addEventListener("pointerdown", () => { if ($("mapempty") && $("mapempty").style.display === "flex") hintDismiss(); }, true);
+function fChips(){
+  const bx = $("mapfc"); if (!bx) return;
+  const L = [["fstat", fStat, "all"], ["fcountry", fCountry, ""], ["fgroup", fGroup, ""], ["fcat", fCat, ""], ["fminr", fMinR, 0], ["fminkm", fMinKm, 0], ["fminel", fMinEl, 0], ["fprice", fPrice, 0], ["fwx", fWx, ""], ["fws", fWs, 0], ["fwc", fWc, 0]];
+  const out = [];
+  if (!filmMode && !frMode) L.forEach(([id, v, d]) => { if (v === d || v === "" || v == null) return; const el = $(id); if (!el) return; const o = [...el.options].find(x => x.value === String(v)); if (!o) return; out.push(`<button type="button" class="fc2" data-id="${id}" data-d="${d}">${esc(o.textContent.trim())}<i>×</i></button>`); });
+  bx.innerHTML = out.join(""); bx.style.display = out.length ? "flex" : "none";
+  bx.querySelectorAll(".fc2").forEach(b => b.onclick = () => { const el = $(b.dataset.id); el.value = b.dataset.d; el.dispatchEvent(new Event("change")); });
+}
 function updateMapUI(){
+  try { fChips(); } catch(e){}
   const n = R.filter(r => marked(r.id)).length;
   const show = !n && !showAll && !hintDone && !hintSeen();
   $("mapempty").style.display = show ? "flex" : "none";
@@ -3194,7 +3242,7 @@ function openQuickVisit(pre){
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="qvx" style="flex:1">Anuluj</button><button class="btn pri" id="qvok" style="flex:2">Dodaj</button></div></div>`;
   const chip = () => { $("qvch").innerHTML = sel ? `<div class="frow" style="margin-bottom:6px"><span>${flag(sel.c.split(",")[0])} <b>${esc(sel.n)}</b></span><button class="btn sm" id="qvchg">Zmień</button></div>` : ""; $("qvq").style.display = sel ? "none" : ""; $("qvr").innerHTML = ""; if (sel) $("qvchg").onclick = () => { sel = null; chip(); $("qvq").focus(); }; };
   const find = () => { const q = norm($("qvq").value.trim()); if (q.length < 2) { $("qvr").innerHTML = ""; return; }
-    const m = R.filter(r => r.s.includes(q)).sort((a, b) => (norm(a.n).startsWith(q) ? 0 : 1) - (norm(b.n).startsWith(q) ? 0 : 1) || b.k - a.k).slice(0, 6);
+    const m = R.filter(r => matchT(r.s, q)).sort((a, b) => (norm(a.n).startsWith(q) ? 0 : 1) - (norm(b.n).startsWith(q) ? 0 : 1) || b.k - a.k).slice(0, 6);
     $("qvr").innerHTML = m.map(r => `<button type="button" class="btn sm qvit" data-id="${esc(r.id)}" style="text-align:left;justify-content:flex-start">${flag(r.c.split(",")[0])} ${esc(r.n)} <span class="small" style="margin-left:6px">${esc(r.c.split(",").map(cname).join(", "))}</span></button>`).join("") || `<div class="small">Nic nie znaleziono.</div>`;
     $("qvr").querySelectorAll(".qvit").forEach(b => b.onclick = () => { sel = R.find(x => x.id === b.dataset.id); chip(); }); };
   $("qvq").oninput = find; chip(); if (!sel) setTimeout(() => $("qvq").focus(), 60);
@@ -3406,7 +3454,7 @@ function showInstBar(){
 }
 let instT = null; function scheduleInstBar(){ if (instT) return; instT = setTimeout(showInstBar, 25000); }
 if (isIOS()) scheduleInstBar();
-$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("bell").onclick = openInbox; $("acct").onclick = openAccount; updateAcct(); initListControls(); mapInit(); show(location.hash.slice(1) || "mapa");
+$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("bell").onclick = openInbox; $("acct").onclick = openAccount; updateAcct(); initListControls(); mapInit(); show(location.hash.slice(1) || "mapa"); setTimeout(startTour, 1600);
 try { if (localStorage.getItem(LSM) !== "w") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
