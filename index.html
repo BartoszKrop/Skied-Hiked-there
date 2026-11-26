@@ -343,7 +343,6 @@ nav button{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.
 /* ===== motyw jasny, cząsteczki, powitanie, przejścia ===== */
 :root{--lblf:#dbe8ff;--lbls:#07101e}
 body.summer{--lblf:#f6efe4;--lbls:#120d08}
-body.light{--lblf:#0e2140;--lbls:#f4f8ff}body.summer.light{--lblf:#2b1a07;--lbls:#fff9ee}
 body.light{--ridge:rgba(90,70,40,.6);--water:rgba(30,110,200,.7);--waterf:rgba(30,110,200,.14);--bg:#f2f6fc;--bg2:#ffffff;--glass:rgba(10,30,70,.045);--glass2:rgba(10,30,70,.08);--line:rgba(10,30,70,.14);--text:#0e1b2e;--mute:#4d5f7c;--faint:#7686a3;--accent:#1e7fe0;--accent2:#6c5ce7;--grad:linear-gradient(135deg,#2f9bf0,#6c5ce7);--halo:#dbe8fa;--maphalo:#e8f1fc;--mapend:#cfe0f5;--accentbg:rgba(30,127,224,.11);--pn:255,255,255;--pn2:244,248,253;--land:#dde8f5;--landline:#9fb6d5;--grat:#d3e0f0;--ok:#0f9e72;--warn:#b87400;--bad:#d1384a;--lblf:#12253f;--lbls:#f4f8fd;color-scheme:light}
 body.summer.light{--bg:#faf5ec;--bg2:#fffdf8;--glass:rgba(80,50,10,.05);--glass2:rgba(80,50,10,.09);--line:rgba(80,50,10,.15);--text:#2a2014;--mute:#6a5842;--faint:#9a8870;--accent:#d2601a;--accent2:#b23b2a;--grad:linear-gradient(135deg,#f0a04b,#d2601a);--halo:#f3e4cc;--maphalo:#f6ecda;--mapend:#e6d5b8;--accentbg:rgba(210,96,26,.1);--pn:255,252,245;--pn2:248,241,229;--land:#eadfc8;--landline:#b79f77;--grat:#e2d5ba;--ok:#4c8a1f;--lblf:#3a2a17;--lbls:#fbf5ea}
 body.light::before{background-image:radial-gradient(rgba(30,60,110,.07) 1.2px,transparent 1.8px),radial-gradient(rgba(30,60,110,.05) 1px,transparent 1.6px)}
@@ -1737,7 +1736,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v184";
+const APPV = "v185";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1746,20 +1745,43 @@ function ovBox(){
   ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; return ov;
 }
 const TOUR = [
-  ["Witaj", "Zaznaczaj miejsca, w których byłeś, i planuj kolejne. Wszystko ląduje na jednej mapie."],
-  ["Mapa i lista", "Dotknij punktu na mapie, żeby zobaczyć szczegóły, szlaki i opinie. Szukaj i filtruj z listy albo przyciskiem Filtry."],
-  ["Lato i zima", "Przełącznik na górze zmienia aplikację na szlaki piesze albo ośrodki narciarskie. Tryb filmowy znajdziesz w filtrach."],
-  ["Zacznij", "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."]
+  {t: "Witaj", x: "Pokażę Ci w skrócie, co gdzie jest. Zajmie to chwilę, a możesz pominąć w każdej chwili."},
+  {v: "mapa", s: "#mode", t: "Lato i zima", x: "Tu przełączasz aplikację: Skied there to ośrodki narciarskie, Hiked there to szlaki i miejsca w górach."},
+  {v: "mapa", s: ".legend", t: "Kolory punktów", x: "Zielony to miejsca, w których byłeś, żółty to planowane, niebieski to jeszcze nie odwiedzone. Dotknij punktu na mapie, żeby zobaczyć szczegóły, opinie i dodać wizytę."},
+  {v: "mapa", s: "#mfilt", t: "Filtry", x: "Kraj, wielkość, ocena, pogoda, kategoria i tryb filmowy. Aktywne filtry pokażą się jako małe żetony na mapie, każdy zdejmiesz krzyżykiem."},
+  {v: "mapa", s: "#znames", t: "Nazwy na mapie", x: "Włącza i wyłącza podpisy miejsc. Przekreślone Aa oznacza, że nazwy są ukryte."},
+  {v: "mapa", s: ".zoom", t: "Przybliżanie", x: "Przyciskami albo palcami. Mapą możesz przesuwać bez końca, bo zawija się dookoła globu. Ostatni widok zapamiętuje się sam."},
+  {v: "mapa", s: "#mlist", t: "Lista miejsc", x: "Ten sam zestaw miejsc w formie listy. Zobaczmy, jak wygląda."},
+  {v: "lista", s: "#q", t: "Wyszukiwarka", x: "Wpisz dowolny fragment nazwy, miejscowości albo regionu. Wystarczy druga część nazwy, a pod polem pojawią się podpowiedzi."},
+  {v: "lista", s: ".frowm", t: "Status i sortowanie", x: "Pokaż tylko miejsca, w których byłeś, które planujesz albo których jeszcze nie znasz. Obok możesz zmienić sortowanie."},
+  {v: "lista", s: "#fmore", t: "Więcej filtrów", x: "Kraj, region, wielkość, pogoda i reszta. To te same filtry, co na mapie, więc ustawienia działają w obu miejscach."},
+  {v: "mapa", s: "#nav", t: "Reszta w skrócie", x: "Ranking to najlepsze miejsca według ocen. Staty to Twoje podsumowanie, a Wyjazdy służą do planowania z ekipą: pakowanie, koszty, pogoda."},
+  {t: "Gotowe", x: "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."}
 ];
 function startTour(force){
   try { if (!force && (localStorage.getItem("skibeen.tour") === "1" || RO || Object.keys(wVisits).length + Object.keys(sVisits).length)) return; } catch(e){}
   if ($("tour")) return;
   let i = 0; const ov = document.createElement("div"); ov.id = "tour";
-  ov.style.cssText = "position:fixed;inset:0;z-index:9998;background:rgba(5,10,20,.72);display:flex;align-items:center;justify-content:center;padding:20px";
-  const end = () => { try { localStorage.setItem("skibeen.tour", "1"); } catch(e){} ov.remove(); };
-  const draw = () => { const t = TOUR[i], last = i === TOUR.length - 1;
-    ov.innerHTML = `<div class="card" style="width:min(340px,92vw);text-align:center"><div class="small" style="margin-bottom:6px">${i + 1} / ${TOUR.length}</div><h3 style="margin-bottom:8px">${t[0]}</h3><p style="color:var(--mute);margin:0 0 16px;line-height:1.45">${t[1]}</p><div style="display:flex;gap:8px"><button class="btn" id="tskip" style="flex:1">Pomiń</button><button class="btn pri" id="tnext" style="flex:2">${last ? "Zaczynamy" : "Dalej"}</button></div></div>`;
-    $("tskip").onclick = end; $("tnext").onclick = () => { if (last) end(); else { i++; draw(); } }; };
+  ov.style.cssText = "position:fixed;inset:0;z-index:9998";
+  const end = () => { try { localStorage.setItem("skibeen.tour", "1"); } catch(e){} ov.remove(); try { show("mapa"); } catch(e){} };
+  const draw = () => {
+    const t = TOUR[i], last = i === TOUR.length - 1, W = innerWidth, H = innerHeight;
+    if (t.v) { try { show(t.v); } catch(e){} }
+    setTimeout(() => {
+      if (!$("tour")) return;
+      const el = t.s ? document.querySelector(t.s) : null; let r = el ? el.getBoundingClientRect() : null;
+      if (r && (r.width < 4 || r.height < 4)) r = null;
+      const cw = Math.min(330, W - 24), cx = r ? r.left + r.width / 2 : W / 2;
+      const cl = Math.max(12, Math.min(W - cw - 12, cx - cw / 2));
+      const pad = 6, below = r ? (r.top + r.height / 2) < H / 2 : true;
+      const hole = r ? `<div style="position:fixed;left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px;border-radius:12px;box-shadow:0 0 0 100vmax rgba(5,10,20,.78);outline:2px solid var(--accent);pointer-events:none"></div>` : `<div style="position:fixed;inset:0;background:rgba(5,10,20,.78)"></div>`;
+      const pos = !r ? `top:50%;transform:translateY(-50%)` : below ? `top:${r.bottom + pad + 16}px` : `bottom:${H - r.top + pad + 16}px`;
+      const ax = r ? Math.max(18, Math.min(cw - 30, cx - cl - 6)) : 0;
+      const arrow = r ? `<div style="position:absolute;${below ? "top:-7px" : "bottom:-7px"};left:${ax}px;width:14px;height:14px;background:var(--bg2);transform:rotate(45deg);border:1px solid var(--line);border-${below ? "right" : "left"}:0;border-${below ? "bottom" : "top"}:0"></div>` : "";
+      ov.innerHTML = hole + `<div class="card" style="position:fixed;left:${cl}px;width:${cw}px;${pos};text-align:left;padding:16px;margin:0;background:var(--bg2);backdrop-filter:none"><div class="small" style="margin-bottom:4px">${i + 1} / ${TOUR.length}</div><h3 style="margin:0 0 6px">${t.t}</h3><p style="color:var(--mute);margin:0 0 14px;line-height:1.45;font-size:14px">${t.x}</p><div style="display:flex;gap:8px"><button class="btn" id="tskip" style="flex:1">${last ? "Zamknij" : "Pomiń"}</button><button class="btn pri" id="tnext" style="flex:2">${last ? "Zaczynamy" : "Dalej"}</button></div>${arrow}</div>`;
+      $("tskip").onclick = end; $("tnext").onclick = () => { if (last) end(); else { i++; draw(); } };
+    }, t.v ? 380 : 0);
+  };
   document.body.append(ov); draw();
 }
 function openSettings(){ SOC.ov = ""; ovBox().innerHTML = settingsCard(); bindSettings(); const cl = $("lclose"); if (cl) cl.onclick = closeAccount; }
@@ -2452,7 +2474,7 @@ function vbHeavy(full){
       d._s = s;
       d.c.setAttribute("r", (d._on ? d.rad + 1.5 : d.rad) / s);
       d.h.setAttribute("r", (d.rad + 7) / s);
-      d.t.setAttribute("font-size", 12 / s); d.t.setAttribute("stroke-width", 4.2 / s); d.t.setAttribute("dy", -(d.rad + 6) / s);
+      d.t.setAttribute("font-size", 11 / s); d.t.setAttribute("stroke-width", 3 / s); d.t.setAttribute("dy", -(d.rad + 6) / s);
     }
     const lab = showNames && ((d._on || d._sel) ? z >= 4 : (z >= 12 || (MODE === "w" && z >= 8 && d.r.k > 100) || (MODE === "s" && z >= 6)));
     if (lab) cand.push(d); else if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; }
