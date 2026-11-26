@@ -612,7 +612,7 @@ table tr{transition:background .12s}
   <section class="view" id="v-lista">
     <div class="toolbar"><div id="qsug" class="qsug"></div>
       <div style="display:flex;gap:8px;align-items:center"><input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off" style="flex:1;min-width:0"><button id="qvadd" class="btn pri" aria-label="Zgłoś brakujące miejsce" title="Zgłoś brakujące miejsce" style="display:none;flex:none;width:44px;height:44px;padding:0;font-size:22px;line-height:1;border-radius:12px">＋</button></div>
-      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option><option value="fp">Znajomi planują</option><option value="tog">Planujemy razem</option><option value="pfv">Chcę, znajomi byli</option><option value="fv">Byli znajomi</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
+      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
       <button class="fmore" id="fmore" type="button">Więcej filtrów<span id="fmoren"></span></button>
       <div id="fextra" style="display:none">
       <div class="row2" id="frow3"><select id="fgroup"></select></div>
@@ -1736,7 +1736,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v185";
+const APPV = "v186";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2513,10 +2513,10 @@ function openMapFilters(){
     ovBox().innerHTML = `<div class="card mfm" style="width:min(460px,94vw)"><h3>Filtry mapy</h3>
       <div class="mfg2">
       ${F("mfc", "KRAJ", $("fcountry").innerHTML)}
-      ${hasF ? F("mfs", "ZNAJOMI", [["all", "Wszyscy"], ["fp", "Znajomi planują"], ["tog", "Planujemy razem"], ["pfv", "Chcę, byli znajomi"], ["fv", "Znajomi byli"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")) : ""}
+      ${false ? F("mfs", "ZNAJOMI", [["all", "Wszyscy"], ["fp", "Znajomi planują"], ["tog", "Planujemy razem"], ["pfv", "Chcę, byli znajomi"], ["fv", "Znajomi byli"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")) : ""}
       ${W ? F("mfg", "GRUPA", $("fgroup").innerHTML) : ""}
       ${F("mfr", "OCENA", $("fminr").innerHTML)}
-      ${W ? F("mfk", "WIELKOŚĆ", $("fminkm").innerHTML) + F("mfe", "WYSOKOŚĆ", $("fminel").innerHTML) : F("mfct", "RODZAJ", $("fcat").innerHTML)}${F("mfv", "TRYB", `<option value="n">Tryb zwykły</option><option value="f">Tryb znajomi</option><option value="m">Tryb filmowy</option>`)}
+      ${W ? F("mfk", "WIELKOŚĆ", $("fminkm").innerHTML) + F("mfe", "WYSOKOŚĆ", $("fminel").innerHTML) : ""}${F("mfv", "TRYB", `<option value="n">Tryb zwykły</option><option value="f">Tryb znajomi</option><option value="m">Tryb filmowy</option>`)}
       ${F("mfwd", "POGODA · KIEDY", $("fwd").innerHTML)}${F("mfwx", "OPADY", $("fwx").innerHTML)}${F("mfwc", "CHMURY", $("fwc").innerHTML)}
       </div>
       <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="mfclr" style="flex:1">Wyczyść</button><button class="btn pri" id="mfok" style="flex:2">Pokaż (${cnt()})</button></div></div>`;
@@ -2686,7 +2686,7 @@ function setMode(m){
   document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
   if (tripOpen) { const tt = allTrips().find(x => x.id === tripOpen); if (!tt || (tt.mode || "s") !== m) tripOpen = null; } packOpen = null; if ($("v-wyjazdy").classList.contains("on")) renderTrips();
   try { localStorage.setItem(LSM, m); } catch(e){}
-  exitFilm(true); fCountry = ""; fCat = ""; $("fcat").value = ""; $("frow6").style.display = m === "w" ? "none" : ""; $("frow5").classList.toggle("sm", m !== "w"); fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; fMinR = 0; fPrice = 0; $("fminr").value = "0"; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; fWx = ""; fWd = 0; fWs = 0; fWc = 0; fixWxOpts(m); $("fwc").value = "0"; $("fwx").value = ""; $("fwd").value = "0"; $("fws").value = "0"; $("fwsort").value = ""; $("fsort").value = "k"; setFStat("all");
+  exitFilm(true); fCountry = ""; fCat = ""; $("fcat").value = ""; $("frow6").style.display = "none"; $("frow5").classList.toggle("sm", m !== "w"); fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; fMinR = 0; fPrice = 0; $("fminr").value = "0"; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; fWx = ""; fWd = 0; fWs = 0; fWc = 0; fixWxOpts(m); $("fwc").value = "0"; $("fwx").value = ""; $("fwd").value = "0"; $("fws").value = "0"; $("fwsort").value = ""; $("fsort").value = "k"; setFStat("all");
   $("fsort").options[0].textContent = m === "w" ? "Najwięksi" : "Najwięcej szlaków"; $("lview").style.display = m === "s" ? "" : "none";
   buildCountrySelect(); buildGroupSelect(); showAll = false; buildDots(); renderAll();
   const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
