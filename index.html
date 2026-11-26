@@ -1737,7 +1737,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v193";
+const APPV = "v194";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1790,8 +1790,7 @@ const TOUR = [
   {v: "wyjazdy", demo: 1, s: "#fabx", t: "Szybkie akcje", x: "Okrągły przycisk w rogu, gdy masz wyjazd. Dodaje wydatek, rzecz do sklepu, rzecz do zabrania albo znajomego bez wchodzenia w szczegóły wyjazdu."},
   {v: "statystyki", s: '#nav button[data-t="statystyki"]', t: "Staty", x: "Podsumowanie Twoich miejsc, krajów i szlaków oraz rankingi tego, co zaznaczyłeś."},
   {v: "statystyki", cond: () => SBC && store && store.sb && !RO, s: "#rkscope", t: "Ranking społeczności", x: () => "Przełącznik na Społeczność pokazuje rankingi wszystkich użytkowników: gdzie ludzie najczęściej byli, gdzie chcą jechać i co jest najwyżej oceniane." + (MODE === "s" ? " Latem jest tam nawet ranking szarlotek ze schronisk." : "")},
-  {t: "Gotowe", x: "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."},
-  {only: "s", cond: () => SBC && store && store.sb && !RO, t: "Aha, bym zapomniał", btn: "Idę na szarlotkę", x: "Zajrzyj w Staty, w ranking społeczności. Jest tam ranking szarlotek z polskich schronisk, więc zanim ruszysz w Tatry, wiesz, gdzie warto skręcić."}
+  {t: "Gotowe", x: "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."}
 ];
 function startTour(force){
   const STEPS = TOUR.filter(q => (!q.only || q.only === MODE) && (!q.cond || q.cond()));
