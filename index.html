@@ -271,6 +271,15 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
 
 @keyframes pop{0%{transform:scale(.94);opacity:0}60%{transform:scale(1.015)}100%{transform:none;opacity:1}}
 @keyframes starpop{0%{transform:scale(.6)}55%{transform:scale(1.35) rotate(-8deg)}100%{transform:none}}
+
+@keyframes skim{0%{background-position:120% 0}100%{background-position:-120% 0}}
+.sk{display:block;border-radius:10px;height:16px;margin:10px 0;background:linear-gradient(90deg,rgba(128,140,170,.14) 25%,rgba(128,140,170,.30) 45%,rgba(128,140,170,.14) 65%);background-size:240% 100%;animation:skim 1.3s linear infinite}
+.sk.l{height:44px;border-radius:14px}
+#modefx{position:fixed;inset:0;z-index:99998;pointer-events:none;animation:modewipe .75s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes modewipe{0%{clip-path:circle(0% at 50% 0%);opacity:.95}60%{clip-path:circle(150% at 50% 0%);opacity:.9}100%{clip-path:circle(150% at 50% 0%);opacity:0}}
+@keyframes dotin{from{opacity:0}to{opacity:1}}
+.din{animation:dotin .45s ease-out}
+@media(prefers-reduced-motion:reduce){#modefx{display:none}.sk{animation:none}.din{animation:none}}
 @keyframes flipin{0%{opacity:0;transform:translateY(10px) scale(.985);filter:blur(3px)}100%{opacity:1;transform:none;filter:none}}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes ringpulse{0%{box-shadow:0 0 0 0 var(--accent)}100%{box-shadow:0 0 0 14px transparent}}
@@ -1471,7 +1480,7 @@ function shareCanvas(kind, per, tall){
 async function openShare(kind, per){
   try { await Promise.all([document.fonts.load('800 40px "Barlow Condensed"'), document.fonts.load('700 30px "Barlow Condensed"'), document.fonts.load("600 26px Barlow"), document.fonts.load("500 22px Barlow")]); } catch(e){}
   let ov = $("shareov"); if (!ov) { ov = document.createElement("div"); ov.id = "shareov"; document.body.append(ov); }
-  if ((kind === "map" || kind === "period") && !GEO && !LANDR) { ov.innerHTML = `<div class="small" style="color:#cdd8ee;text-align:center;padding:30px">Ładuję kontury map…</div>`; ov.style.display = "flex"; await loadGeo(); }
+  if ((kind === "map" || kind === "period") && !GEO && !LANDR) { ov.innerHTML = `<div style="width:min(420px,86vw);padding:30px">${skel(5)}</div>`; ov.style.display = "flex"; await loadGeo(); }
   const cv = shareCanvas(kind, per, true); ov.innerHTML = ""; ov.append(cv);
   const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px";
   const sv = Object.assign(document.createElement("button"), {className:"btn pri", textContent:"Pobierz 9:16 (TikTok)"}), sq = Object.assign(document.createElement("button"), {className:"btn", textContent:"Pobierz 4:5"}), cl = Object.assign(document.createElement("button"), {className:"btn", textContent:"Zamknij"});
@@ -1710,7 +1719,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v172";
+const APPV = "v173";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2040,13 +2049,13 @@ function renderStats(){
   else if (pick === "year") rankBody = tb(["Rok", W ? "Wizyty" : "Miejsca"], Object.keys(years).sort().reverse().map(y => `<tr><td>${y}</td><td class="r">${years[y]} ${W ? plur(years[y],"wizyta","wizyty","wizyt") : plur(years[y],"miejsce","miejsca","miejsc")}</td></tr>`));
   if (com) {
     const cm = COM[MODE], pl = x => plur(x, "osoba", "osoby", "osób"), ctb = (h, rows, empty) => rows.length ? tb(h, rows) : `<div class="sub">${empty}</div>`;
-    if (!cm) rankBody = `<div class="sub">Ładuję ranking społeczności…</div>`;
+    if (!cm) rankBody = skel(6);
     else if (cm.err) rankBody = `<div class="sub">Ranking społeczności nie jest jeszcze włączony. Właściciel apki musi uruchomić plik SQL w Supabase.</div>`;
     else if (pick === "cv" || pick === "cp") { const k = pick === "cv" ? "v" : "p", rows = R.filter(r => cm[r.id] && cm[r.id][k] > 0).sort((a, b) => cm[b.id][k] - cm[a.id][k] || (cm[b.id][k === "v" ? "p" : "v"] - cm[a.id][k === "v" ? "p" : "v"]) || a.n.localeCompare(b.n, "pl")).slice(0, 50);
       rankBody = ctb(["#  " + (W ? "Ośrodek" : "Miejsce"), pick === "cv" ? "Byli" : "Chcą"], rows.map((r, i) => `<tr><td>${i + 1}. ${nm(r)}</td><td class="r">${cm[r.id][k]} ${pl(cm[r.id][k])}</td></tr>`), pick === "cv" ? "Jeszcze nikt z publicznych kont nie zaznaczył tu odwiedzin." : "Jeszcze nikt z publicznych kont nie dodał tu planów."); }
     else if (pick === "cr") { const rr = RATE[MODE] || {}, rows = R.filter(r => rr[r.id] && rr[r.id].n > 0).sort((a, b) => rr[b.id].a - rr[a.id].a || rr[b.id].n - rr[a.id].n).slice(0, 50);
       rankBody = ctb(["#  " + (W ? "Ośrodek" : "Miejsce"), "Średnia"], rows.map((r, i) => `<tr><td>${i + 1}. ${nm(r)}</td><td class="r"><span style="color:var(--warn)">★ ${fmtAvg(rr[r.id].a)}</span> <span class="small">(${rr[r.id].n})</span></td></tr>`), "Jeszcze nikt z publicznych kont nie ocenił miejsc."); }
-    else if (pick === "cs") { const cp = COMP; if (!cp) rankBody = `<div class="sub">Ładuję…</div>`; else if (cp.err) rankBody = `<div class="sub">Ranking szarlotek wymaga uruchomienia pliku SQL w Supabase.</div>`;
+    else if (pick === "cs") { const cp = COMP; if (!cp) rankBody = skel(6); else if (cp.err) rankBody = `<div class="sub">Ranking szarlotek wymaga uruchomienia pliku SQL w Supabase.</div>`;
       else rankBody = ctb(["#  Szarlotka", "Średnia"], cp.slice().sort((a, b) => (a.a == null) - (b.a == null) || (b.a || 0) - (a.a || 0) || b.nr - a.nr || b.ate - a.ate || a.n.localeCompare(b.n, "pl")).map((x, i) => `<tr><td>${i + 1}. ${esc(x.n)}<div class="small">${byId[x.pid] ? esc(byId[x.pid].n) + " · " : ""}jadło: ${x.ate}</div></td><td class="r">${x.a == null ? `<span class="small">bez ocen</span>` : `<span style="color:var(--warn)">★ ${fmtAvg(x.a)}</span> <span class="small">(${x.nr})</span>`}</td></tr>`), "Jeszcze nikt z publicznych kont nie zaznaczył szarlotki."); }
     else { const hr = []; R.forEach(r => { const m = RATEH[r.id] || {}; Object.keys(m).forEach(i => { if (r.hikes[i] && !r.hikes[i].del && m[i].n > 0) hr.push({h: r.hikes[i], r, a: m[i].a, n: m[i].n}); }); });
       rankBody = ctb(["#  Szlak / miejsce", "Średnia"], hr.sort((a, b) => b.a - a.a || b.n - a.n).slice(0, 50).map((x, i) => `<tr><td>${i + 1}. ${esc(x.h.n)}<div class="small">${flag(x.r.c.split(",")[0])} ${esc(x.r.n)}</div></td><td class="r"><span style="color:var(--warn)">★ ${fmtAvg(x.a)}</span> <span class="small">(${x.n})</span></td></tr>`), "Jeszcze nikt z publicznych kont nie ocenił szlaków."); }
@@ -2561,7 +2570,10 @@ addEventListener("pointerdown", e => { lastPt = {x: e.clientX, y: e.clientY}; },
 function toast(msg){ let t = $("toast"); if (!t) { t = document.createElement("div"); t.id = "toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.remove("on"); void t.offsetWidth; t.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 2200); }
 function burst(){ if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const cs = ["#38e0a0", "#ffc65c", "#5ad1ff", "#ff8f5a", "#ffffff"]; for (let i = 0; i < 16; i++) { const p = document.createElement("i"), a = Math.PI * 2 * i / 16 + Math.random() * .4, d = 44 + Math.random() * 46; p.className = "cf"; p.style.cssText = `left:${lastPt.x}px;top:${lastPt.y}px;background:${cs[i % cs.length]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d - 16}px;--rot:${Math.random() * 360}deg`; document.body.appendChild(p); setTimeout(() => p.remove(), 900); } }
 function buildFx(){ const h = document.querySelector("header"); if (!h) return; let f = $("fx"); if (!f) { f = document.createElement("div"); f.id = "fx"; h.prepend(f); } f.replaceChildren(); const W = MODE === "w"; if (matchMedia("(prefers-reduced-motion: reduce)").matches) { f.className = W ? "snow" : "sun"; return; } for (let i = 0; i < (W ? 16 : 0); i++) { const p = document.createElement("i"), sz = W ? 6 + Math.random() * 6 : 2 + Math.random() * 2.5; p.style.cssText = `left:${Math.random() * 100}%;width:${sz}px;height:${sz}px;animation-duration:${(W ? 9 : 14) + Math.random() * 9}s;animation-delay:-${Math.random() * 18}s;opacity:${.25 + Math.random() * .4}`; f.appendChild(p); } f.className = W ? "snow" : "sun"; if (!W) { const w = f.offsetWidth + 180; for (let i = 0; i < 4; i++) { const c = document.createElement("b"), d = 80 + Math.random() * 60; c.style.cssText = `top:${8 + Math.random() * 62}%;--w:${w}px;transform:scale(${.7 + Math.random() * .7});animation-duration:${d}s;animation-delay:-${Math.random() * d}s;opacity:${.55 + Math.random() * .4}`; f.appendChild(c); } } }
-function flipUI(){ buildFx(); const a = document.querySelector("main"), h = document.querySelector("header"); [a, h].forEach(e => { if (!e) return; e.classList.remove("flip"); void e.offsetWidth; e.classList.add("flip"); }); setTimeout(() => [a, h].forEach(e => e && e.classList.remove("flip")), 600); }
+function modeFx(){ if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const o = $("modefx"); if (o) o.remove(); const e = document.createElement("div"); e.id = "modefx"; e.style.background = MODE === "w" ? "radial-gradient(circle at 50% 0%, #2a6ab0, #0b1b34 70%)" : "radial-gradient(circle at 50% 0%, #e0944a, #2b1d12 70%)"; document.body.appendChild(e); setTimeout(() => e.remove(), 800); }
+function dotsIn(){ try { gDots.classList.remove("din"); void gDots.getBoundingClientRect(); gDots.classList.add("din"); } catch (e) {} }
+function skel(n){ return Array.from({length: n || 4}, (_, i) => `<span class="sk${i % 3 === 0 ? " l" : ""}" style="width:${88 - (i * 11) % 40}%"></span>`).join(""); }
+function flipUI(){ buildFx(); modeFx(); dotsIn(); const a = document.querySelector("main"), h = document.querySelector("header"); [a, h].forEach(e => { if (!e) return; e.classList.remove("flip"); void e.offsetWidth; e.classList.add("flip"); }); setTimeout(() => [a, h].forEach(e => e && e.classList.remove("flip")), 600); }
 function countUp(){ document.querySelectorAll("#hstats b").forEach(b => { const to = parseFloat(b.textContent); if (!isFinite(to) || to <= 0 || to > 99999 || b.dataset.cu === String(to)) return; const from = parseFloat(b.dataset.cu) || 0; b.dataset.cu = String(to); if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const t0 = performance.now(), dur = 700, txt = b.textContent; (function f(t){ const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); b.textContent = k < 1 ? String(Math.round(from + (to - from) * e)) : txt; if (k < 1) requestAnimationFrame(f); })(t0); }); }
 const FILMS = [["", "Wszystkie"], ["sw", "Star Wars"], ["lotr", "Władca Pierścieni"], ["hob", "Hobbit"], ["got", "Gra o tron"], ["hp", "Harry Potter"], ["pirates", "Piraci z Karaibów"], ["bond", "James Bond"], ["ij", "Indiana Jones"], ["mi", "Mission: Impossible"], ["dune", "Diuna"], ["nar", "Narnia"], ["int", "Interstellar"], ["sm", "Dźwięki muzyki"]];
 function dname(r){ if (!filmMode || !r.fl) return r.n; const k = fFilm && r.fl[fFilm] ? fFilm : Object.keys(r.fl).find(x => (r.fm || []).includes(x)) || Object.keys(r.fl)[0]; const f = r.fl[k]; return f ? f + " (" + r.n.replace(/\s*\(.*\)$/, "") + ")" : r.n; }
@@ -2571,7 +2583,7 @@ function setView(v){
   if (v === "f") { if (!Object.keys(FRD).length) { toast("Brak znajomych do pokazania"); viewSync(); return; } exitFilm(); setFrMode(true); viewSync(); return; }
   exitFilm(); setFrMode(false); viewSync();
 }
-function viewSync(){ ["fview", "mfv"].forEach(i => { const e = $(i); if (e) e.value = viewVal(); }); }
+function viewSync(){ dotsIn(); ["fview", "mfv"].forEach(i => { const e = $(i); if (e) e.value = viewVal(); }); }
 function filmBar(){ $("filmchips").innerHTML = FILMS.map(([v, l]) => `<button data-f="${v}" class="${fFilm === v ? "on" : ""}">${l}</button>`).join(""); }
 function enterFilm(){
   if (MODE === "w") setMode("s");
