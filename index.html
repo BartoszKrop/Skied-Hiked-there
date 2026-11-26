@@ -598,7 +598,7 @@ table tr{transition:background .12s}
   <section class="view" id="v-lista">
     <div class="toolbar">
       <div style="display:flex;gap:8px;align-items:center"><input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off" style="flex:1;min-width:0"><button id="qvadd" class="btn pri" aria-label="Zgłoś brakujące miejsce" title="Zgłoś brakujące miejsce" style="display:none;flex:none;width:44px;height:44px;padding:0;font-size:22px;line-height:1;border-radius:12px">＋</button></div>
-      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option><option value="fp">👥 Znajomi planują</option><option value="tog">🤝 Planujemy razem</option><option value="pfv">📍 Chcę, znajomi byli</option><option value="fv">👥 Byli znajomi</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
+      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option><option value="fp">Znajomi planują</option><option value="tog">Planujemy razem</option><option value="pfv">Chcę, znajomi byli</option><option value="fv">Byli znajomi</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
       <button class="fmore" id="fmore" type="button">Więcej filtrów<span id="fmoren"></span></button>
       <div id="fextra" style="display:none">
       <div class="row2" id="frow3"><select id="fgroup"></select></div>
@@ -1725,7 +1725,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v163";
+const APPV = "v164";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2442,7 +2442,7 @@ function openMapFilters(){
     ovBox().innerHTML = `<div class="card mfm" style="width:min(460px,94vw)"><h3>Filtry mapy</h3>
       <div class="mfg2">
       ${F("mfc", "KRAJ", $("fcountry").innerHTML)}
-      ${hasF ? F("mfs", "ZNAJOMI", [["all", "Wszyscy"], ["fp", "👥 Znajomi planują"], ["tog", "🤝 Planujemy razem"], ["pfv", "📍 Chcę, byli znajomi"], ["fv", "👥 Znajomi byli"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")) : ""}
+      ${hasF ? F("mfs", "ZNAJOMI", [["all", "Wszyscy"], ["fp", "Znajomi planują"], ["tog", "Planujemy razem"], ["pfv", "Chcę, byli znajomi"], ["fv", "Znajomi byli"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")) : ""}
       ${W ? F("mfg", "GRUPA", $("fgroup").innerHTML) : ""}
       ${F("mfr", "OCENA", $("fminr").innerHTML)}
       ${W ? F("mfk", "WIELKOŚĆ", $("fminkm").innerHTML) + F("mfe", "WYSOKOŚĆ", $("fminel").innerHTML) : F("mfct", "RODZAJ", $("fcat").innerHTML)}${F("mfv", "TRYB", `<option value="n">Tryb zwykły</option><option value="f">Tryb znajomi</option><option value="m">Tryb filmowy</option>`)}
