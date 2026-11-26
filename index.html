@@ -1637,7 +1637,7 @@ function friendsCard(){
   const ing = `<div class="sub">Wyszukaj kogoś po nazwie użytkownika. Publiczne konto obserwujesz od razu, a prywatne dopiero po akceptacji właściciela. Na karcie miejsca zobaczysz, kto z obserwowanych tam był.</div>
     ${store.authed ? "" : `<div class="small">Zaloguj się, żeby obserwować.</div>`}
     ${SOC.err && store.authed ? `<div class="small" style="color:#ff8a8a;margin-bottom:6px">Obserwowanie nie działa: ${esc(SOC.err.slice(0, 90))}. Uruchom w Supabase pliki social.sql i social2.sql.</div>` : ""}
-    ${store.authed && store.prof && store.prof.username ? `<div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn" id="fshare" style="flex:1">${navigator.share ? "Wyślij" : "Skopiuj"} link do mapy</button><button class="btn pri" id="fadd" style="flex:1">Dodaj mnie: @${esc(store.prof.username)}</button></div>${store.prof.is_public === false ? `<div class="small" style="margin:-6px 0 10px">Masz konto prywatne, więc link pokaże mapę tylko osobom, które zaakceptujesz.</div>` : ""}` : ""}
+    ${store.authed && store.prof && store.prof.username ? `<button class="btn" id="fshare" style="width:100%;margin-bottom:10px">${navigator.share ? "Wyślij" : "Skopiuj"} link do mojej mapy</button>${store.prof.is_public === false ? `<div class="small" style="margin:-6px 0 10px">Masz konto prywatne, więc link pokaże mapę tylko osobom, które zaakceptujesz.</div>` : ""}` : ""}
     <div style="display:flex;gap:8px"><input id="fsq" class="lin" placeholder="nazwa użytkownika" autocapitalize="none" style="flex:1"><button class="btn pri" id="fsgo">Szukaj</button></div><div id="fsres" class="small" style="margin:8px 0"></div>
     ${F.length ? F.map(u => fr(u, `<button class="btn sm pri fgo" data-u="${esc(u)}">Zobacz</button><button class="btn sm bad ffr" data-u="${esc(u)}">Przestań</button>`)).join("") : `<div class="small">Jeszcze nikogo. Wyszukaj kogoś powyżej.</div>`}
     ${SOC.outReq.length ? `<div class="sech">Wysłane prośby</div>${SOC.outReq.map(r => fr(r.to_name, `<button class="btn sm ffr" data-u="${esc(r.to_name)}">Anuluj</button>`, "czeka na akceptację")).join("")}` : ""}`;
@@ -1651,7 +1651,6 @@ function friendsCard(){
 }
 function bindFriends(){
   const cl = $("lclose"); if (cl) cl.onclick = closeAccount;
-  { const ad = $("fadd"); if (ad) ad.onclick = () => shareLink("Dodaj mnie: @" + store.prof.username, "Dodaj mnie w Mountained There (@" + store.prof.username + ") i zobacz, gdzie byłem w górach:", location.origin + location.pathname + "#u/" + store.prof.username); }
   { const sh = $("fshare"); if (sh) sh.onclick = () => shareLink("Moja mapa", "Zobacz moją mapę:", location.origin + location.pathname + "#u/" + store.prof.username); }
   document.querySelectorAll("#ftabs button").forEach(b => b.onclick = () => { SOC.ftab = b.dataset.t; openFriends(); });
   document.querySelectorAll("#acctov .fgo").forEach(b => b.onclick = () => openProfile(b.dataset.u));
@@ -1719,7 +1718,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v177";
+const APPV = "v178";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
