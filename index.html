@@ -1737,7 +1737,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v191";
+const APPV = "v192";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1778,7 +1778,7 @@ const TOUR = [
   {v: "wyjazdy", demo: 1, s: ".thandle", t: "Układanie dni", x: "Chwyć uchwyt i przeciągnij cel na inny dzień albo w inne miejsce w dniu. Cele bez dnia czekają w sekcji Do rozplanowania. Jeśli dzień jest zbyt długi albo miejsca są daleko od siebie, pojawi się ostrzeżenie."},
   {v: "wyjazdy", demo: 1, s: ".tvg", t: "Głosy i komentarze", x: "Gdy wyjazd jest wspólny, każdy może dać plus albo minus celowi i go skomentować. Cele bez dnia ustawiają się według wyniku głosowania, więc najlepsze są na górze."},
   {v: "wyjazdy", demo: 1, s: "#rsvseg", t: "Kto jedzie", x: "Każdy uczestnik odpowiada Jadę, Może albo Nie jadę. Pod spodem widać podsumowanie, ile osób jedzie i kto jeszcze nie odpowiedział."},
-  {v: "wyjazdy", demo: 1, s: ".tact", t: "Kalendarz, mapa, znajomi", x: "Kalendarz eksportuje dni z przypisanymi celami bezpośrednio do pliku .ics. Mapa pokazuje trasę wyjazdu dzień po dniu. Przycisk współdzielenia zaprasza znajomych po nicku, a oni widzą i edytują ten sam plan."},
+  {v: "wyjazdy", demo: 1, s: ".tact", t: "Kalendarz, mapa, znajomi", x: "Kalendarz dodaje dni z przypisanymi celami do kalendarza na Twoim urządzeniu. Mapa pokazuje trasę wyjazdu dzień po dniu. Przycisk współdzielenia zaprasza znajomych po nicku, a oni widzą i edytują ten sam plan."},
   {v: "wyjazdy", demo: 1, s: ".tcd > summary", t: "Koszty", x: "Wydatki wyjazdu, także w różnych walutach. Każdy ma osobę, która zapłaciła, i osoby, na które się dzieli. Plus obok nagłówka dodaje nowy."},
   {v: "wyjazdy", demo: 1, s: ".tcd > .card", t: "Rozliczenie", x: "Aplikacja sama liczy, kto komu ile oddaje, po przeliczeniu wszystkich walut. Gdy ktoś odda pieniądze, klika Rozliczone i dług znika z listy."},
   {v: "wyjazdy", demo: 1, s: ".swr", t: "Własne wydatki", x: "Wydatki, które sam dodałeś, możesz edytować (kwota, data, kurs, podział) albo usunąć ikonami obok kwoty. Cudzych wydatków nie zmienisz."},
