@@ -1737,7 +1737,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v189";
+const APPV = "v190";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -1771,12 +1771,10 @@ const TOUR = [
   {v: "mapa", pre: () => openMapFilters(), s: "#mfv", t: "Trzy tryby mapy", x: "To pole Tryb w filtrach mapy.<br>• <b>Zwykły</b>: Twoje miejsca, wizyty i plany.<br>• <b>Znajomi</b>: mapa ze znajomymi, gdzie byli i co planują.<br>• Trzeci tryb zostawiam Tobie do odkrycia."},
   {v: "mapa", pre: () => openMapFilters(), s: ".mfg2", t: "Pozostałe filtry", x: "Kraj, ocena, wielkość i wysokość (zima) albo grupa (lato), a także pogoda: opady, chmury i dzień prognozy. Aktywne filtry pokazują się potem jako małe żetony na mapie. Wyczyść resetuje je i wraca do trybu zwykłego."},
   {v: "mapa", s: "#frbtn", t: "Znajomi", x: "Dodaj znajomych po nicku. Dzięki temu działa tryb znajomi, a w wyjazdach możesz planować razem z nimi."},
-  {v: "wyjazdy", s: '#nav button[data-t="wyjazdy"]', t: "Wyjazdy", x: "Planer wyjazdów. Z listy miejsc robisz konkretny plan z dniami, kosztami i wspólnymi ustaleniami. Pokażę go na przykładowym wyjeździe."},
-  {v: "wyjazdy", s: "#tnew", t: "Nowy wyjazd", x: "Zaczynasz od nazwy i dat, potem dodajesz cele. Zimą wybierasz też ośrodek bazowy."},
+  {v: "wyjazdy", s: '#nav button[data-t="wyjazdy"]', t: "Wyjazdy", x: "Planer wyjazdów. Nowy wyjazd zaczynasz przyciskiem na dole listy: nazwa, daty i cele (zimą także ośrodek bazowy). Z listy miejsc robisz konkretny plan z dniami, kosztami i wspólnymi ustaleniami. Pokażę go na przykładowym wyjeździe."},
   {v: "wyjazdy", s: "#tseg", t: "Pakowanie", x: "Druga zakładka to osobne listy rzeczy do zabrania, z gotowymi podpowiedziami. Odhaczasz spakowane rzeczy bez planowania wyjazdu, a listę możesz zduplikować na kolejny raz."},
   {v: "wyjazdy", demo: 1, s: "#tname", t: "Przykładowy wyjazd", x: "Otwieram demo z trzema osobami: test1, test2 i test3. To tylko pokaz, nic z niego nie zapisuje się na Twoim koncie."},
-  {v: "wyjazdy", demo: 1, s: "#tfrom", t: "Daty", x: "Po ustawieniu dat wyjazd dzieli się na dni, a przy miejscach przypisanych do dnia pojawia się prognoza pogody na ten dzień."},
-  {v: "wyjazdy", demo: 1, s: ".tit", t: "Karta celu", x: "Znacznik po lewej oznacza zrobione. Nazwa otwiera wyszukiwanie w Google, pod nią widać pogodę na dany dzień. Listą obok wybierasz dzień, a krzyżyk usuwa cel z wyjazdu."},
+  {v: "wyjazdy", demo: 1, s: ".tit", t: "Karta celu", x: "Gdy ustawisz daty wyjazdu, cele przypisane do dnia pokazują pod nazwą prognozę pogody na ten dzień. Nazwa otwiera wyszukiwanie w Google, a znacznik po lewej oznacza, że cel jest zrobiony."},
   {v: "wyjazdy", demo: 1, s: ".thandle", t: "Układanie dni", x: "Chwyć uchwyt i przeciągnij cel na inny dzień albo w inne miejsce w dniu. Cele bez dnia czekają w sekcji Do rozplanowania. Jeśli dzień jest zbyt długi albo miejsca są daleko od siebie, pojawi się ostrzeżenie."},
   {v: "wyjazdy", demo: 1, s: ".tvg", t: "Głosy i komentarze", x: "Gdy wyjazd jest wspólny, każdy może dać plus albo minus celowi i go skomentować. Cele bez dnia ustawiają się według wyniku głosowania, więc najlepsze są na górze."},
   {v: "wyjazdy", demo: 1, s: "#rsvseg", t: "Kto jedzie", x: "Każdy uczestnik odpowiada Jadę, Może albo Nie jadę. Pod spodem widać podsumowanie, ile osób jedzie i kto jeszcze nie odpowiedział."},
@@ -1790,17 +1788,21 @@ const TOUR = [
   {v: "wyjazdy", demo: 1, s: "#tact", t: "Obecny wyjazd", x: "W trakcie terminu wyjazd włącza się sam jako obecny, a tym przyciskiem ustawisz to ręcznie. Dzięki temu skróty do dodawania działają od razu na nim."},
   {v: "wyjazdy", demo: 1, s: "#tfin", t: "Zakończ wyjazd", x: "Po powrocie kliknij to, a miejsca z wyjazdu zapiszą się na mapie jako odwiedzone. Nie musisz zaznaczać ich po kolei."},
   {v: "wyjazdy", demo: 1, s: "#fabx", t: "Szybkie akcje", x: "Okrągły przycisk w rogu, gdy masz wyjazd. Dodaje wydatek, rzecz do sklepu, rzecz do zabrania albo znajomego bez wchodzenia w szczegóły wyjazdu."},
-  {v: "statystyki", s: '#nav button[data-t="statystyki"]', t: "Staty i ranking", x: "Staty to ogólne podsumowanie Twoich miejsc, krajów i szlaków. Ranking pokazuje najlepsze miejsca według ocen."},
-  {t: "Gotowe", x: "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."}
+  {v: "ranking", s: '#nav button[data-t="ranking"]', t: "Ranking", x: "To tier lista Twoich miejsc. Przytrzymaj miejsce, w którym byłeś, i przeciągnij do tieru od S do D. Dotknięcie otwiera szczegóły."},
+  {v: "statystyki", s: '#nav button[data-t="statystyki"]', t: "Staty", x: "Podsumowanie Twoich miejsc, krajów i szlaków oraz rankingi tego, co zaznaczyłeś."},
+  {v: "statystyki", cond: () => SBC && store && store.sb && !RO, s: "#rkscope", t: "Ranking społeczności", x: () => "Przełącznik na Społeczność pokazuje rankingi wszystkich użytkowników: gdzie ludzie najczęściej byli, gdzie chcą jechać i co jest najwyżej oceniane." + (MODE === "s" ? " Latem jest tam nawet ranking szarlotek ze schronisk." : "")},
+  {t: "Gotowe", x: "Dodaj pierwsze miejsce, w którym byłeś. Przewodnik wrócisz w Ustawieniach."},
+  {only: "s", cond: () => SBC && store && store.sb && !RO, t: "Aha, bym zapomniał", btn: "Idę na szarlotkę", x: "Zajrzyj w Staty, w ranking społeczności. Jest tam ranking szarlotek z polskich schronisk, więc zanim ruszysz w Tatry, wiesz, gdzie warto skręcić."}
 ];
 function startTour(force){
+  const STEPS = TOUR.filter(q => (!q.only || q.only === MODE) && (!q.cond || q.cond()));
   try { if (!force && (localStorage.getItem("skibeen.tour") === "1" || RO || Object.keys(wVisits).length + Object.keys(sVisits).length)) return; } catch(e){}
   if ($("tour")) return;
   let i = 0; const ov = document.createElement("div"); ov.id = "tour";
   ov.style.cssText = "position:fixed;inset:0;z-index:9998";
   const end = () => { try { localStorage.setItem("skibeen.tour", "1"); } catch(e){} ov.remove(); TOURDEMO = null; TOURME = ""; tripOpen = null; try { closeAccount(); show("mapa"); updateFab(); } catch(e){} };
   const draw = () => {
-    const t = TOUR[i], last = i === TOUR.length - 1, W = innerWidth, H = innerHeight;
+    const t = STEPS[i], last = i === STEPS.length - 1, W = innerWidth, H = innerHeight;
     try { closeAccount(); } catch(e){}
     TOURDEMO = t.demo ? (TOURDEMO || tourDemo()) : null; TOURME = t.demo ? "test1" : "";
     if (t.v) { try { show(t.v); } catch(e){} }
@@ -1820,7 +1822,7 @@ function startTour(force){
       const pos = !r ? `top:50%;transform:translateY(-50%)` : below ? `top:${r.bottom + pad + 16}px` : `bottom:${H - r.top + pad + 16}px`;
       const ax = r ? Math.max(18, Math.min(cw - 30, cx - cl - 6)) : 0;
       const arrow = r ? `<div style="position:absolute;${below ? "top:-7px" : "bottom:-7px"};left:${ax}px;width:14px;height:14px;background:var(--bg2);transform:rotate(45deg);border:1px solid var(--line);border-${below ? "right" : "left"}:0;border-${below ? "bottom" : "top"}:0"></div>` : "";
-      ov.innerHTML = hole + `<div class="card" style="position:fixed;left:${cl}px;width:${cw}px;${pos};text-align:left;padding:16px;margin:0;background:var(--bg2);backdrop-filter:none"><div class="small" style="margin-bottom:4px">${i + 1} / ${TOUR.length}</div><h3 style="margin:0 0 6px">${t.t}</h3><p style="color:var(--mute);margin:0 0 14px;line-height:1.45;font-size:14px">${t.x}</p><div style="display:flex;gap:8px"><button class="btn" id="tskip" style="flex:1">${last ? "Zamknij" : "Pomiń"}</button><button class="btn pri" id="tnext" style="flex:2">${last ? "Zaczynamy" : "Dalej"}</button></div>${arrow}</div>`;
+      ov.innerHTML = hole + `<div class="card" style="position:fixed;left:${cl}px;width:${cw}px;${pos};text-align:left;padding:16px;margin:0;background:var(--bg2);backdrop-filter:none"><div class="small" style="margin-bottom:4px">${i + 1} / ${STEPS.length}</div><h3 style="margin:0 0 6px">${t.t}</h3><p style="color:var(--mute);margin:0 0 14px;line-height:1.45;font-size:14px">${typeof t.x === "function" ? t.x() : t.x}</p><div style="display:flex;gap:8px"><button class="btn" id="tskip" style="flex:1">${last ? "Zamknij" : "Pomiń"}</button><button class="btn pri" id="tnext" style="flex:2">${last ? (t.btn || "Zaczynamy") : "Dalej"}</button></div>${arrow}</div>`;
       $("tskip").onclick = end; $("tnext").onclick = () => { if (last) end(); else { i++; draw(); } };
     }, t.v ? 420 : 0);
   };
