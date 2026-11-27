@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Mountained there – gdzie byłem na nartach i w górach</title>
+<meta name="description" content="Zaznacz ośrodki narciarskie i górskie szlaki, w których byłeś. Mapa, tier lista, plany i podsumowanie sezonu.">
+<meta property="og:title" content="Mountained there">
+<meta property="og:description" content="Gdzie byłeś na nartach i w górach? Zaznacz na mapie, ułóż tier listę i pochwal się podsumowaniem sezonu.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://bartoszkrop.github.io/Skied-Hiked-there/">
+<meta property="og:image" content="https://bartoszkrop.github.io/Skied-Hiked-there/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#08111f">
+<script>window.__SB__={url:"https://vzneaibmofguejivjfjw.supabase.co",key:"sb_publishable_hCwKWGsd0GTuBVAE85G3qw_C2kJM8gk"};</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mountained">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<!--@CSS-->
+</head>
+<body>
+<header>
+  <div class="brand">
+
+    <div class="mode" id="mode" role="tablist"><button data-m="w" class="on"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h20"/><path d="M12 2v20"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></svg></span>Skied there</button><button data-m="s"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></svg></span>Hiked there</button></div>
+    <div class="rt"><button id="bell" class="acct" style="flex:none;padding:6px 9px;font-size:15px;display:none" aria-label="Powiadomienia" title="Powiadomienia"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.6 2H4.4z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><span class="bdg" id="bdg" style="display:none"></span></button><button id="frbtn" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Obserwowani" title="Obserwowani"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.9.2 5 2.6 5 5.8"/></svg></button><button id="gear" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Ustawienia" title="Ustawienia"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button><button id="acct" class="acct" style="flex:none;padding:6px 9px;font-size:15px" aria-label="Profil" title="Profil"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button></div><i class="brk"></i>
+  </div>
+  <div class="hstats" id="hstats"></div>
+  <div class="savel" style="display:none"><span id="saveState"></span></div>
+  <div class="prog"><i id="progBar"></i></div>
+</header>
+<div id="robar"></div>
+<main>
+  <div id="filmbar"><button class="btn sm" id="filmback" type="button">← Mapa</button><div id="filmchips"></div></div>
+  <section class="view on" id="v-mapa">
+    <div id="mapwrap">
+      <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="zoom"><button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button></div>
+      <div class="mapfc" id="mapfc"></div>
+      <div class="mapchips2"><button class="btn sm" id="znames" aria-label="Nazwy na mapie" title="Nazwy na mapie"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg> Nazwy</button></div>
+      <div class="mapchips"><button class="btn sm" id="mlist"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg> Lista</button><button class="btn sm" id="mfilt"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></svg> Filtry</button><button class="btn sm" id="mall">Pokaż wszystkie</button></div>
+      <div class="mapempty" id="mapempty"><div class="hintpill"><div id="welh">Gdzie już byłeś?</div><div class="sub" id="wels"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn pri sm" id="madd2">Dodaj z listy</button><button class="btn sm" id="mall2">Pokaż wszystkie</button></div></div></div>
+      <div class="legend"><span class="lgn" data-c="v"><i style="background:var(--ok)"></i>byłem</span><span class="lgn" data-c="p"><i style="background:var(--warn)"></i>planuję</span><span class="lgn" data-c="u"><i style="background:#7aa8ff"></i>nie byłem</span><span class="lgf" data-f="A" style="display:none"><i style="background:#2dd4bf"></i>znajomi byli</span><span class="lgf" data-f="B" style="display:none"><i style="background:#e6f46a"></i>planuję, a znajomi byli</span><span class="lgf" data-f="C" style="display:none"><i style="background:#c58bff"></i>znajomi planują</span><span class="lgf" data-f="D" style="display:none"><i style="background:#ff7eb6"></i>oboje planujemy</span></div>
+      <div class="note" id="mapnote"></div>
+    </div>
+  </section>
+  <section class="view" id="v-lista">
+    <div class="toolbar"><div id="qsug" class="qsug"></div>
+      <div style="display:flex;gap:8px;align-items:center"><input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off" style="flex:1;min-width:0"><button id="qvadd" class="btn pri" aria-label="Zgłoś brakujące miejsce" title="Zgłoś brakujące miejsce" style="display:none;flex:none;width:44px;height:44px;padding:0;font-size:22px;line-height:1;border-radius:12px">＋</button></div>
+      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
+      <button class="fmore" id="fmore" type="button">Więcej filtrów<span id="fmoren"></span></button>
+      <div id="fextra" style="display:none">
+      <div class="row2" id="frow3"><select id="fgroup"></select></div>
+      <div class="row2" id="frow4"><select id="fminr" aria-label="Ocena"><option value="0">Ocena</option><option value="3">★ 3,0 i więcej</option><option value="3.5">★ 3,5 i więcej</option><option value="4">★ 4,0 i więcej</option><option value="4.5">★ 4,5 i więcej</option></select></div>
+      <div class="row2" id="frow2"><select id="fminkm"><option value="0">Wielkość</option><option value="30">od 30 km tras</option><option value="50">od 50 km</option><option value="100">od 100 km</option><option value="150">od 150 km</option><option value="200">od 200 km</option><option value="300">od 300 km</option></select><select id="fminel"><option value="0">Wysokość</option><option value="1000">powyżej 1000 m</option><option value="1500">powyżej 1500 m</option><option value="2000">powyżej 2000 m</option><option value="2500">powyżej 2500 m</option><option value="3000">powyżej 3000 m</option></select></div>
+      <div id="frow6" style="display:none"><select id="fcat" aria-label="Rodzaj"><option value="">Rodzaj: wszystkie</option><option value="g">Szlaki i szczyty</option><option value="j">Jeziora</option><option value="w">Wodospady</option><option value="k">Kaniony i formacje</option></select></div>
+      <div class="row2" id="frow7"><select id="fview" aria-label="Tryb"><option value="n">Tryb zwykły</option><option value="f">Tryb znajomi</option><option value="m">Tryb filmowy</option></select></div>
+      <div id="frow5"><div class="wxh"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9z"/></svg> Pogoda</div><select id="fwd" aria-label="Dzień"><option value="0">Dziś</option><option value="1">Jutro</option><option value="2">Pojutrze</option><option value="7">Średnio 7 dni</option></select><select id="fwx" aria-label="Opady"><option value="">Opady: dowolne</option><option value="dry">Bez opadów</option><option value="snow">Śnieg ≥1 cm</option></select><select id="fwc" aria-label="Zachmurzenie"><option value="0">Chmury: dowolne</option><option value="30">Chmury ≤30%</option><option value="60">Chmury ≤60%</option></select><select id="fws" aria-label="Pokrywa śniegu"><option value="0">Pokrywa: dowolna</option><option value="20">Pokrywa od 20 cm</option><option value="50">Pokrywa od 50 cm</option><option value="100">Pokrywa od 100 cm</option><option value="150">Pokrywa od 150 cm</option></select><select id="fwsort" aria-label="Sortuj wg pogody"><option value="">Sortuj wg pogody</option><option value="ws">Najwięcej świeżego śniegu</option><option value="wd">Największa pokrywa</option><option value="wp">Najmniejsza szansa opadów</option><option value="wc">Najmniej chmur</option></select></div>
+      </div>
+    </div>
+    <div class="seg" id="lview" style="margin:10px 2px 0;display:none"><button data-v="p" class="on">Miejsca</button><button data-v="h">Szlaki</button></div>
+    <div class="mapfc listfc" id="listfc"></div>
+    <div class="small" id="fcount" style="margin:8px 4px 2px"></div>
+    <div class="list" id="list"></div>
+  </section>
+  <section class="view" id="v-ranking"><div class="pad tiers" id="tiers"></div></section>
+  <section class="view" id="v-wyjazdy"><div class="pad" id="trips"></div></section>
+    <section class="view" id="v-statystyki"><div class="pad" id="stats"></div></section>
+</main>
+<nav id="nav">
+  <button data-t="mapa" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4z"/><path d="M9 4v13M15 7v13"/></svg>Mapa</button>
+  
+  <button data-t="ranking"><svg class="i" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a2 2 0 0 0 0 4h3M16 6h3a2 2 0 0 1 0 4h-3M12 13v4M9 20h6M10 17h4"/></svg>Ranking</button>
+  <button data-t="wyjazdy" style="display:none"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V8l4-3 4 3v12M12 20V12l4-3 4 3v8M2 20h20"/></svg>Wyjazdy</button>
+  <button data-t="statystyki"><svg class="i" viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>Staty</button>
+</nav>
+<div id="sheetbg"></div>
+<div id="sheet"></div>
+
+<!--@JS-->
+<div id="splash"><div class="spi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="sbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14263f"/><stop offset="1" stop-color="#08111f"/></linearGradient><clipPath id="sm"><path d="M40 410 L196 120 L292 268 L350 186 L472 410 Z"/></clipPath><clipPath id="sl"><path d="M0 0H300L252 512H0Z"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#sbg)"/><g transform="translate(256 266) scale(.9) translate(-256 -266)"><g clip-path="url(#sm)"><rect width="512" height="512" fill="#f4a259"/><rect width="512" height="512" fill="#5ad1ff" clip-path="url(#sl)"/><path d="M196 120 L148 230 L190 214 L214 262 L246 196 Z" fill="#fff" opacity=".9" clip-path="url(#sl)"/><path d="M286 20 L330 20 L238 512 L194 512 Z" fill="#fff" opacity=".95"/></g><path d="M40 428H472" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity=".92"/></g></svg></div><div class="spt"><b>Mountained</b> there</div></div><script>try{ const sp=document.getElementById("splash"); if(sp){ if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){ document.body.classList.add("spl"); setTimeout(()=>{sp.classList.add("out"); setTimeout(()=>sp.remove(),500);},900); } else sp.remove(); } }catch(e){}</script><script>if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) window.addEventListener("load",()=>{const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload();}});navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});});</script></body>
+</html>
