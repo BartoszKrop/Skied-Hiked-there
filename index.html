@@ -656,6 +656,10 @@ body.wide #fab{left:auto;right:18px}
 .clu circle{fill:rgba(122,168,255,.82);stroke:#fff}
 .clu text{fill:#fff;font-family:Barlow,"Segoe UI",Roboto,Arial,sans-serif;font-weight:700}
 body.summer .clu circle{fill:rgba(90,130,200,.78)}
+
+#mlmap{position:absolute;inset:0;z-index:0}
+#mlmap .maplibregl-ctrl-attrib{font-size:10px;background:rgba(var(--pn),.7)}
+body.mlon #mapnote{display:none}
 </style>
 </head>
 <body>
@@ -1839,9 +1843,9 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v209";
+const APPV = "v210";
 function settingsCard(){
-  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
+  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div><div class="fld"><label>MAPA</label><div class="seg big" id="mlseg"><button data-v="0">Klasyczna</button><button data-v="1">Nowa (test)</button></div><div class="small" style="margin-top:4px">Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.</div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
 function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
@@ -1935,6 +1939,7 @@ function openSettings(){ SOC.ov = ""; ovBox().innerHTML = settingsCard(); bindSe
 function bindSettings(){
   { const sg = $("themeseg"); if (sg) { const cur = () => { let v = "auto"; try { v = localStorage.getItem("skibeen.theme") || "auto"; } catch(e){} return v; }, mark = () => sg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === cur())); mark(); sg.onclick = e => { const b = e.target.closest("button"); if (!b) return; try { localStorage.setItem("skibeen.theme", b.dataset.v); } catch(e){} applyTheme(); mark(); }; } }
   { const tb = $("tourbtn"); if (tb) tb.onclick = () => { closeAccount(); startTour(true); }; }
+  { const sg = $("mlseg"); if (sg) { const mark = () => sg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === (mlOn ? "1" : "0"))); mark(); sg.onclick = e => { const b = e.target.closest("button"); if (!b) return; mlSet(b.dataset.v === "1"); mark(); }; } }
   const ib = $("instset"); if (ib) ib.onclick = async () => { if (!(await doInstall())) $("instmsg").textContent = installText(); };
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
 }
@@ -2588,7 +2593,7 @@ function shownBounds(){
   return {x0: Math.min(...xs) - pad, x1: Math.max(...xs) + pad, y0: Math.min(...ys) - pad, y1: Math.max(...ys) + pad};
 }
 let vbRestore = (() => { try { const a = JSON.parse(localStorage.getItem("skibeen.vb") || "null"); if (Array.isArray(a) && a.length === 4 && a.every(Number.isFinite) && a[2] > 0.05 && a[2] < 1e4 && a[3] > 0.05) return a; } catch(e){} return null; })(), _vbSave = 0;
-function fit(){ mapFitted = true;
+function fit(){ mapFitted = true; if (ML) { vbRestore = null; const b = shownBounds(); ML.fitBounds([[b.x0 / COS, -b.y1], [b.x1 / COS, -b.y0]], {padding: 24, duration: 500}); return; }
   if (vbRestore) { const a = vbRestore; vbRestore = null; const rc0 = svg.getBoundingClientRect(); if (rc0.width > 50 && rc0.height > 50) { const cx = a[0] + a[2] / 2, cy = a[1] + a[3] / 2; vb.w = a[2]; vb.h = a[2] * rc0.height / rc0.width; vb.x = cx - vb.w / 2; vb.y = cy - vb.h / 2; applyVB(); return; } }
   const rc = svg.getBoundingClientRect(); const W = rc.width || 360, H = rc.height || 500, b = shownBounds();
   const bw = b.x1 - b.x0, bh = b.y1 - b.y0, s = Math.min(W / bw, H / bh);
@@ -2712,8 +2717,73 @@ function openMapFilters(){
   };
   draw();
 }
-function mapRefresh(){ legSync(); viewSync(); { if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
+/* ---------- nowa mapa (test): MapLibre + OpenFreeMap + cieniowanie gór ---------- */
+let ML = null, mlOn = false; try { mlOn = localStorage.getItem("skibeen.ml") === "1"; } catch (e) {}
+const ML_SRC = window.__MLSRC || "https://cdn.jsdelivr.net/npm/maplibre-gl@5/dist/";
+function mlLoad(){ if (window.maplibregl) return Promise.resolve(); if (mlLoad._p) return mlLoad._p;
+  mlLoad._p = new Promise((res, rej) => { const l = document.createElement("link"); l.rel = "stylesheet"; l.href = ML_SRC + "maplibre-gl.css"; document.head.append(l); const sc = document.createElement("script"); sc.src = ML_SRC + "maplibre-gl.js"; sc.onload = res; sc.onerror = () => { mlLoad._p = null; rej(new Error("maplibre")); }; document.head.append(sc); }); return mlLoad._p; }
+async function mlStyle(){
+  const light = document.body.classList.contains("light");
+  let src = {type: "vector", url: "https://tiles.openfreemap.org/planet"}, glyphs = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
+  try { const st = await (await fetch(window.__MLSTYLE || "https://tiles.openfreemap.org/styles/positron")).json(); const k = Object.keys(st.sources || {}).find(k => st.sources[k].type === "vector"); if (k) src = st.sources[k]; if (st.glyphs) glyphs = st.glyphs; } catch (e) {}
+  const C = light ? {bg: "#f4efe6", water: "#c3d6e6", ice: "#ffffff", wood: "rgba(150,170,120,.16)", bnd: "rgba(110,95,70,.5)", lab: "#8a7e69", halo: "#f4efe6", sh: "rgba(70,52,30,.5)", hi: "rgba(255,255,255,.4)"}
+    : {bg: "#0d1726", water: "#0b2336", ice: "rgba(220,235,255,.22)", wood: "rgba(60,110,80,.12)", bnd: "rgba(170,190,220,.32)", lab: "#8193b0", halo: "#0d1726", sh: "rgba(0,0,0,.6)", hi: "rgba(140,170,210,.16)"};
+  const F = ["Noto Sans Regular"];
+  return {version: 8, glyphs, sources: {omt: src, dem: {type: "raster-dem", tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"], encoding: "terrarium", tileSize: 256, maxzoom: 12, attribution: "Teren: Mapzen / AWS"}}, layers: [
+    {id: "bg", type: "background", paint: {"background-color": C.bg}},
+    {id: "wood", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 7, filter: ["in", ["get", "class"], ["literal", ["wood", "forest"]]], paint: {"fill-color": C.wood}},
+    {id: "ice", type: "fill", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"fill-color": C.ice, "fill-opacity": .8}},
+    {id: "water", type: "fill", source: "omt", "source-layer": "water", paint: {"fill-color": C.water}},
+    {id: "hs", type: "hillshade", source: "dem", minzoom: 6, paint: {"hillshade-exaggeration": ["interpolate", ["linear"], ["zoom"], 6, 0, 8, .3, 12, .5], "hillshade-shadow-color": C.sh, "hillshade-highlight-color": C.hi, "hillshade-accent-color": "rgba(0,0,0,0)"}},
+    {id: "bnd", type: "line", source: "omt", "source-layer": "boundary", filter: ["all", ["<=", ["get", "admin_level"], 2], ["!=", ["get", "maritime"], 1]], paint: {"line-color": C.bnd, "line-width": ["interpolate", ["linear"], ["zoom"], 3, .6, 8, 1.4]}},
+    {id: "peak", type: "symbol", source: "omt", "source-layer": "mountain_peak", minzoom: 11, layout: {"text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]], "text-font": F, "text-size": 10.5, "text-offset": [0, .6]}, paint: {"text-color": C.lab, "text-halo-color": C.halo, "text-halo-width": 1.2}},
+    {id: "country", type: "symbol", source: "omt", "source-layer": "place", maxzoom: 6, filter: ["==", ["get", "class"], "country"], layout: {"text-field": ["coalesce", ["get", "name:" + (LANG === "pl" ? "pl" : LANG)], ["get", "name:latin"], ["get", "name"]], "text-font": F, "text-size": 11, "text-transform": "uppercase", "text-letter-spacing": .12}, paint: {"text-color": C.lab, "text-halo-color": C.halo, "text-halo-width": 1.2}}]};
+}
+const mlEmpty = () => ({type: "FeatureCollection", features: []});
+function mlData(){
+  if (!ML || !ML.getSource("pm")) return;
+  try { vbHeavy(true); } catch (e) {}
+  const on = [], off = [];
+  dots.forEach(d => { if (!d._show) return; const f = {type: "Feature", geometry: {type: "Point", coordinates: [d.r.x, d.r.y]}, properties: {id: d.r.id, n: dname(d.r), col: d._col || "#7aa8ff", sel: d._sel ? 1 : 0, k: d.r.k || 0}}; (d._on || d._sel ? on : off).push(f); });
+  ML.getSource("pm").setData({type: "FeatureCollection", features: on}); ML.getSource("pu").setData({type: "FeatureCollection", features: off});
+  ["pm-l", "pu-l"].forEach(l => { if (ML.getLayer(l)) ML.setLayoutProperty(l, "visibility", showNames ? "visible" : "none"); });
+}
+function mlLayers(){
+  const light = document.body.classList.contains("light"), halo = light ? "#f4efe6" : "#0d1726", txt = light ? "#3b3326" : "#dbe6f7", F = ["Noto Sans Regular"];
+  ML.addSource("pu", {type: "geojson", data: mlEmpty(), cluster: true, clusterRadius: 46, clusterMaxZoom: 9});
+  ML.addSource("pm", {type: "geojson", data: mlEmpty()});
+  ML.addLayer({id: "pu-c", type: "circle", source: "pu", filter: ["has", "point_count"], paint: {"circle-color": "rgba(122,168,255,.82)", "circle-stroke-color": "#fff", "circle-stroke-width": 1.5, "circle-radius": ["interpolate", ["linear"], ["get", "point_count"], 3, 12, 50, 20]}});
+  ML.addLayer({id: "pu-n", type: "symbol", source: "pu", filter: ["has", "point_count"], layout: {"text-field": ["to-string", ["get", "point_count"]], "text-font": F, "text-size": 12, "text-allow-overlap": true}, paint: {"text-color": "#fff"}});
+  ML.addLayer({id: "pu-p", type: "circle", source: "pu", filter: ["!", ["has", "point_count"]], paint: {"circle-color": "rgba(122,168,255,.6)", "circle-radius": 5, "circle-stroke-color": "rgba(255,255,255,.35)", "circle-stroke-width": 1}});
+  ML.addLayer({id: "pu-l", type: "symbol", source: "pu", minzoom: 7, filter: ["!", ["has", "point_count"]], layout: {"text-field": ["get", "n"], "text-font": F, "text-size": 11, "text-offset": [0, -1.2], "text-anchor": "bottom", "text-max-width": 12}, paint: {"text-color": txt, "text-halo-color": halo, "text-halo-width": 1.5, "text-opacity": .8}});
+  ML.addLayer({id: "pm-h", type: "circle", source: "pm", filter: ["==", ["get", "sel"], 1], paint: {"circle-color": "#5ad1ff", "circle-opacity": .35, "circle-radius": 16}});
+  ML.addLayer({id: "pm-p", type: "circle", source: "pm", paint: {"circle-color": ["get", "col"], "circle-radius": ["case", ["==", ["get", "sel"], 1], 8, 6.5], "circle-stroke-color": "#fff", "circle-stroke-width": ["case", ["==", ["get", "sel"], 1], 2.5, 1.5]}});
+  ML.addLayer({id: "pm-l", type: "symbol", source: "pm", minzoom: 4, layout: {"text-field": ["get", "n"], "text-font": F, "text-size": 12, "text-offset": [0, -1.3], "text-anchor": "bottom", "text-max-width": 12, "symbol-sort-key": ["-", 0, ["get", "k"]]}, paint: {"text-color": txt, "text-halo-color": halo, "text-halo-width": 1.6}});
+  mlData();
+}
+async function mlStart(){
+  if (ML) return; const box = $("v-mapa"); if (!box) return;
+  try { await mlLoad(); } catch (e) { toast("Nie udało się wczytać nowej mapy"); return; }
+  let el = $("mlmap"); if (!el) { el = document.createElement("div"); el.id = "mlmap"; svg.after(el); }
+  const style = await mlStyle(); if (!mlOn) return;
+  svg.style.display = "none"; document.body.classList.add("mlon");
+  ML = new maplibregl.Map({container: el, style, bounds: [[vb.x / COS, -(vb.y + vb.h)], [(vb.x + vb.w) / COS, -vb.y]], attributionControl: {compact: true}, dragRotate: false, pitchWithRotate: false, touchPitch: false, renderWorldCopies: true, maxZoom: 15});
+  ML.touchZoomRotate.disableRotation();
+  ML.on("load", mlLayers);
+  ML.on("moveend", () => { const b = ML.getBounds(); try { localStorage.setItem("skibeen.vb", JSON.stringify([b.getWest() * COS, -b.getNorth(), (b.getEast() - b.getWest()) * COS, b.getNorth() - b.getSouth()].map(n => +n.toFixed(3)))); } catch (e) {} });
+  ML.on("click", e => { const p = e.point, f = ML.queryRenderedFeatures([[p.x - 14, p.y - 14], [p.x + 14, p.y + 14]], {layers: ["pm-p", "pu-c", "pu-p"]}); if (!f.length) return;
+    const pm = f.find(x => x.layer.id === "pm-p"), x = pm || f[0];
+    if (x.layer.id === "pu-c") { ML.getSource("pu").getClusterExpansionZoom(x.properties.cluster_id).then(z => ML.easeTo({center: x.geometry.coordinates, zoom: z + .3})); return; }
+    openSheet(x.properties.id); });
+  ["pm-p", "pu-c", "pu-p"].forEach(l => { ML.on("mouseenter", l, () => ML.getCanvas().style.cursor = "pointer"); ML.on("mouseleave", l, () => ML.getCanvas().style.cursor = ""); });
+}
+function mlStop(){ document.body.classList.remove("mlon"); if (ML) { ML.remove(); ML = null; } const el = $("mlmap"); if (el) el.remove(); svg.style.display = ""; mapRefresh(); }
+function mlSet(v){ mlOn = !!v; try { localStorage.setItem("skibeen.ml", mlOn ? "1" : "0"); } catch (e) {} if (mlOn) mlStart(); else mlStop(); }
+{ const o = applyTheme; applyTheme = function(){ o(); try { if (ML) mlTheme(); } catch (e) {} }; }
+function mlTheme(){ if (!ML) return; mlStyle().then(st => { if (!ML) return; ML.setStyle(st); ML.once("style.load", mlLayers); }); }
+function mapRefresh(){ if (ML) setTimeout(mlData, 0); legSync(); viewSync(); { if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){
+  if (ML) { ML.easeTo({zoom: ML.getZoom() - Math.log2(f), duration: 220}); return; }
   const rc = svg.getBoundingClientRect();
   const cx = ctr ? vb.x + (ctr.x - rc.left) / rc.width * vb.w : vb.x + vb.w / 2;
   const cy2 = ctr ? vb.y + (ctr.y - rc.top) / rc.height * vb.h : vb.y + vb.h / 2;
@@ -3674,7 +3744,7 @@ function showInstBar(){
 }
 let instT = null; function scheduleInstBar(){ if (instT) return; instT = setTimeout(showInstBar, 25000); }
 if (isIOS()) scheduleInstBar();
-$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("bell").onclick = openInbox; $("acct").onclick = openAccount; updateAcct(); initListControls(); mapInit(); show(location.hash.slice(1) || "mapa"); setTimeout(startTour, 1600);
+$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("bell").onclick = openInbox; $("acct").onclick = openAccount; updateAcct(); initListControls(); mapInit(); if (mlOn) setTimeout(() => { if (mlOn) mlStart(); }, 50); show(location.hash.slice(1) || "mapa"); setTimeout(startTour, 1600);
 try { if (localStorage.getItem(LSM) !== "w") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
