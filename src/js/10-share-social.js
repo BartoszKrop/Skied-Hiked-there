@@ -430,7 +430,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v222";
+const APPV = "v223";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button><button class="btn sm" id="bugbtn" type="button">Zgłoś błąd lub pomysł</button></span></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div><div class="fld"><label>MAPA</label><div class="seg big" id="mlseg"><button data-v="0">Klasyczna</button><button data-v="1">Nowa (test)</button></div><div class="small" style="margin-top:4px">Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.</div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -828,8 +828,8 @@ function renderStats(){
   const nm = r => `${flag(r.c.split(",")[0])} ${esc(r.n)}`;
   const stars = n => n ? `<span style="color:var(--warn)">${"★".repeat(n)}</span>` : `<span class="small">bez oceny</span>`;
   const OPTS = W
-    ? [["visits", "Najczęściej odwiedzane"], ["rating", "Najwyżej oceniane"], ["km", "Największe (km tras)"], ["country", "Według kraju"], ["year", "Wizyty według roku"], ["groups", "Grupy (domeny narciarskie)"]]
-    : [["hikerate", "Najwyżej oceniane szlaki"], ["rating", "Najwyżej oceniane miejsca"], ["hikes", "Najwięcej szlaków"], ["country", "Według kraju"], ["year", "Odwiedzone miejsca według roku"], ["sz", "Szarlotki"]];
+    ? [["visits", "Najczęściej odwiedzane"], ["rating", "Najwyżej oceniane"], ["km", "Największe (km tras)"], ["country", "Według kraju"], ["year", "Wizyty według roku"], ["groups", "Grupy (domeny narciarskie)"], ["cprog", "Postęp w krajach"]]
+    : [["hikerate", "Najwyżej oceniane szlaki"], ["rating", "Najwyżej oceniane miejsca"], ["hikes", "Najwięcej szlaków"], ["country", "Według kraju"], ["year", "Odwiedzone miejsca według roku"], ["sz", "Szarlotki"], ["cprog", "Postęp w krajach"]];
   const COPTS = W ? [["cv", "Gdzie ludzie najczęściej byli"], ["cp", "Gdzie najchętniej by pojechali"], ["cr", "Najwyżej oceniane"]] : [["cv", "Gdzie ludzie najczęściej byli"], ["cp", "Gdzie najchętniej by poszli"], ["cr", "Najwyżej oceniane miejsca"], ["ch", "Najwyżej oceniane szlaki"], ["cs", "Szarlotki (ranking ogólny)"]];
   const com = statScope === "c" && SBC && store && store.sb && !RO, OP = com ? COPTS : OPTS, ck = "c" + MODE;
   if (!OP.some(o => o[0] === statRank[com ? ck : MODE])) statRank[com ? ck : MODE] = OP[0][0];
@@ -858,7 +858,7 @@ function renderStats(){
     else { const hr = []; R.forEach(r => { const m = RATEH[r.id] || {}; Object.keys(m).forEach(i => { if (r.hikes[i] && !r.hikes[i].del && m[i].n > 0) hr.push({h: r.hikes[i], r, a: m[i].a, n: m[i].n}); }); });
       rankBody = ctb(["#  Szlak / miejsce", "Średnia"], hr.sort((a, b) => b.a - a.a || b.n - a.n).slice(0, 50).map((x, i) => `<tr><td>${i + 1}. ${esc(x.h.n)}<div class="small">${flag(x.r.c.split(",")[0])} ${esc(x.r.n)}</div></td><td class="r"><span style="color:var(--warn)">★ ${fmtAvg(x.a)}</span> <span class="small">(${x.n})</span></td></tr>`), "Jeszcze nikt z publicznych kont nie ocenił szlaków."); }
   }
-  const rankCard = com ? `<div class="card">${rankBody}</div><div class="small" style="margin:-4px 4px 8px">Liczone tylko z publicznych kont, bez nazwisk.</div>` : pick === "sz" ? szCard() : pick === "groups" ? groupsHtml() : `<div class="card">${rankBody}</div>`;
+  let rankCard = com ? `<div class="card">${rankBody}</div><div class="small" style="margin:-4px 4px 8px">Liczone tylko z publicznych kont, bez nazwisk.</div>` : pick === "sz" ? szCard() : pick === "groups" ? groupsHtml() : `<div class="card">${rankBody}</div>`;
   const planned = R.filter(r => isPlan(r.id)).length;
   const mx = (L, f) => L.reduce((m, r) => (!m || f(r) > f(m)) ? r : m, null), shortN = r => esc(r.n.length > 22 ? r.n.slice(0, 21) + "…" : r.n);
   const cCnt = {}; vis.forEach(r => r.c.split(",").forEach(c => { cCnt[c] = (cCnt[c] || 0) + 1; })); const favC = Object.keys(cCnt).sort((a, b) => cCnt[b] - cCnt[a])[0];
@@ -872,20 +872,12 @@ function renderStats(){
   const cs = Object.keys(allC).sort((a, b) => ((cCnt[b] || 0) / allC[b] - (cCnt[a] || 0) / allC[a]) || allC[b] - allC[a]), cOpen = !!RKOPEN["pgc" + MODE];
   const cList = cs.filter(c => cCnt[c]), cRest = cs.filter(c => !cCnt[c]);
   const cShow = cOpen ? cList.concat(cRest) : cList.length ? cList : cRest.slice(0, 5);
-  const cCard = `<div class="card pgc"><h3>Postęp w krajach</h3>${cList.length ? "" : `<div class="sub">${W ? "Zaznacz ośrodki, a tu zobaczysz, ile już zaliczyłeś w każdym kraju." : "Zaznacz miejsca, a tu zobaczysz, ile już zaliczyłeś w każdym kraju."}</div>`}${cShow.map(c => bar(flag(c) + " " + esc(cname(c)), cCnt[c] || 0, allC[c])).join("")}${(cOpen || cRest.length > (cList.length ? 0 : 5)) ? `<button class="btn" id="pgmore" style="width:100%;margin-top:8px">${cOpen ? "Pokaż tylko moje kraje" : "Pokaż wszystkie kraje (" + cs.length + ")"}</button>` : ""}</div>`;
-  /* osiągnięcia: postęp w kilku wyzwaniach */
-  const cnt = f => [R.filter(r => f(r) && isVis(r.id)).length, R.filter(f).length];
-  let ach;
-  if (W) { const big = cnt(r => r.k >= 200), high = cnt(r => r.e >= 3000), pl = cnt(r => r.c.split(",").includes("PL")), alps = cnt(r => /(^|,)(AT|CH|FR|IT)(,|$)/.test(r.c));
-    ach = [["Kraje", Object.keys(cCnt).length, Math.min(10, Object.keys(allC).length)], ["Giganci: 200+ km tras", ...big], ["Lodowce i szczyty: 3000+ m", ...high], ["Alpy", ...alps], ["Polska", ...pl], ["Kompletne grupy", s.gdone, G.filter(g => g.m.length >= 2).length]]; }
-  else { const H = {g: [0, 0], s: [0, 0], t: [0, 0]}; R.forEach(r => (r.hikes || []).forEach((h, i) => { if (h.del) return; const k = /trud/.test(h.d) ? "t" : /śred/.test(h.d) ? "s" : "g"; H[k][1]++; if (visits[r.id] && visits[r.id].done && visits[r.id].done[i]) H[k][0]++; }));
-    ach = [["Kraje", Object.keys(cCnt).length, Math.min(10, Object.keys(allC).length)], ["Szlaki łatwe", ...H.g], ["Szlaki średnie", ...H.s], ["Szlaki trudne", ...H.t], ["Tatry", ...cnt(r => /tatr/i.test(r.n + " " + (r.r || "")))]]; }
-  const aCard = `<div class="card pgc"><h3>Osiągnięcia</h3>${ach.filter(x => x[2] > 0).map(x => bar(x[0], x[1], x[2])).join("")}</div>`;
+  const cCard = `<div class="card pgc">${cList.length ? "" : `<div class="sub">${W ? "Zaznacz ośrodki, a tu zobaczysz, ile już zaliczyłeś w każdym kraju." : "Zaznacz miejsca, a tu zobaczysz, ile już zaliczyłeś w każdym kraju."}</div>`}${cShow.map(c => bar(flag(c) + " " + esc(cname(c)), cCnt[c] || 0, allC[c])).join("")}${(cOpen || cRest.length > (cList.length ? 0 : 5)) ? `<button class="btn" id="pgmore" style="width:100%;margin-top:8px">${cOpen ? "Pokaż tylko moje kraje" : "Pokaż wszystkie kraje (" + cs.length + ")"}</button>` : ""}</div>`;
+  if (!com && pick === "cprog") rankCard = cCard;
   $("stats").innerHTML = `
     <div class="big">${cards.map(c => `<div class="card"><div class="n">${c[0]}</div><div class="l">${c[1]}</div></div>`).join("")}</div>
     <div class="rkwrap"><div class="card rkhead"><h3>Rankingi</h3>${SBC && store && store.sb && !RO ? `<div class="seg" id="rkscope" style="margin-bottom:8px"><button data-s="m" class="${com ? "" : "on"}">Moje</button><button data-s="c" class="${com ? "on" : ""}">Społeczność</button></div>` : ""}<select class="sel" id="rkpick">${OP.map(o => `<option value="${o[0]}"${o[0] === pick ? " selected" : ""}>${o[1]}</option>`).join("")}</select></div>
     ${rankCard}</div>
-    ${cCard}${aCard}
     <div class="card"><h3>Udostępnij i eksportuj</h3>
       <div class="sub">Obraz do wrzucenia na TikToka/Instagram oraz pliki z Twoimi miejscami do map.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">${W ? `<button class="btn pri" id="shrank">${IC.img} Obraz: ranking</button>` : ""}<button class="btn pri" id="shmap">${IC.img} Obraz: mapa</button></div>
