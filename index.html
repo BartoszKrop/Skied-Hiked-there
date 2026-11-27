@@ -635,6 +635,22 @@ body.hcomp .prog{display:none}
 .hstats b,.hstats small{transition:font-size .2s ease}
 @media (prefers-reduced-motion:reduce){.hstats b,.hstats small{transition:none}}
 #v-lista .toolbar{background:linear-gradient(180deg,var(--bg) calc(100% - 12px),transparent)}
+
+/* v208: układ dwukolumnowy na szerokim ekranie */
+@media (min-width:1100px){
+body.wide{display:grid;--pw:430px;grid-template-columns:var(--pw) 1fr;grid-template-rows:auto 1fr auto}
+body.wide header{grid-column:1/-1;grid-row:1}
+body.wide main{grid-column:1/-1;grid-row:2/4}
+body.wide nav{grid-column:1;grid-row:3;z-index:6;border-right:1px solid var(--line)}
+body.wide .view{right:auto;width:var(--pw);bottom:var(--navh,64px);border-right:1px solid var(--line);background:var(--bg);animation:none}
+body.wide #v-mapa{display:block!important;left:var(--pw);right:0;width:auto;bottom:0;border-right:0;background:transparent}
+body.wide #mlist{display:none}
+body.wide #sheetbg{display:none!important}
+body.wide #sheet{left:0;right:auto;width:var(--pw);top:var(--hh,120px);bottom:0;max-height:none;border-radius:0;border:0;border-right:1px solid var(--line);box-shadow:8px 0 30px rgba(0,0,0,.08);padding:10px 18px 20px;z-index:12}
+body.wide #sheet .grab{display:none}
+body.wide #sheet .hero h2{font-size:26px}body.wide #sheet .hero .flg{width:56px;height:56px;font-size:30px;border-radius:16px}body.wide #sheet .hero .meta{font-size:14px}
+body.wide #fab{left:auto;right:18px}
+}
 </style>
 </head>
 <body>
@@ -1818,7 +1834,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v207";
+const APPV = "v208";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2775,12 +2791,17 @@ function paintCountries(){
 /* ---------- zakładki i tryb ---------- */
 { const hc = () => { const v = document.querySelector(".view.on"); const y = (v && v.id !== "v-mapa") ? v.scrollTop : 0, on = document.body.classList.contains("hcomp"); if (!on && y > 56) document.body.classList.add("hcomp"); else if (on && y < 8) document.body.classList.remove("hcomp"); };
   document.querySelectorAll(".view").forEach(v => v.addEventListener("scroll", hc, {passive: true})); window.__hc = hc; }
+{ const mq = matchMedia("(min-width:1100px)"), hd = document.querySelector("header"), nv = $("nav");
+  const sz = () => { document.body.style.setProperty("--hh", hd.offsetHeight + "px"); if (nv) document.body.style.setProperty("--navh", nv.offsetHeight + "px"); };
+  const sync = () => { const was = document.body.classList.contains("wide"); document.body.classList.toggle("wide", mq.matches); sz(); if (was !== mq.matches && typeof show === "function" && show._t) show(show._t === "lista" ? "mapa" : show._t); };
+  (mq.addEventListener ? mq.addEventListener("change", sync) : mq.addListener(sync)); new ResizeObserver(sz).observe(hd); if (nv) new ResizeObserver(sz).observe(nv); sync(); }
 function show(t){
+  if (document.body.classList.contains("wide") && t === "lista") t = "mapa";
   if (t === "grupy") { statRank.w = "groups"; t = "statystyki"; if (MODE === "w") renderStats(); }
   if (!["mapa","lista","ranking","grupy","statystyki","wyjazdy"].includes(t) || (t === "ranking" && MODE !== "w") || (t === "wyjazdy" && RO)) t = "mapa";
   { const ord = ["mapa", "lista", "ranking", "wyjazdy", "statystyki"], np = ord.indexOf(t), pp = ord.indexOf(show._t);
     if (show._t && show._t !== t && np >= 0 && pp >= 0) show._dir = np > pp ? "sl-r" : "sl-l"; else show._dir = ""; show._t = t; }
-  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t)); updateFab(); if (window.__hc) window.__hc();
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t)); if (document.body.classList.contains("wide") && t === "mapa") $("v-lista").classList.add("on"); updateFab(); if (window.__hc) window.__hc();
   if (show._dir) { const vw = $("v-" + t); if (vw) { vw.classList.remove("sl-l", "sl-r"); void vw.offsetWidth; vw.classList.add(show._dir); setTimeout(() => vw.classList.remove("sl-l", "sl-r"), 420); } }
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === (t === "lista" ? "mapa" : t)));
   try { if (!RO && location.hash !== "#" + t && !/access_token|error_description/.test(location.hash)) history.replaceState(null, "", "#" + t); } catch(e){}
