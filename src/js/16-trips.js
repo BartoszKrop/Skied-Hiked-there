@@ -780,10 +780,44 @@ function showInstBar(){
 }
 let instT = null; function scheduleInstBar(){ if (instT) return; instT = setTimeout(showInstBar, 25000); }
 if (isIOS()) scheduleInstBar();
-$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("bell").onclick = openInbox; $("acct").onclick = openAccount; updateAcct(); initListControls(); mapInit(); if (mlOn) setTimeout(() => { if (mlOn) mlStart(); }, 50); show(location.hash.slice(1) || "mapa"); setTimeout(startTour, 1600);
+$("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("bell").onclick = openInbox; $("acct").onclick = openAccount; updateAcct(); initListControls(); mapInit(); if (mlOn) setTimeout(() => { if (mlOn) mlStart(); }, 50); show(location.hash.slice(1) || "mapa"); setTimeout(welcomePick, 1200);
 try { if (localStorage.getItem(LSM) !== "w") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
 try { if (!RO && !R.some(r => marked(r.id))) { showAll = true; mapRefresh(); } } catch(e){}
 
 try { applyTheme(); setTimeout(buildFx, 0); matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); } catch(e){}
+
+/* pierwsze uruchomienie: wybór zima / lato */
+function welcomePick(){
+  try { if (localStorage.getItem("skibeen.tour") === "1" || localStorage.getItem("skibeen.picked") === "1" || RO || Object.keys(wVisits).length + Object.keys(sVisits).length) { startTour(); return; } } catch (e) { startTour(); return; }
+  if ($("wpick")) return; const o = document.createElement("div"); o.id = "wpick";
+  o.innerHTML = `<div class="wpc"><h2>Od czego zaczynasz?</h2><p>Zaznaczasz miejsca, w których już byłeś, i planujesz kolejne.</p>
+    <div class="wpg"><button data-m="w" class="wpw"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1 19.1 4.9M9 3l3 3 3-3M9 21l3-3 3 3M3 9l3 3-3 3M21 9l-3 3 3 3"/></svg><b>Zima</b><span>Ośrodki narciarskie</span></button>
+    <button data-m="s" class="wps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 20 6.5-11 4 6.5 2.5-4L21 20z"/><circle cx="17" cy="5" r="2"/></svg><b>Lato</b><span>Góry i szlaki</span></button></div>
+    <small>Tryb zmienisz w każdej chwili przełącznikiem u góry.</small></div>`;
+  document.body.append(o);
+  o.onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; try { localStorage.setItem("skibeen.picked", "1"); } catch (x) {} setMode(b.dataset.m); o.classList.add("out"); setTimeout(() => { o.remove(); startTour(); }, 260); };
+}
+/* wyszukiwarka na mapie */
+function mapGoTo(r){
+  if (typeof ML !== "undefined" && ML) { ML.flyTo({center: [r.x, r.y], zoom: Math.max(ML.getZoom(), 8.5), duration: 700}); return; }
+  const rc = svg.getBoundingClientRect(), tw = Math.min(vb.w, 2.6), th = tw * rc.height / rc.width, tx = px(r.x) - tw / 2, ty = py(r.y) - th / 2;
+  const a = {...vb}, t0 = performance.now(), D = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 420; mapFitted = true;
+  (function st(t){ const k = D ? Math.min(1, (t - t0) / D) : 1, e = 1 - Math.pow(1 - k, 3); vb.x = a.x + (tx - a.x) * e; vb.y = a.y + (ty - a.y) * e; vb.w = a.w + (tw - a.w) * e; vb.h = a.h + (th - a.h) * e; if (k < 1) { applyVB(true); requestAnimationFrame(st); } else applyVB(); })(t0);
+}
+function mapSearch(){
+  let p = $("msrch"); if (p) { p.querySelector("input").focus(); return; }
+  p = document.createElement("div"); p.id = "msrch";
+  p.innerHTML = `<div class="msi"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="${tr(MODE === "w" ? "Szukaj ośrodka…" : "Szukaj miejsca…")}" autocomplete="off" enterkeyhint="go"><button class="msx" aria-label="Zamknij">×</button></div><div class="msr"></div>`;
+  $("v-mapa").append(p); const inp = p.querySelector("input"), res = p.querySelector(".msr");
+  const close = () => { p.classList.add("out"); setTimeout(() => p.remove(), 160); };
+  const pick = id => { const r = byId[id]; if (!r) return; close(); if (!passF(r) && !marked(r.id)) { showAll = true; } mapRefresh(); mapGoTo(r); setTimeout(() => openSheet(id), document.body.classList.contains("wide") ? 0 : 450); };
+  const draw = () => { const q = norm(inp.value.trim()); if (q.length < 2) { res.innerHTML = ""; return; }
+    const L = R.filter(r => norm(r.n + " " + r.c.split(",").map(cname).join(" ")).includes(q)).sort((a, b) => (norm(b.n).startsWith(q) - norm(a.n).startsWith(q)) || ((b.k || 0) - (a.k || 0))).slice(0, 6);
+    res.innerHTML = L.length ? L.map(r => `<button data-id="${esc(r.id)}"><span class="msf">${flag(r.c.split(",")[0])}</span><span class="msn"><b>${esc(r.n)}</b><small>${esc(r.c.split(",").map(cname).join(", "))}</small></span>${marked(r.id) ? `<i class="msd ${isVis(r.id) ? "v" : "p"}"></i>` : ""}</button>`).join("") : `<div class="mse">${tr("Nic nie znaleziono")}</div>`; };
+  inp.oninput = draw; inp.onkeydown = e => { if (e.key === "Escape") close(); if (e.key === "Enter") { const b = res.querySelector("button"); if (b) pick(b.dataset.id); } };
+  res.onclick = e => { const b = e.target.closest("button[data-id]"); if (b) pick(b.dataset.id); };
+  p.querySelector(".msx").onclick = close; requestAnimationFrame(() => inp.focus());
+}
+$("msbtn").onclick = mapSearch;

@@ -5,12 +5,12 @@
     const hs = hd0.querySelector(".hstats"); hd0.style.transition = "none"; hd0.style.height = h0 + "px"; void hd0.offsetHeight; hd0.style.transition = "height .26s cubic-bezier(.2,.8,.3,1)"; hd0.style.height = h1 + "px";
     if (hs) { hs.classList.remove("hfade"); void hs.offsetWidth; hs.classList.add("hfade"); }
     clearTimeout(hd0._t); hd0._t = setTimeout(() => { hd0.style.height = ""; hd0.style.transition = ""; if (hs) hs.classList.remove("hfade"); }, 300); };
-  const hc = () => { const v = document.querySelector(".view.on"); const y = (v && v.id !== "v-mapa") ? v.scrollTop : 0, on = document.body.classList.contains("hcomp"); if (!on && y > 56) setC(true); else if (on && y < 8) setC(false); };
+  const hc = () => { if (document.body.classList.contains("hcomp")) document.body.classList.remove("hcomp"); }; void setC;
   document.querySelectorAll(".view").forEach(v => v.addEventListener("scroll", hc, {passive: true})); window.__hc = hc; }
 { const mq = matchMedia("(min-width:1100px)"), hd = document.querySelector("header"), nv = $("nav");
-  const sz = () => { document.body.style.setProperty("--hh", hd.offsetHeight + "px"); if (nv) document.body.style.setProperty("--navh", nv.offsetHeight + "px"); const zn = $("znames"); if (zn) document.body.style.setProperty("--m2w", (zn.offsetWidth + 6) + "px"); };
+  const sz = () => { document.body.style.setProperty("--hh", hd.offsetHeight + "px"); if (nv) document.body.style.setProperty("--navh", nv.offsetHeight + "px"); const zn = document.querySelector(".mapchips2"); if (zn) document.body.style.setProperty("--m2w", (zn.offsetWidth + 6) + "px"); };
   const sync = () => { const was = document.body.classList.contains("wide"); document.body.classList.toggle("wide", mq.matches); sz(); if (was !== mq.matches && typeof show === "function" && show._t) show(show._t === "lista" ? "mapa" : show._t); };
-  (mq.addEventListener ? mq.addEventListener("change", sync) : mq.addListener(sync)); new ResizeObserver(sz).observe(hd); if (nv) new ResizeObserver(() => { sz(); navPill(false); }).observe(nv); { const zn = $("znames"); if (zn) new ResizeObserver(sz).observe(zn); } sync(); }
+  (mq.addEventListener ? mq.addEventListener("change", sync) : mq.addListener(sync)); new ResizeObserver(sz).observe(hd); if (nv) new ResizeObserver(() => { sz(); navPill(false); }).observe(nv); { const zn = document.querySelector(".mapchips2"); if (zn) new ResizeObserver(sz).observe(zn); } sync(); }
 function navPill(anim){ const nv = $("nav"); if (!nv) return; let pl = $("navpill"); if (!pl) { pl = document.createElement("span"); pl.id = "navpill"; nv.prepend(pl); }
   const b = nv.querySelector("button.on"); if (!b || !b.offsetWidth) { pl.style.opacity = "0"; return; } if (!anim) pl.style.transition = "none";
   pl.style.transform = `translateX(${b.offsetLeft}px)`; pl.style.width = b.offsetWidth + "px"; pl.style.height = b.offsetHeight + "px"; pl.style.top = b.offsetTop + "px"; pl.style.opacity = "1";
