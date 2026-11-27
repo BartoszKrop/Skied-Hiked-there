@@ -797,7 +797,7 @@ function welcomePick(){
     <button data-m="s" class="wps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 20 6.5-11 4 6.5 2.5-4L21 20z"/><circle cx="17" cy="5" r="2"/></svg><b>Lato</b><span>Góry i szlaki</span></button></div>
     <small>Tryb zmienisz w każdej chwili przełącznikiem u góry.</small></div>`;
   document.body.append(o);
-  o.onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; try { localStorage.setItem("skibeen.picked", "1"); } catch (x) {} setMode(b.dataset.m); o.classList.add("out"); setTimeout(() => { o.remove(); startTour(); }, 260); };
+  o.onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; try { localStorage.setItem("skibeen.picked", "1"); } catch (x) {} track("start-" + (b.dataset.m === "w" ? "zima" : "lato")); setMode(b.dataset.m); o.classList.add("out"); setTimeout(() => { o.remove(); startTour(); }, 260); };
 }
 /* wyszukiwarka na mapie */
 function mapGoTo(r){
@@ -812,7 +812,7 @@ function mapSearch(){
   p.innerHTML = `<div class="msi"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="${tr(MODE === "w" ? "Szukaj ośrodka lub szlaku…" : "Szukaj miejsca lub szlaku…")}" autocomplete="off" enterkeyhint="go"><button class="msx" aria-label="Zamknij">×</button></div><div class="msr"></div>`;
   $("v-mapa").append(p); const inp = p.querySelector("input"), res = p.querySelector(".msr");
   const close = () => { p.classList.add("out"); setTimeout(() => p.remove(), 160); };
-  const pick = (id, hi) => { if (hi != null && MODE !== "s") setMode("s"); const r = byId[id]; if (!r) return; close(); if (!passF(r) && !marked(r.id)) { showAll = true; } mapRefresh(); mapGoTo(r);
+  const pick = (id, hi) => { track("szukaj"); if (hi != null && MODE !== "s") setMode("s"); const r = byId[id]; if (!r) return; close(); if (!passF(r) && !marked(r.id)) { showAll = true; } mapRefresh(); mapGoTo(r);
     setTimeout(() => { openSheet(id); if (hi != null) { hkOpen.add(r.id + ":" + hi); renderSheet(); } if (hi != null) setTimeout(() => { const el = document.querySelector(`#sheet .hkhead[data-o="${hi}"]`); if (el) { const h = el.closest(".hike") || el; h.scrollIntoView({block: "center", behavior: "smooth"}); h.classList.add("hkflash"); setTimeout(() => h.classList.remove("hkflash"), 1600); } }, 320); }, document.body.classList.contains("wide") ? 0 : 450); };
   const draw = () => { const q = norm(inp.value.trim()); if (q.length < 2) { res.innerHTML = ""; return; }
     const L = R.filter(r => norm(r.n + " " + r.c.split(",").map(cname).join(" ")).includes(q)).sort((a, b) => (norm(b.n).startsWith(q) - norm(a.n).startsWith(q)) || ((b.k || 0) - (a.k || 0))).slice(0, 5);

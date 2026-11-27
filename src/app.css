@@ -745,3 +745,16 @@ body.light #wpick{background:rgba(20,30,50,.35)}
 .msh{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--glass2);color:var(--mute)}.msh .ic{width:16px;height:16px}
 .msdf{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:1px 6px;flex:none}
 .hike.hkflash{box-shadow:0 0 0 2px var(--accent);transition:box-shadow .4s}
+/* postęp i osiągnięcia */
+.pgc h3{margin-bottom:10px}
+.pg{margin:10px 0}
+.pgt{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;margin-bottom:5px}
+.pgt span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pgt b{font-family:var(--fd);font-size:16px;flex:none}.pgt b small{font-family:inherit;font-weight:600;color:var(--mute);font-size:13px}
+.pgb{height:7px;border-radius:7px;background:var(--glass2);overflow:hidden}
+.pgb i{display:block;height:100%;border-radius:inherit;background:var(--accent);transform-origin:left;animation:pgin .7s cubic-bezier(.2,.8,.3,1)}
+.pg.full .pgb i{background:var(--ok)}.pg.full .pgt b{color:var(--ok)}
+@keyframes pgin{from{transform:scaleX(0)}}
+@media (prefers-reduced-motion:reduce){.pgb i{animation:none}}
+.big .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.big .l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

@@ -430,9 +430,9 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v221";
+const APPV = "v222";
 function settingsCard(){
-  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div><div class="fld"><label>MAPA</label><div class="seg big" id="mlseg"><button data-v="0">Klasyczna</button><button data-v="1">Nowa (test)</button></div><div class="small" style="margin-top:4px">Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.</div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
+  return `<div class="card"><h3>Ustawienia</h3><div class="fld"><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button><button class="btn sm" id="bugbtn" type="button">Zgłoś błąd lub pomysł</button></span></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div><div class="fld"><label>MAPA</label><div class="seg big" id="mlseg"><button data-v="0">Klasyczna</button><button data-v="1">Nowa (test)</button></div><div class="small" style="margin-top:4px">Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.</div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
 function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
@@ -526,6 +526,7 @@ function openSettings(){ SOC.ov = ""; ovBox().innerHTML = settingsCard(); bindSe
 function bindSettings(){
   { const sg = $("themeseg"); if (sg) { const cur = () => { let v = "auto"; try { v = localStorage.getItem("skibeen.theme") || "auto"; } catch(e){} return v; }, mark = () => sg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === cur())); mark(); sg.onclick = e => { const b = e.target.closest("button"); if (!b) return; try { localStorage.setItem("skibeen.theme", b.dataset.v); } catch(e){} applyTheme(); mark(); }; } }
   { const tb = $("tourbtn"); if (tb) tb.onclick = () => { closeAccount(); startTour(true); }; }
+  { const bb = $("bugbtn"); if (bb) bb.onclick = openBugReport; }
   { const sg = $("mlseg"); if (sg) { const mark = () => sg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === (mlOn ? "1" : "0"))); mark(); sg.onclick = e => { const b = e.target.closest("button"); if (!b) return; mlSet(b.dataset.v === "1"); mark(); }; } }
   const ib = $("instset"); if (ib) ib.onclick = async () => { if (!(await doInstall())) $("instmsg").textContent = installText(); };
   const ls = $("langsel"); if (ls) { ls.value = LANG; ls.onchange = () => { try { localStorage.setItem("skibeen.lang", ls.value); } catch(e){} location.reload(); }; }
@@ -859,13 +860,32 @@ function renderStats(){
   }
   const rankCard = com ? `<div class="card">${rankBody}</div><div class="small" style="margin:-4px 4px 8px">Liczone tylko z publicznych kont, bez nazwisk.</div>` : pick === "sz" ? szCard() : pick === "groups" ? groupsHtml() : `<div class="card">${rankBody}</div>`;
   const planned = R.filter(r => isPlan(r.id)).length;
+  const mx = (L, f) => L.reduce((m, r) => (!m || f(r) > f(m)) ? r : m, null), shortN = r => esc(r.n.length > 22 ? r.n.slice(0, 21) + "…" : r.n);
+  const cCnt = {}; vis.forEach(r => r.c.split(",").forEach(c => { cCnt[c] = (cCnt[c] || 0) + 1; })); const favC = Object.keys(cCnt).sort((a, b) => cCnt[b] - cCnt[a])[0];
+  const hi = W ? mx(vis.filter(r => r.e), r => r.e) : null, bigR = W ? mx(vis, r => r.k) : null, yr = String(new Date().getFullYear());
   const cards = W
-    ? [[s.n, "ośrodków z " + R.length], [s.countries.size, "krajów"], [s.stays, "wizyt"], [Math.round(s.km), "km tras w tych ośrodkach"], [planned, "w planach"], [s.gdone, "kompletnych grup"]]
-    : [[s.n, "miejsc z " + R.length], [s.countries.size, "krajów"], [R.filter(r => isVis(r.id) && visits[r.id].stays.some(x => x.y === String(new Date().getFullYear()))).length, "miejsc w tym roku"], [s.hikes, "zaliczonych szlaków"], [planned, "w planach"], [R.reduce((a, r) => a + r.hikes.length, 0), "szlaków na liście"]];
+    ? [[hi ? hi.e + " m" : "–", hi ? "najwyżej: " + shortN(hi) : "najwyższy punkt"], [bigR ? Math.round(bigR.k) + " km" : "–", bigR ? "największy: " + shortN(bigR) : "największy ośrodek"], [favC ? flag(favC) + " " + cCnt[favC] : "–", favC ? "najczęściej: " + esc(cname(favC)) : "ulubiony kraj"], [planned, "w planach"]]
+    : [[R.filter(r => isVis(r.id) && visits[r.id].stays.some(x => x.y === yr)).length, "miejsc w tym roku"], [favC ? flag(favC) + " " + cCnt[favC] : "–", favC ? "najczęściej: " + esc(cname(favC)) : "ulubiony kraj"], [R.reduce((a, r) => a + (r.hikes || []).filter(h => !h.del).length, 0), "szlaków do zrobienia"], [planned, "w planach"]];
+  /* postęp w krajach */
+  const allC = {}; R.forEach(r => r.c.split(",").forEach(c => { allC[c] = (allC[c] || 0) + 1; }));
+  const bar = (lab, a, b, extra) => { const pc = b ? Math.min(100, Math.round(100 * a / b)) : 0; return `<div class="pg${a >= b && b ? " full" : ""}"><div class="pgt"><span>${lab}</span><b>${a}<small> / ${b}</small></b></div><div class="pgb"><i style="width:${pc}%"></i></div>${extra || ""}</div>`; };
+  const cs = Object.keys(allC).sort((a, b) => ((cCnt[b] || 0) / allC[b] - (cCnt[a] || 0) / allC[a]) || allC[b] - allC[a]), cOpen = !!RKOPEN["pgc" + MODE];
+  const cList = cs.filter(c => cCnt[c]), cRest = cs.filter(c => !cCnt[c]);
+  const cShow = cOpen ? cList.concat(cRest) : cList.length ? cList : cRest.slice(0, 5);
+  const cCard = `<div class="card pgc"><h3>Postęp w krajach</h3>${cList.length ? "" : `<div class="sub">${W ? "Zaznacz ośrodki, a tu zobaczysz, ile już zaliczyłeś w każdym kraju." : "Zaznacz miejsca, a tu zobaczysz, ile już zaliczyłeś w każdym kraju."}</div>`}${cShow.map(c => bar(flag(c) + " " + esc(cname(c)), cCnt[c] || 0, allC[c])).join("")}${(cOpen || cRest.length > (cList.length ? 0 : 5)) ? `<button class="btn" id="pgmore" style="width:100%;margin-top:8px">${cOpen ? "Pokaż tylko moje kraje" : "Pokaż wszystkie kraje (" + cs.length + ")"}</button>` : ""}</div>`;
+  /* osiągnięcia: postęp w kilku wyzwaniach */
+  const cnt = f => [R.filter(r => f(r) && isVis(r.id)).length, R.filter(f).length];
+  let ach;
+  if (W) { const big = cnt(r => r.k >= 200), high = cnt(r => r.e >= 3000), pl = cnt(r => r.c.split(",").includes("PL")), alps = cnt(r => /(^|,)(AT|CH|FR|IT)(,|$)/.test(r.c));
+    ach = [["Kraje", Object.keys(cCnt).length, Math.min(10, Object.keys(allC).length)], ["Giganci: 200+ km tras", ...big], ["Lodowce i szczyty: 3000+ m", ...high], ["Alpy", ...alps], ["Polska", ...pl], ["Kompletne grupy", s.gdone, G.filter(g => g.m.length >= 2).length]]; }
+  else { const H = {g: [0, 0], s: [0, 0], t: [0, 0]}; R.forEach(r => (r.hikes || []).forEach((h, i) => { if (h.del) return; const k = /trud/.test(h.d) ? "t" : /śred/.test(h.d) ? "s" : "g"; H[k][1]++; if (visits[r.id] && visits[r.id].done && visits[r.id].done[i]) H[k][0]++; }));
+    ach = [["Kraje", Object.keys(cCnt).length, Math.min(10, Object.keys(allC).length)], ["Szlaki łatwe", ...H.g], ["Szlaki średnie", ...H.s], ["Szlaki trudne", ...H.t], ["Tatry", ...cnt(r => /tatr/i.test(r.n + " " + (r.r || "")))]]; }
+  const aCard = `<div class="card pgc"><h3>Osiągnięcia</h3>${ach.filter(x => x[2] > 0).map(x => bar(x[0], x[1], x[2])).join("")}</div>`;
   $("stats").innerHTML = `
     <div class="big">${cards.map(c => `<div class="card"><div class="n">${c[0]}</div><div class="l">${c[1]}</div></div>`).join("")}</div>
     <div class="rkwrap"><div class="card rkhead"><h3>Rankingi</h3>${SBC && store && store.sb && !RO ? `<div class="seg" id="rkscope" style="margin-bottom:8px"><button data-s="m" class="${com ? "" : "on"}">Moje</button><button data-s="c" class="${com ? "on" : ""}">Społeczność</button></div>` : ""}<select class="sel" id="rkpick">${OP.map(o => `<option value="${o[0]}"${o[0] === pick ? " selected" : ""}>${o[1]}</option>`).join("")}</select></div>
     ${rankCard}</div>
+    ${cCard}${aCard}
     <div class="card"><h3>Udostępnij i eksportuj</h3>
       <div class="sub">Obraz do wrzucenia na TikToka/Instagram oraz pliki z Twoimi miejscami do map.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">${W ? `<button class="btn pri" id="shrank">${IC.img} Obraz: ranking</button>` : ""}<button class="btn pri" id="shmap">${IC.img} Obraz: mapa</button></div>
@@ -881,6 +901,7 @@ function renderStats(){
     </div>`}
     <div class="small" style="margin:6px 4px 24px">Ośrodki: © współtwórcy OpenStreetMap / OpenSkiMap (licencja ODbL); długości tras bywają zaniżone tam, gdzie mapowanie jest niepełne. Szlaki letnie to ręcznie wybrana lista orientacyjna, czasy i trudność sprawdź w mapach turystycznych przed wyjściem.</div>`;
   $("rkpick").onchange = e => { statRank[com ? ck : MODE] = e.target.value; renderStats(); };
+  { const pm = $("pgmore"); if (pm) pm.onclick = () => { RKOPEN["pgc" + MODE] = !RKOPEN["pgc" + MODE]; renderStats(); }; }
   { const mb = $("rkmore"); if (mb) mb.onclick = () => { RKOPEN[mb.dataset.k] = !RKOPEN[mb.dataset.k]; renderStats(); }; }
   { const sc = $("rkscope"); if (sc) sc.onclick = e => { const b = e.target.closest("button"); if (!b) return; statScope = b.dataset.s; try { localStorage.setItem("sht_rks", statScope); } catch (x) {} renderStats(); }; }
   $("shyear").onclick = () => { const o = periodOptions().find(x => x.v === $("shper").value); if (o) openShare("period", o); };
@@ -895,3 +916,21 @@ function renderStats(){
   if ($("bdl")) $("bdl").onclick = () => saveBlob("ski-been-backup.json", new Blob([exportJSON(true)], {type:"application/json"}), $("bmsg"));
 }
 
+
+/* ogólne zgłoszenie błędu lub pomysłu (trafia do tabeli suggestions, jak inne zgłoszenia) */
+function openBugReport(){
+  const can = SBC && store && store.sb && store.uid;
+  ovBox().innerHTML = `<div class="card" style="width:min(440px,94vw)"><h3>Zgłoś błąd lub pomysł</h3>
+    <div class="sub">Napisz, co nie działa albo co byś zmienił. Wersja aplikacji i telefon dołączą się same.</div>
+    ${can ? `<textarea id="bgt" rows="5" maxlength="1500" placeholder="Np. po kliknięciu X dzieje się Y…" style="width:100%;margin-top:8px"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="bgc" style="flex:1">Anuluj</button><button class="btn pri" id="bgs" style="flex:2">Wyślij</button></div><div class="small" id="bgm" style="margin-top:6px"></div>`
+    : `<div class="sub" style="margin-top:8px">Żeby wysłać zgłoszenie, zaloguj się (ikona osób u góry).</div><button class="btn" id="bgc" style="width:100%;margin-top:10px">Zamknij</button>`}</div>`;
+  $("bgc").onclick = closeAccount; const t = $("bgt"); if (!t) return; setTimeout(() => t.focus(), 50);
+  $("bgs").onclick = async () => { const v = t.value.trim(); if (v.length < 3) { $("bgm").textContent = "Napisz kilka słów."; return; } $("bgs").disabled = true;
+    try { const {error} = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: MODE, name: ("Zgłoszenie: " + v.split("\n")[0]).slice(0, 120), country: "", note: (v + " · " + APPV + " · " + navigator.userAgent.slice(0, 160)).slice(0, 1900)});
+      if (error) throw error; closeAccount(); toast("Wysłano, dzięki!"); track("zgloszenie"); } catch (e) { $("bgs").disabled = false; $("bgm").textContent = "Nie udało się wysłać. Spróbuj jeszcze raz."; } };
+}
+/* analityka: anonimowa (GoatCounter, bez cookies). Pusta nazwa = wyłączona. */
+const GC = "";
+function track(ev){ try { if (!GC || !window.goatcounter || !window.goatcounter.count) return; window.goatcounter.count({path: "ev-" + ev, title: ev, event: true}); } catch (e) {} }
+if (GC && !/localhost|127\.0\.0\.1/.test(location.hostname)) { const sc = document.createElement("script"); sc.async = true; sc.src = "https://gc.zgo.at/count.js"; sc.dataset.goatcounter = "https://" + GC + ".goatcounter.com/count"; document.head.append(sc); }
