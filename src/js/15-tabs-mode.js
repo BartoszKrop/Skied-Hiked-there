@@ -8,14 +8,14 @@
   const hc = () => { const v = document.querySelector(".view.on"); const y = (v && v.id !== "v-mapa") ? v.scrollTop : 0, on = document.body.classList.contains("hcomp"); if (!on && y > 56) setC(true); else if (on && y < 8) setC(false); };
   document.querySelectorAll(".view").forEach(v => v.addEventListener("scroll", hc, {passive: true})); window.__hc = hc; }
 { const mq = matchMedia("(min-width:1100px)"), hd = document.querySelector("header"), nv = $("nav");
-  const sz = () => { document.body.style.setProperty("--hh", hd.offsetHeight + "px"); if (nv) document.body.style.setProperty("--navh", nv.offsetHeight + "px"); };
+  const sz = () => { document.body.style.setProperty("--hh", hd.offsetHeight + "px"); if (nv) document.body.style.setProperty("--navh", nv.offsetHeight + "px"); const zn = $("znames"); if (zn) document.body.style.setProperty("--m2w", (zn.offsetWidth + 6) + "px"); };
   const sync = () => { const was = document.body.classList.contains("wide"); document.body.classList.toggle("wide", mq.matches); sz(); if (was !== mq.matches && typeof show === "function" && show._t) show(show._t === "lista" ? "mapa" : show._t); };
-  (mq.addEventListener ? mq.addEventListener("change", sync) : mq.addListener(sync)); new ResizeObserver(sz).observe(hd); if (nv) new ResizeObserver(sz).observe(nv); sync(); }
+  (mq.addEventListener ? mq.addEventListener("change", sync) : mq.addListener(sync)); new ResizeObserver(sz).observe(hd); if (nv) new ResizeObserver(sz).observe(nv); { const zn = $("znames"); if (zn) new ResizeObserver(sz).observe(zn); } sync(); }
 function show(t){
   if (document.body.classList.contains("wide") && t === "lista") t = "mapa";
   if (t === "grupy") { statRank.w = "groups"; t = "statystyki"; if (MODE === "w") renderStats(); }
   if (!["mapa","lista","ranking","grupy","statystyki","wyjazdy"].includes(t) || (t === "ranking" && MODE !== "w") || (t === "wyjazdy" && RO)) t = "mapa";
-  { const ord = ["mapa", "lista", "ranking", "wyjazdy", "statystyki"], np = ord.indexOf(t), pp = ord.indexOf(show._t);
+  { const ord = ["mapa", "lista", "ranking", "statystyki", "wyjazdy"], np = ord.indexOf(t), pp = ord.indexOf(show._t);
     if (show._t && show._t !== t && np >= 0 && pp >= 0) show._dir = np > pp ? "sl-r" : "sl-l"; else show._dir = ""; show._t = t; }
   document.body.classList.toggle("wtr", t === "wyjazdy"); document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t)); if (document.body.classList.contains("wide") && t === "mapa") $("v-lista").classList.add("on"); updateFab(); if (window.__hc) window.__hc();
   if (show._dir) { const vw = $("v-" + t); if (vw) { vw.classList.remove("sl-l", "sl-r"); void vw.offsetWidth; vw.classList.add(show._dir); setTimeout(() => vw.classList.remove("sl-l", "sl-r"), 420); } }

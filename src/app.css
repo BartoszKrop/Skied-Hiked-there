@@ -631,6 +631,8 @@ body.wide #sheet{left:0;right:auto;width:var(--pw);top:var(--hh,120px);bottom:0;
 body.wide #sheet .grab{display:none}
 body.wide #sheet .hero h2{font-size:26px}body.wide #sheet .hero .flg{width:56px;height:56px;font-size:30px;border-radius:16px}body.wide #sheet .hero .meta{font-size:14px}
 body.wide #fab{left:auto;right:18px}
+body.wide .mapchips2{top:12px}
+body.wide .mapchips{left:calc(12px + var(--m2w,86px))}
 /* wyjazdy na szerokim ekranie: bez mapy, treść wyśrodkowana */
 body.wide.wtr #v-mapa{display:none!important}
 body.wide.wtr #v-wyjazdy{width:auto;right:0;border-right:0;padding-left:max(18px,calc((100% - 880px)/2));padding-right:max(18px,calc((100% - 880px)/2))}
