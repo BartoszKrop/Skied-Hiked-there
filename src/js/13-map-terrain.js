@@ -140,14 +140,14 @@ function vbHeavy(full){
       }
     }
     if (!d._show) { if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; } return; }
-    const X = px(d.r.x) + (d._k || 0) * WW, Y = py(d.r.y) + (d._ky || 0) * WH;
-    if (X < X0 || X > X1 || Y < Y0 || Y > Y1) { if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; } return; }
     if (d._s !== s) {
       d._s = s;
       d.c.setAttribute("r", (d._on ? d.rad + 1.5 : d.rad) / s);
       d.h.setAttribute("r", (d.rad + 7) / s);
       d.t.setAttribute("font-size", 11 / s); d.t.setAttribute("stroke-width", 3 / s); d.t.setAttribute("dy", -(d.rad + 6) / s);
     }
+    const X = px(d.r.x) + (d._k || 0) * WW, Y = py(d.r.y) + (d._ky || 0) * WH;
+    if (X < X0 || X > X1 || Y < Y0 || Y > Y1) { if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; } return; }
     const lab = showNames && ((d._on || d._sel) ? z >= 4 : (z >= 12 || (MODE === "w" && z >= 8 && d.r.k > 100) || (MODE === "s" && z >= 6)));
     if (lab) cand.push(d); else if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; }
   });
