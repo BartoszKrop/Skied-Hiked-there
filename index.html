@@ -651,6 +651,11 @@ body.wide #sheet .grab{display:none}
 body.wide #sheet .hero h2{font-size:26px}body.wide #sheet .hero .flg{width:56px;height:56px;font-size:30px;border-radius:16px}body.wide #sheet .hero .meta{font-size:14px}
 body.wide #fab{left:auto;right:18px}
 }
+
+/* v209: grupy punktów */
+.clu circle{fill:rgba(122,168,255,.82);stroke:#fff}
+.clu text{fill:#fff;font-family:Barlow,"Segoe UI",Roboto,Arial,sans-serif;font-weight:700}
+body.summer .clu circle{fill:rgba(90,130,200,.78)}
 </style>
 </head>
 <body>
@@ -1834,7 +1839,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v208";
+const APPV = "v209";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2464,7 +2469,7 @@ const svg = $("map"), NS = "http://www.w3.org/2000/svg";
 const COS = Math.cos(47 * Math.PI / 180);
 const px = lon => lon * COS, py = lat => -lat;
 const WW = 360 * COS, WH = 180;
-let vb = {x:0, y:0, w:10, h:10}, base = null, dots = [], gGrat, gLand, gTile, gDots, gLbl;
+let vb = {x:0, y:0, w:10, h:10}, base = null, dots = [], gGrat, gLand, gTile, gDots, gLbl, gClu, CLU = [];
 const mk = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
 
 function tileG(vb, wpx){
@@ -2532,10 +2537,10 @@ function terrUpd(){
 }
 let showAll = false;
 function mapInit(){
-  gGrat = mk("g", {}); gLand = mk("g", {}); gTile = mk("g", {"pointer-events":"none"}); gTer = mk("g", {"pointer-events":"none"}); gDots = mk("g", {}); gLbl = mk("g", {"pointer-events":"none"});
+  gGrat = mk("g", {}); gLand = mk("g", {}); gTile = mk("g", {"pointer-events":"none"}); gTer = mk("g", {"pointer-events":"none"}); gDots = mk("g", {}); gClu = mk("g", {"pointer-events":"none"}); gLbl = mk("g", {"pointer-events":"none"});
   gGrat.id = "gGrat"; gLand.id = "gLand";
   const gGh = mk("g", {"pointer-events":"none"}); [-1, 0, 1].forEach(k => [-1, 0, 1].forEach(m => { if (!k && !m) return; ["gGrat", "gLand"].forEach(id => { const u = mk("use", {href: "#" + id}); u.setAttribute("transform", `translate(${k * WW} ${m * WH})`); gGh.append(u); }); }));
-  svg.append(gGrat, gLand, gGh, gTile, gTer, gDots, gLbl);
+  svg.append(gGrat, gLand, gGh, gTile, gTer, gClu, gDots, gLbl);
   for (let lon = -180; lon <= 180; lon += 10) gGrat.append(mk("line", {x1:px(lon), y1:py(-90), x2:px(lon), y2:py(90), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
   for (let lat = -90; lat <= 90; lat += 10) gGrat.append(mk("line", {x1:px(-180), y1:py(lat), x2:px(180), y2:py(lat), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
   for (let lon = -25; lon <= 30; lon += 5) gGrat.append(mk("line", {x1:px(lon), y1:py(30), x2:px(lon), y2:py(68), style:"stroke:var(--grat)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}));
@@ -2615,7 +2620,7 @@ function vbHeavy(full){
       if (d.r.fo && !filmMode && !on && !sel) show = false;
       if (show && !sel && lgOff.size && !frMode) { const cat = v ? "v" : pl ? "p" : "u"; if (lgOff.has(cat)) show = false; }
       d._show = show; d._on = on; d._sel = sel; d._pulse = fc === "D"; d._col = frMode ? (fc ? FRC[fc] : "#7aa8ff") : v ? "#38e0a0" : pl ? "#ffc65c" : "#7aa8ff"; d._s = 0;
-      d.c.style.display = show ? "" : "none"; d.h.style.display = show ? "" : "none";
+      d.c.style.display = show ? "" : "none"; d.h.style.display = show ? "" : "none"; d._cl = false;
       if (show) {
         d.c.setAttribute("fill", on ? d._col : "rgba(122,168,255,.6)");
         d.c.setAttribute("stroke", (sel || on) ? "#ffffff" : "rgba(255,255,255,.3)");
@@ -2635,8 +2640,22 @@ function vbHeavy(full){
     const lab = showNames && ((d._on || d._sel) ? z >= 4 : (z >= 12 || (MODE === "w" && z >= 8 && d.r.k > 100) || (MODE === "s" && z >= 6)));
     if (lab) cand.push(d); else if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; }
   });
+  /* grupowanie nieoznaczonych punktów (byłem/planuję zawsze osobno) */
+  { const cs = 58 / s, cells = new Map();
+    dots.forEach(d => { if (!d._show || d._on || d._sel) { if (d._cl) { d._cl = false; d.c.style.display = d._show ? "" : "none"; d.h.style.display = d._show ? "" : "none"; } return; }
+      const X = px(d.r.x) + (d._k || 0) * WW, Y = py(d.r.y) + (d._ky || 0) * WH; if (X < X0 || X > X1 || Y < Y0 || Y > Y1) return;
+      const k = Math.floor(X / cs) + "," + Math.floor(Y / cs); let c = cells.get(k); if (!c) cells.set(k, c = {L: [], x: 0, y: 0}); c.L.push(d); c.x += X; c.y += Y; });
+    CLU = []; let n = 0;
+    cells.forEach(c => { const cl = c.L.length >= 3 && z < 40;
+      c.L.forEach(d => { if (d._cl !== cl) { d._cl = cl; d.c.style.display = cl ? "none" : ""; d.h.style.display = cl ? "none" : ""; } });
+      if (!cl) return; const x = c.x / c.L.length, y = c.y / c.L.length, r = (11 + Math.min(9, Math.sqrt(c.L.length) * 1.6)) / s;
+      let g = gClu.children[n]; if (!g) { g = mk("g", {class: "clu"}); g.append(mk("circle", {}), mk("text", {"text-anchor": "middle", "dominant-baseline": "central"})); gClu.append(g); }
+      g.style.display = ""; const [ci, tx] = g.children; ci.setAttribute("cx", x); ci.setAttribute("cy", y); ci.setAttribute("r", r); ci.setAttribute("stroke-width", 1.5 / s);
+      tx.setAttribute("x", x); tx.setAttribute("y", y); tx.setAttribute("font-size", 11.5 / s); tx.textContent = c.L.length; CLU.push({x, y, r, n: c.L.length}); n++; });
+    for (let i = n; i < gClu.children.length; i++) gClu.children[i].style.display = "none";
+    for (let i = cand.length - 1; i >= 0; i--) if (cand[i]._cl) { const d = cand[i]; if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; } cand.splice(i, 1); } }
   /* etykiety: bez nakładania się, ważniejsze pierwsze */
-  const boxes = [];
+  const boxes = []; CLU.forEach(q => { const cx = (q.x - vb.x) * s, cy = (q.y - vb.y) * s, rr = q.r * s; boxes.push([cx - rr, cy - rr, cx + rr, cy + rr]); });
   cand.sort((a, b) => (b.r.id === curId) - (a.r.id === curId) || (marked(b.r.id) - marked(a.r.id)) || ((b.r.k || 0) - (a.r.k || 0)));
   cand.forEach(d => { const cx = (px(d.r.x) + (d._k || 0) * WW - vb.x) * s, cy = (py(d.r.y) + (d._ky || 0) * WH - vb.y) * s - d.rad - 10, w = Math.min(dname(d.r).length, filmMode ? 30 : 22) * 6.2 + 6, bx = [cx - w / 2, cy - 7, cx + w / 2, cy + 7];
     if (boxes.some(q => bx[0] < q[2] && bx[2] > q[0] && bx[1] < q[3] && bx[3] > q[1])) { if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; } return; }
@@ -2732,6 +2751,8 @@ function bindMapGestures(){
 }
 function tapAt(cx, cy){
   const rc = svg.getBoundingClientRect(), s = scale(), c = [];
+  { let best = null; CLU.forEach(q => { const sx = rc.left + (q.x - vb.x) * s, sy = rc.top + (q.y - vb.y) * s, dd = Math.hypot(sx - cx, sy - cy); if (dd < q.r * s + 6 && (!best || dd < best.dd)) best = {dd, sx, sy}; });
+    if (best) { const fr = 0.35, steps = 10; let i = 0; const st = () => { i++; zoomAt(Math.pow(fr, 1 / steps), {x: best.sx, y: best.sy}); if (i < steps) requestAnimationFrame(st); }; st(); return; } }
   dots.forEach(d => { if (d.c.style.display === "none") return; const sx = rc.left + (px(d.r.x) + (d._k || 0) * WW - vb.x) * s, sy = rc.top + (py(d.r.y) + (d._ky || 0) * WH - vb.y) * s; const dist = Math.hypot(sx - cx, sy - cy) - d.rad; if (dist < 22) c.push({d, dist}); });
   if (!c.length) return; c.sort((p, q) => p.dist - q.dist);
   const L = c.filter(x => x.dist < c[0].dist + 12).slice(0, 5);
