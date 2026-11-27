@@ -8,6 +8,11 @@
 <meta property="og:title" content="Mountained there">
 <meta property="og:description" content="Gdzie byłeś na nartach i w górach? Zaznacz na mapie, ułóż tier listę i pochwal się podsumowaniem sezonu.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://bartoszkrop.github.io/Skied-Hiked-there/">
+<meta property="og:image" content="https://bartoszkrop.github.io/Skied-Hiked-there/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#08111f">
 <script>window.__SB__={url:"https://vzneaibmofguejivjfjw.supabase.co",key:"sb_publishable_hCwKWGsd0GTuBVAE85G3qw_C2kJM8gk"};</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -839,7 +844,7 @@ function startI18n(){
 }
 const shortM = i => I18M[LANG][i] || I18M.pl[i];
 /*I18N-END*/
-/*I18N-EXTRA*/ Object.assign(I18N.en, {"Pokaż przewodnik": "Show guide", "Łatwe": "Easy", "Średnie": "Moderate", "Trudne": "Hard", "Od łatwych ↓": "Easiest first ↓", "Od trudnych ↑": "Hardest first ↑", "łatwe": "easy", "średnie": "moderate", "trudne": "hard", "Do wyjazdu": "To trip", "Zgłoś błąd": "Report an error", "Twoja ocena": "Your rating", "Opis i mapa": "Description & map", "Nazwy": "Names"}); Object.assign(I18N.de, {"Pokaż przewodnik": "Anleitung zeigen", "Łatwe": "Leicht", "Średnie": "Mittel", "Trudne": "Schwer", "Od łatwych ↓": "Leichteste zuerst ↓", "Od trudnych ↑": "Schwerste zuerst ↑", "łatwe": "leicht", "średnie": "mittel", "trudne": "schwer", "Do wyjazdu": "Zur Reise", "Zgłoś błąd": "Fehler melden", "Twoja ocena": "Deine Bewertung", "Opis i mapa": "Beschreibung & Karte", "Nazwy": "Namen"});
+/*I18N-EXTRA*/ Object.assign(I18N.en, {"Klasyczna": "Classic", "Nowa (test)": "New (test)", "Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.": "The new map has land outlines and mountain shading when zoomed in. If it stutters, switch back to classic.", "Nie udało się wczytać nowej mapy": "Couldn't load the new map", "Pokaż przewodnik": "Show guide", "Łatwe": "Easy", "Średnie": "Moderate", "Trudne": "Hard", "Od łatwych ↓": "Easiest first ↓", "Od trudnych ↑": "Hardest first ↑", "łatwe": "easy", "średnie": "moderate", "trudne": "hard", "Do wyjazdu": "To trip", "Zgłoś błąd": "Report an error", "Twoja ocena": "Your rating", "Opis i mapa": "Description & map", "Nazwy": "Names"}); Object.assign(I18N.de, {"Klasyczna": "Klassisch", "Nowa (test)": "Neu (Test)", "Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.": "Die neue Karte zeigt Landumrisse und beim Hineinzoomen Bergschattierung. Wenn sie ruckelt, wechsle zurück zur klassischen.", "Nie udało się wczytać nowej mapy": "Neue Karte konnte nicht geladen werden", "Pokaż przewodnik": "Anleitung zeigen", "Łatwe": "Leicht", "Średnie": "Mittel", "Trudne": "Schwer", "Od łatwych ↓": "Leichteste zuerst ↓", "Od trudnych ↑": "Schwerste zuerst ↑", "łatwe": "leicht", "średnie": "mittel", "trudne": "schwer", "Do wyjazdu": "Zur Reise", "Zgłoś błąd": "Fehler melden", "Twoja ocena": "Deine Bewertung", "Opis i mapa": "Beschreibung & Karte", "Nazwy": "Namen"});
 for (const L of ["en", "de"]) { const T = I18N[L]; for (const k of Object.keys(T)) { const m = k.match(/^(?:\p{Extended_Pictographic}|[☰⚙✎＋↻⛷❄☀✅])️?\s+(.+)$/u); if (m && T[m[1]] === undefined) T[m[1]] = String(T[k]).replace(/^(?:\p{Extended_Pictographic}|[☰⚙✎＋↻⛷❄☀✅])️?\s+/u, ""); } }
 
 
@@ -1843,7 +1848,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v210";
+const APPV = "v211";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div><div class="fld"><label>MAPA</label><div class="seg big" id="mlseg"><button data-v="0">Klasyczna</button><button data-v="1">Nowa (test)</button></div><div class="small" style="margin-top:4px">Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.</div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
