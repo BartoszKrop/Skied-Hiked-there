@@ -742,3 +742,6 @@ body.light #wpick{background:rgba(20,30,50,.35)}
 .msd{width:9px;height:9px;border-radius:50%;flex:none}.msd.v{background:var(--ok)}.msd.p{background:var(--warn)}
 .mse{padding:12px;color:var(--mute);font-size:14px;text-align:center}
 @media (prefers-reduced-motion:reduce){#wpick,.wpc,#msrch{animation:none}}
+.msh{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--glass2);color:var(--mute)}.msh .ic{width:16px;height:16px}
+.msdf{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:1px 6px;flex:none}
+.hike.hkflash{box-shadow:0 0 0 2px var(--accent);transition:box-shadow .4s}

@@ -809,15 +809,20 @@ function mapGoTo(r){
 function mapSearch(){
   let p = $("msrch"); if (p) { p.querySelector("input").focus(); return; }
   p = document.createElement("div"); p.id = "msrch";
-  p.innerHTML = `<div class="msi"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="${tr(MODE === "w" ? "Szukaj ośrodka…" : "Szukaj miejsca…")}" autocomplete="off" enterkeyhint="go"><button class="msx" aria-label="Zamknij">×</button></div><div class="msr"></div>`;
+  p.innerHTML = `<div class="msi"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="${tr(MODE === "w" ? "Szukaj ośrodka lub szlaku…" : "Szukaj miejsca lub szlaku…")}" autocomplete="off" enterkeyhint="go"><button class="msx" aria-label="Zamknij">×</button></div><div class="msr"></div>`;
   $("v-mapa").append(p); const inp = p.querySelector("input"), res = p.querySelector(".msr");
   const close = () => { p.classList.add("out"); setTimeout(() => p.remove(), 160); };
-  const pick = id => { const r = byId[id]; if (!r) return; close(); if (!passF(r) && !marked(r.id)) { showAll = true; } mapRefresh(); mapGoTo(r); setTimeout(() => openSheet(id), document.body.classList.contains("wide") ? 0 : 450); };
+  const pick = (id, hi) => { if (hi != null && MODE !== "s") setMode("s"); const r = byId[id]; if (!r) return; close(); if (!passF(r) && !marked(r.id)) { showAll = true; } mapRefresh(); mapGoTo(r);
+    setTimeout(() => { openSheet(id); if (hi != null) { hkOpen.add(r.id + ":" + hi); renderSheet(); } if (hi != null) setTimeout(() => { const el = document.querySelector(`#sheet .hkhead[data-o="${hi}"]`); if (el) { const h = el.closest(".hike") || el; h.scrollIntoView({block: "center", behavior: "smooth"}); h.classList.add("hkflash"); setTimeout(() => h.classList.remove("hkflash"), 1600); } }, 320); }, document.body.classList.contains("wide") ? 0 : 450); };
   const draw = () => { const q = norm(inp.value.trim()); if (q.length < 2) { res.innerHTML = ""; return; }
-    const L = R.filter(r => norm(r.n + " " + r.c.split(",").map(cname).join(" ")).includes(q)).sort((a, b) => (norm(b.n).startsWith(q) - norm(a.n).startsWith(q)) || ((b.k || 0) - (a.k || 0))).slice(0, 6);
-    res.innerHTML = L.length ? L.map(r => `<button data-id="${esc(r.id)}"><span class="msf">${flag(r.c.split(",")[0])}</span><span class="msn"><b>${esc(r.n)}</b><small>${esc(r.c.split(",").map(cname).join(", "))}</small></span>${marked(r.id) ? `<i class="msd ${isVis(r.id) ? "v" : "p"}"></i>` : ""}</button>`).join("") : `<div class="mse">${tr("Nic nie znaleziono")}</div>`; };
-  inp.oninput = draw; inp.onkeydown = e => { if (e.key === "Escape") close(); if (e.key === "Enter") { const b = res.querySelector("button"); if (b) pick(b.dataset.id); } };
-  res.onclick = e => { const b = e.target.closest("button[data-id]"); if (b) pick(b.dataset.id); };
+    const L = R.filter(r => norm(r.n + " " + r.c.split(",").map(cname).join(" ")).includes(q)).sort((a, b) => (norm(b.n).startsWith(q) - norm(a.n).startsWith(q)) || ((b.k || 0) - (a.k || 0))).slice(0, 5);
+    const H = []; SUMMER.R.forEach(r => (r.hikes || []).forEach((h, i) => { if (!h.del && norm(h.n).includes(q)) H.push({r, h, i, st: norm(h.n).startsWith(q)}); })); H.sort((a, b) => b.st - a.st);
+    const row = r => `<button data-id="${esc(r.id)}"><span class="msf">${flag(r.c.split(",")[0])}</span><span class="msn"><b>${esc(r.n)}</b><small>${esc(r.c.split(",").map(cname).join(", "))}</small></span>${marked(r.id) ? `<i class="msd ${isVis(r.id) ? "v" : "p"}"></i>` : ""}</button>`;
+    const hrow = z => `<button data-id="${esc(z.r.id)}" data-h="${z.i}"><span class="msf msh">${IC.foot}</span><span class="msn"><b>${esc(z.h.n)}</b><small>${tr("Szlak")} · ${esc(z.r.n)}</small></span>${z.h.d ? `<span class="msdf">${esc(z.h.d)}</span>` : ""}</button>`;
+    const out = L.map(row).join("") + H.slice(0, Math.max(3, 8 - L.length)).map(hrow).join("");
+    res.innerHTML = out || `<div class="mse">${tr("Nic nie znaleziono")}</div>`; };
+  inp.oninput = draw; inp.onkeydown = e => { if (e.key === "Escape") close(); if (e.key === "Enter") { const b = res.querySelector("button"); if (b) pick(b.dataset.id, b.dataset.h != null ? +b.dataset.h : null); } };
+  res.onclick = e => { const b = e.target.closest("button[data-id]"); if (b) pick(b.dataset.id, b.dataset.h != null ? +b.dataset.h : null); };
   p.querySelector(".msx").onclick = close; requestAnimationFrame(() => inp.focus());
 }
 $("msbtn").onclick = mapSearch;
