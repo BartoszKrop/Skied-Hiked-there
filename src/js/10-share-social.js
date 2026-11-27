@@ -430,13 +430,13 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v215";
+const APPV = "v216";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div><div class="fld"><label>MAPA</label><div class="seg big" id="mlseg"><button data-v="0">Klasyczna</button><button data-v="1">Nowa (test)</button></div><div class="small" style="margin-top:4px">Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.</div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
 function ovBox(){
   let ov = $("acctov"); if (!ov) { ov = document.createElement("div"); ov.id = "acctov"; document.body.append(ov); ov.addEventListener("click", e => { if (e.target === ov) closeAccount(); }); }
-  ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; return ov;
+  clearTimeout(closeAccount._t); const fresh = ov.style.display !== "flex" || ov.classList.contains("out"); ov.classList.remove("out"); ov.style.display = "flex"; ov.style.flexDirection = "column"; ov.style.alignItems = "center"; if (fresh) { ov.classList.remove("in"); void ov.offsetWidth; ov.classList.add("in"); } return ov;
 }
 const tripsPre = () => { tripOpen = null; tripsTab = "trips"; renderTrips(); };
 function tourDemo(){
@@ -774,7 +774,7 @@ function openAccount(){
   SOC.ov = "";
   const ov = ovBox(); ov.innerHTML = accountCard(); ov.scrollTop = 0; bindAccount();
 }
-function closeAccount(){ SOC.ov = ""; const ov = $("acctov"); if (ov) ov.style.display = "none"; }
+function closeAccount(){ SOC.ov = ""; const ov = $("acctov"); if (!ov || ov.style.display === "none" || ov.classList.contains("out")) return; clearTimeout(closeAccount._t); if (matchMedia("(prefers-reduced-motion: reduce)").matches) { ov.style.display = "none"; return; } ov.classList.remove("in"); ov.classList.add("out"); closeAccount._t = setTimeout(() => { ov.style.display = "none"; ov.classList.remove("out"); }, 170); }
 function bindAccount(){
   const us = $("usave"); if (us) us.onclick = async () => {
     const u = ($("uname").value || "").trim().toLowerCase(), m = $("umsg");

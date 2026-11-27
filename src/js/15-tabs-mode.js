@@ -10,7 +10,11 @@
 { const mq = matchMedia("(min-width:1100px)"), hd = document.querySelector("header"), nv = $("nav");
   const sz = () => { document.body.style.setProperty("--hh", hd.offsetHeight + "px"); if (nv) document.body.style.setProperty("--navh", nv.offsetHeight + "px"); const zn = $("znames"); if (zn) document.body.style.setProperty("--m2w", (zn.offsetWidth + 6) + "px"); };
   const sync = () => { const was = document.body.classList.contains("wide"); document.body.classList.toggle("wide", mq.matches); sz(); if (was !== mq.matches && typeof show === "function" && show._t) show(show._t === "lista" ? "mapa" : show._t); };
-  (mq.addEventListener ? mq.addEventListener("change", sync) : mq.addListener(sync)); new ResizeObserver(sz).observe(hd); if (nv) new ResizeObserver(sz).observe(nv); { const zn = $("znames"); if (zn) new ResizeObserver(sz).observe(zn); } sync(); }
+  (mq.addEventListener ? mq.addEventListener("change", sync) : mq.addListener(sync)); new ResizeObserver(sz).observe(hd); if (nv) new ResizeObserver(() => { sz(); navPill(false); }).observe(nv); { const zn = $("znames"); if (zn) new ResizeObserver(sz).observe(zn); } sync(); }
+function navPill(anim){ const nv = $("nav"); if (!nv) return; let pl = $("navpill"); if (!pl) { pl = document.createElement("span"); pl.id = "navpill"; nv.prepend(pl); }
+  const b = nv.querySelector("button.on"); if (!b || !b.offsetWidth) { pl.style.opacity = "0"; return; } if (!anim) pl.style.transition = "none";
+  pl.style.transform = `translateX(${b.offsetLeft}px)`; pl.style.width = b.offsetWidth + "px"; pl.style.height = b.offsetHeight + "px"; pl.style.top = b.offsetTop + "px"; pl.style.opacity = "1";
+  if (!anim) { void pl.offsetWidth; pl.style.transition = ""; } }
 function show(t){
   if (document.body.classList.contains("wide") && t === "lista") t = "mapa";
   if (t === "grupy") { statRank.w = "groups"; t = "statystyki"; if (MODE === "w") renderStats(); }
@@ -19,7 +23,7 @@ function show(t){
     if (show._t && show._t !== t && np >= 0 && pp >= 0) show._dir = np > pp ? "sl-r" : "sl-l"; else show._dir = ""; show._t = t; }
   document.body.classList.toggle("wtr", t === "wyjazdy"); document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + t)); if (document.body.classList.contains("wide") && t === "mapa") $("v-lista").classList.add("on"); updateFab(); if (window.__hc) window.__hc();
   if (show._dir) { const vw = $("v-" + t); if (vw) { vw.classList.remove("sl-l", "sl-r"); void vw.offsetWidth; vw.classList.add(show._dir); setTimeout(() => vw.classList.remove("sl-l", "sl-r"), 420); } }
-  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === (t === "lista" ? "mapa" : t)));
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.t === (t === "lista" ? "mapa" : t))); navPill(true);
   try { if (!RO && location.hash !== "#" + t && !/access_token|error_description/.test(location.hash)) history.replaceState(null, "", "#" + t); } catch(e){}
   if (t === "mapa") requestAnimationFrame(() => { if (mapFitted) applyVB(); else fit(); });
   if (t === "wyjazdy") loadShared(false);
@@ -77,7 +81,7 @@ function setMode(m){
   document.body.classList.toggle("summer", m === "s"); flipUI();
   document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
     document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
-  document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
+  document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : ""; requestAnimationFrame(() => navPill(true));
   if (tripOpen) { const tt = allTrips().find(x => x.id === tripOpen); if (!tt || (tt.mode || "s") !== m) tripOpen = null; } packOpen = null; if ($("v-wyjazdy").classList.contains("on")) renderTrips();
   try { localStorage.setItem(LSM, m); } catch(e){}
   exitFilm(true); fCountry = ""; fCat = ""; $("fcat").value = ""; $("frow6").style.display = "none"; $("frow5").classList.toggle("sm", m !== "w"); fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; fMinR = 0; fPrice = 0; $("fminr").value = "0"; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; fWx = ""; fWd = 0; fWs = 0; fWc = 0; fixWxOpts(m); $("fwc").value = "0"; $("fwx").value = ""; $("fwd").value = "0"; $("fws").value = "0"; $("fwsort").value = ""; $("fsort").value = "k"; setFStat("all");

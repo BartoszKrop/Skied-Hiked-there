@@ -4,9 +4,11 @@ const stayKey = st => st.y + "-" + (st.m || "00");
 function openSheet(id){
   if (curId !== id) hkOpen.clear(); curId = id; confirmDel = false; armedStay = -1;
   if (visits[id] && visits[id].s === "v") visits[id].stays.sort((a,b) => stayKey(b).localeCompare(stayKey(a)));
-  renderSheet(); $("sheetbg").style.display = "block"; const sh = $("sheet"); sh.style.display = "block"; sh.classList.remove("open"); void sh.offsetWidth; sh.classList.add("open"); sh.scrollTop = 0; mapRefresh();
+  renderSheet(); clearTimeout(closeSheet._t); const bg = $("sheetbg"); bg.classList.remove("out"); bg.style.display = "block"; const sh = $("sheet"); const was = sh.style.display === "block" && !sh.classList.contains("out"); sh.classList.remove("out"); sh.style.display = "block"; if (was) { sh.scrollTop = 0; mapRefresh(); return; } sh.classList.remove("open"); void sh.offsetWidth; sh.classList.add("open"); sh.scrollTop = 0; mapRefresh();
 }
-function closeSheet(){ curId = null; $("sheetbg").style.display = "none"; $("sheet").style.display = "none"; mapRefresh(); }
+function closeSheet(){ const sh = $("sheet"), bg = $("sheetbg"), vis = sh.style.display === "block" && !sh.classList.contains("out"); curId = null; mapRefresh(); clearTimeout(closeSheet._t);
+  if (!vis || matchMedia("(prefers-reduced-motion: reduce)").matches) { bg.style.display = "none"; sh.style.display = "none"; sh.classList.remove("out"); bg.classList.remove("out"); return; }
+  sh.classList.remove("open"); sh.classList.add("out"); bg.classList.add("out"); closeSheet._t = setTimeout(() => { sh.style.display = "none"; bg.style.display = "none"; sh.classList.remove("out"); bg.classList.remove("out"); }, 200); }
 $("sheetbg").addEventListener("click", closeSheet);
 function toggleHike(i){
   if (!visits[curId]) visits[curId] = newEntry("v");
@@ -102,7 +104,7 @@ function renderSheet(){
   const t1 = W ? `<div class="tile"><b>${Math.round(r.k*10)/10}</b><span>km tras zjazdowych</span></div>` : `<div class="tile"><b>${liveN(r)}</b><span>szlaków poniżej</span></div>`;
   const gpill = (W && r.g.length) ? `<span class="gpill">${esc(r.g[r.g.length-1])}</span>` : "", t2 = W ? "" : `<div class="tile"><b>${v ? Object.keys(v.done).length : 0}/${liveN(r)}</b><span>zrobionych</span></div>`;
   $("sheet").innerHTML = `<div class="grab"></div>
-    ${sheetNav()}<div class="hero hsil"><svg class="hsv" viewBox="0 0 200 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><path d="M0 80 L50 24 L74 52 L104 8 L150 62 L170 40 L200 80 Z"/></svg><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}${gpill}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}${W ? " " + pbadge(r) : ""}${(SBC && ratingLine(r.id)) ? " · " + ratingLine(r.id) : ""}</div></div><button class="hgear" id="hgear" title="Opcje">⚙</button></div>
+    ${sheetNav()}<div class="hero hsil"><svg class="hsv" viewBox="0 0 200 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><path d="M0 80 L50 24 L74 52 L104 8 L150 62 L170 40 L200 80 Z"/></svg><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2 class="${r.n.length > 26 ? "hl2" : r.n.length > 16 ? "hl1" : ""}">${esc(r.n)}${gpill}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}${W ? " " + pbadge(r) : ""}${(SBC && ratingLine(r.id)) ? " · " + ratingLine(r.id) : ""}</div></div><button class="hgear" id="hgear" title="Opcje" aria-label="Opcje"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg></button></div>
     ${r.ds ? `<div style="margin:10px 2px 2px;font-size:13px;line-height:1.5;color:var(--mute)">${esc(r.ds)}</div>` : ""}
     <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : W ? "" : (() => { const L = r.hikes.filter(x => !x.del), c = [0,1,2].map(i => L.filter(x => x.d === DIFF[i]).length); const T = c[0] + c[1] + c[2] || 1; return `<div class="tile dbt"><div class="dbar">${c.map((n, k) => n ? `<i class="db${k}" style="flex:${n}"></i>` : "").join("")}</div><span>${["łatwe", "średnie", "trudne"].map((w, k) => c[k] ? `${c[k]}&nbsp;<em class="dbl">${w}</em>` : "").filter(Boolean).join(" · ")}</span></div>`; })()}</div><div class="small wxn" id="wxn" style="margin:8px 2px 0;min-height:16px"></div>
     <a class="offl" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Oficjalna strona ośrodka" : "Ceny karnetów i informacje") : "Szlaki, mapy i informacje"} <span>↗</span></a>

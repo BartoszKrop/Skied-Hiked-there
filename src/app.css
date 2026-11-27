@@ -647,3 +647,38 @@ body.summer .clu circle{fill:rgba(90,130,200,.78)}
 #mlmap{position:absolute;inset:0;z-index:0}
 #mlmap .maplibregl-ctrl-attrib{font-size:10px;background:rgba(var(--pn),.7)}
 body.mlon #mapnote{display:none}
+
+/* v216: dopracowanie przejść i spójności */
+@keyframes shdown{to{transform:translateY(48px);opacity:0}}
+@keyframes bgout{to{opacity:0}}
+@keyframes bgin{from{opacity:0}}
+@keyframes popin{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes popout{to{opacity:0;transform:translateY(6px) scale(.985)}}
+#sheetbg{animation:bgin .22s ease-out}
+#sheet.out{animation:shdown .2s cubic-bezier(.4,0,1,1) forwards;pointer-events:none}
+#sheetbg.out{animation:bgout .2s ease-in forwards;pointer-events:none}
+#acctov.in{animation:bgin .2s ease-out}
+#acctov.in>*{animation:popin .26s cubic-bezier(.2,.8,.3,1) both}
+#acctov.out{animation:bgout .17s ease-in forwards;pointer-events:none}
+#acctov.out>*{animation:popout .17s ease-in forwards}
+@media (min-width:1100px){body.wide #sheet.open{animation:popin .22s cubic-bezier(.2,.8,.3,1)}body.wide #sheet.out{animation:popout .18s ease-in forwards}}
+@media (prefers-reduced-motion:reduce){#sheetbg,#acctov.in,#acctov.in>*{animation:none}}
+/* jeden wygląd przełączników */
+.seg button.on{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.22)}
+body.light .seg button.on{box-shadow:0 1px 3px rgba(20,40,80,.16)}
+/* długie nazwy w karcie miejsca */
+.hero h2{text-wrap:balance}
+.hero h2.hl1{font-size:.86em}#sheet .hero h2.hl1{font-size:clamp(20px,6vw,26px)}#sheet .hero h2.hl2{font-size:clamp(18px,5vw,22px)}
+@media(min-width:720px){#sheet .hero h2.hl1{font-size:26px}#sheet .hero h2.hl2{font-size:22px}}
+/* śnieg i słońce w nagłówku nie zasłaniają liczników */
+#fx{-webkit-mask-image:linear-gradient(90deg,transparent 0,transparent 30%,#000 70%);mask-image:linear-gradient(90deg,transparent 0,transparent 30%,#000 70%)}
+@media (min-width:700px){#fx{-webkit-mask-image:linear-gradient(90deg,transparent 0,transparent 45%,#000 80%);mask-image:linear-gradient(90deg,transparent 0,transparent 45%,#000 80%)}}
+/* karta „Gdzie już…” */
+.hintpill{max-width:300px;padding:16px 18px}
+.hintpill .btn{white-space:nowrap;flex:1}
+.hintpill #welh{text-wrap:balance}
+.hgear .ic{width:18px;height:18px;fill:currentColor;stroke:none}
+#nav{position:relative}
+#navpill{position:absolute;left:0;top:6px;border-radius:8px;background:var(--accentbg);pointer-events:none;opacity:0;transition:transform .3s cubic-bezier(.2,.8,.3,1),width .3s cubic-bezier(.2,.8,.3,1),opacity .2s}
+#nav button{position:relative;z-index:1}#nav button.on{background:transparent}
+@media (prefers-reduced-motion:reduce){#navpill{transition:none}}
