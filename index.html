@@ -586,6 +586,30 @@ table tr{transition:background .12s}
 #stats table tr:hover td{background:rgba(255,255,255,.04)}
 .mapchips .btn:hover,.mapchips2 .btn:hover{transform:translateY(-1px)}
 }
+
+/* v205: kompaktowe szlaki */
+#sheet .hike.hk2{align-items:center;padding:8px 10px;gap:10px}
+#sheet .hike.hk2.op{align-items:flex-start}
+#sheet .hike.hk2 .tk2{flex-direction:row;gap:6px}
+#sheet .hike.hk2 .tick{width:30px;height:30px;margin-top:0}
+.hkhead{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hkhead:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+.hkt{flex:1;min-width:0}
+.hkn{display:block;font-weight:600;font-size:14.5px;line-height:1.25;color:var(--text)}
+.hkm{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin-top:4px;font-size:12px;color:var(--mute)}
+.hkm .hdf{font-family:var(--fd);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:4px}
+.hkti{display:inline-flex;align-items:center;gap:3px}.hkti .ic,.hkfr .ic{width:13px;height:13px}
+.hkmy{color:var(--warn);letter-spacing:1px;font-size:11px}.hkavg{color:var(--warn)}.hkavg i{font-style:normal;color:var(--faint)}
+.hkfr{display:inline-flex;color:var(--accent)}
+.hkch{display:flex;color:var(--faint);transition:transform .2s}.hkch .ic{width:18px;height:18px}.hike.op .hkch{transform:rotate(180deg)}
+.hkx{margin-top:8px;animation:hkin .18s ease-out}@keyframes hkin{from{opacity:0;transform:translateY(-3px)}}
+.hkx p{margin:0 0 8px;color:var(--mute);font-size:13px;line-height:1.45}
+.hkrl{display:flex;align-items:center;gap:10px;margin:4px 0 6px}.hkrl .szs{margin:0}
+.hka{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.hka .btn{text-decoration:none;font-size:12.5px;display:inline-flex;align-items:center;gap:4px;padding:5px 10px}.hka .btn .ic{width:14px;height:14px;margin:0}
+#sheet .hike.hk2 .hkdel{position:static}
+.tile.dbt{flex:1 1 180px;min-width:160px}.dbar{display:flex;gap:3px;height:10px;margin:6px 0 7px;border-radius:5px;overflow:hidden}.dbar i{display:block;border-radius:2px}
+.dbl{font-style:normal}.db0{background:#2fbf87}.db1{background:#e8a93a}.db2{background:#e0566a}
+@media (prefers-reduced-motion:reduce){.hkx{animation:none}.hkch{transition:none}}
 </style>
 </head>
 <body>
@@ -765,7 +789,9 @@ function startI18n(){
 }
 const shortM = i => I18M[LANG][i] || I18M.pl[i];
 /*I18N-END*/
-const IC = {up:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v11"/><path d="M15 5.9 14 10h5.8a2 2 0 0 1 1.9 2.6l-2.3 8a2 2 0 0 1-1.9 1.4H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.8-1.1L12 2a3.1 3.1 0 0 1 3 3.9z"/></svg>', down:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V3"/><path d="M9 18.1 10 14H4.2a2 2 0 0 1-1.9-2.6l2.3-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.8a2 2 0 0 0-1.8 1.1L12 22a3.1 3.1 0 0 1-3-3.9z"/></svg>', chat:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>', users:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.9.2 5 2.6 5 5.8"/></svg>',user:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>',set:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',ref:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>',cal:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',map:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4z"/><path d="M9 4v13M15 7v13"/></svg>',trash:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',edit:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg>',bag:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l1 12H5L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',plane:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg>'};
+/*I18N-EXTRA*/ Object.assign(I18N.en, {"Łatwe": "Easy", "Średnie": "Moderate", "Trudne": "Hard", "Od łatwych ↓": "Easiest first ↓", "Od trudnych ↑": "Hardest first ↑", "łatwe": "easy", "średnie": "moderate", "trudne": "hard", "Do wyjazdu": "To trip", "Zgłoś błąd": "Report an error", "Twoja ocena": "Your rating", "Opis i mapa": "Description & map", "Nazwy": "Names"}); Object.assign(I18N.de, {"Łatwe": "Leicht", "Średnie": "Mittel", "Trudne": "Schwer", "Od łatwych ↓": "Leichteste zuerst ↓", "Od trudnych ↑": "Schwerste zuerst ↑", "łatwe": "leicht", "średnie": "mittel", "trudne": "schwer", "Do wyjazdu": "Zur Reise", "Zgłoś błąd": "Fehler melden", "Twoja ocena": "Deine Bewertung", "Opis i mapa": "Beschreibung & Karte", "Nazwy": "Namen"});
+
+const IC = {up:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v11"/><path d="M15 5.9 14 10h5.8a2 2 0 0 1 1.9 2.6l-2.3 8a2 2 0 0 1-1.9 1.4H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.8-1.1L12 2a3.1 3.1 0 0 1 3 3.9z"/></svg>', down:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V3"/><path d="M9 18.1 10 14H4.2a2 2 0 0 1-1.9-2.6l2.3-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.8a2 2 0 0 0-1.8 1.1L12 22a3.1 3.1 0 0 1-3-3.9z"/></svg>', chat:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>', users:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.9.2 5 2.6 5 5.8"/></svg>',user:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>',set:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',ref:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>',cal:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',map:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4z"/><path d="M9 4v13M15 7v13"/></svg>',trash:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',edit:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg>',bag:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l1 12H5L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',plane:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg>', check:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>', chev:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>', ext:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>', plus:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>', warn:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>', clock:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', tag:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>', img:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>', dl:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>', phone:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>', list:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>', filt:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></svg>', more:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>', note:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>', share:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></svg>'};
 const CN = {AE:"Zjednoczone Emiraty Arabskie",TN:"Tunezja",DM:"Dominika",VC:"Saint Vincent i Grenadyny",NO:"Norwegia",CO:"Kolumbia",BR:"Brazylia",KZ:"Kazachstan",KG:"Kirgistan",AM:"Armenia",AZ:"Azerbejdżan",TJ:"Tadżykistan",UZ:"Uzbekistan",MN:"Mongolia",NP:"Nepal",PK:"Pakistan",IN:"Indie",PE:"Peru",BO:"Boliwia",AR:"Argentyna",CL:"Chile",EC:"Ekwador",NZ:"Nowa Zelandia",CA:"Kanada",US:"USA",MA:"Maroko",TR:"Turcja",JP:"Japonia",TZ:"Tanzania",ID:"Indonezja",VN:"Wietnam",ZA:"RPA",AL:"Albania",BA:"Bośnia i Hercegowina",GR:"Grecja",MK:"Macedonia Północna",SE:"Szwecja",FI:"Finlandia",IE:"Irlandia",GB:"Wielka Brytania",PT:"Portugalia",HR:"Chorwacja",ME:"Czarnogóra",BG:"Bułgaria",RO:"Rumunia",GE:"Gruzja",AT:"Austria",CH:"Szwajcaria",DE:"Niemcy",FR:"Francja",IT:"Włochy",ES:"Hiszpania",PL:"Polska",SK:"Słowacja",CZ:"Czechy",SI:"Słowenia",LI:"Liechtenstein",AD:"Andora",IS:"Islandia",AU:"Australia",CN:"Chiny",ZW:"Zimbabwe",VE:"Wenezuela",JO:"Jordania",KR:"Korea Południowa",NA:"Namibia",MY:"Malezja",KE:"Kenia"};
 const flag = cc => cc.length===2 ? String.fromCodePoint(...[...cc.toUpperCase()].map(ch => 127397 + ch.charCodeAt(0))) : "";
 const CATI = {g:"🥾",j:"🏞️",w:"💧",k:"🪨"};
@@ -1755,7 +1781,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v204";
+const APPV = "v205";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">📲 Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -2223,7 +2249,7 @@ function renderStats(){
 let curId = null, confirmDel = false, armedStay = -1;
 const stayKey = st => st.y + "-" + (st.m || "00");
 function openSheet(id){
-  curId = id; confirmDel = false; armedStay = -1;
+  if (curId !== id) hkOpen.clear(); curId = id; confirmDel = false; armedStay = -1;
   if (visits[id] && visits[id].s === "v") visits[id].stays.sort((a,b) => stayKey(b).localeCompare(stayKey(a)));
   renderSheet(); $("sheetbg").style.display = "block"; const sh = $("sheet"); sh.style.display = "block"; sh.classList.remove("open"); void sh.offsetWidth; sh.classList.add("open"); sh.scrollTop = 0; mapRefresh();
 }
@@ -2246,7 +2272,7 @@ function setHikeRating(i, n){
   if (v.hr[i] === n) delete v.hr[i]; else v.hr[i] = n;
   scheduleSave(); renderAll(); renderSheet();
 }
-let szOpenSk = null;
+let szOpenSk = null; const hkOpen = new Set();
 function toggleSz(sk){
   if (!visits[curId]) visits[curId] = newEntry("v");
   const v = visits[curId]; v.s = "v"; v.sz = v.sz || {};
@@ -2260,7 +2286,8 @@ function setSzRating(sk, n){
 function hsh(str){ let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function sheetNav(){
   const L = LISTIDS, i = L.indexOf(curId); if (i < 0 || L.length < 2) return "";
-  return `<div class="snav"><button type="button" id="sprev" ${i ? "" : "disabled"} aria-label="Poprzednie">‹</button><span>${i + 1} / ${L.length}</span><button type="button" id="snext" ${i < L.length - 1 ? "" : "disabled"} aria-label="Następne">›</button></div>`;
+  const cc = (byId[curId].c || "").split(",")[0], C = L.filter(id => byId[id] && (byId[id].c || "").split(",")[0] === cc), k = C.indexOf(curId);
+  return `<div class="snav"><button type="button" id="sprev" ${i ? "" : "disabled"} aria-label="Poprzednie">‹</button><span>${C.length > 1 ? `${esc(cname(cc))} · ${k + 1} / ${C.length}` : `${i + 1} / ${L.length}`}</span><button type="button" id="snext" ${i < L.length - 1 ? "" : "disabled"} aria-label="Następne">›</button></div>`;
 }
 function renderSheet(){
   const r = byId[curId]; if (!r) return; const v = visits[curId], W = MODE === "w";
@@ -2280,11 +2307,18 @@ function renderSheet(){
     const sh = dfh + ((secOn && h.s && h.s !== lastSec) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""); if (secOn && h.s) lastSec = h.s;
     const note = (v && v.hn && v.hn[i]) || "";
     const noteUi = RO ? (note ? `<div class="hnro" data-nt>📝 ${esc(note)}</div>` : "") : (d ? `<textarea class="hnote" data-h="${i}" rows="2" placeholder="Notatka do tego szlaku…">${esc(note)}</textarea>` : "");
-    return sh + `<div class="hike ${d?"done":""} ${pl?"planned":""}">
+    const hk = curId + ":" + i, op = hkOpen.has(hk);
+    const q = RATEH[r.id] && RATEH[r.id][i], avg = (q && q.n) ? `<span class="hkavg">★ ${fmtAvg(q.a)} <i>(${q.n})</i></span>` : "";
+    const myR = (d && v.hr && v.hr[i]) ? `<span class="hkmy">${"★".repeat(v.hr[i])}</span>` : "";
+    const ate = !!(h.sk && v && v.sz && v.sz[h.sk]);
+    const frH = hikeFriends(r, i, v);
+    const szRow = (!RO && h.sk && v && v.s === "v") ? `<div class="szrow" style="margin:6px 0"><span style="flex:1;min-width:120px">🥧 ${esc(h.sk)}</span><button class="szb ${ate ? "on" : ""}" data-sk="${esc(h.sk)}">${ate ? "Jadłem ✓" : "Jadłem?"}</button>${ate ? `<span class="szs">${[1,2,3,4,5].map(k => `<button data-sk="${esc(h.sk)}" data-i="${k}" class="${((v.sz[h.sk].r||0)>=k)?"on":""}">★</button>`).join("")}</span>` : ""}</div>` : "";
+    const stars = (d && !RO) ? `<div class="hkrl"><span class="small">Twoja ocena</span><div class="szs hs">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div></div>` : "";
+    const acts = `<div class="hka"><a class="btn sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">${IC.ext} Opis i mapa</a>${!RO ? `<button class="btn sm hktrip" data-h="${i}">${IC.plus} Do wyjazdu</button>` : ""}${(!RO && SBC && store.sb) ? `<button class="btn sm hkrep" data-h="${i}">${IC.warn} Zgłoś błąd</button>` : ""}${(store.admin && !RO && SBC) ? `<button class="btn sm hkdel" data-h="${i}" title="Usuń szlak (admin)" aria-label="Usuń szlak (admin)">${IC.trash}</button>` : ""}</div>`;
+    return sh + `<div class="hike hk2 ${d?"done":""} ${pl?"planned":""} ${op?"op":""}">
       ${RO ? `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>` : `<div class="tk2">${onlyPlan ? "" : `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Byłem">✓</button>`}<button class="tick plan ${pl?"pon":""}" data-p="${i}" aria-label="Planuję">◷</button></div>`}
-      <div class="hb"><b>${esc(h.n)}</b>${(() => { const q = RATEH[r.id] && RATEH[r.id][i]; return q && q.n ? ` <span class="small" style="color:var(--warn)">★ ${fmtAvg(q.a)} <span style="color:var(--faint)">(${q.n})</span></span>` : ""; })()}<div class="bd"><span class="d${DIFF.indexOf(h.d)}">${esc(h.d)}</span>${(!RO && h.sk && v && v.s === "v") ? `<button class="szc hkpie ${(v.sz && v.sz[h.sk]) ? "on" : ""}" data-sk="${esc(h.sk)}" title="Szarlotka w schronisku" style="padding:1px 8px;font-size:12px">🥧 ${(v.sz && v.sz[h.sk]) ? "✓" : "?"}</button>` : ""}${!RO ? `<button class="hkgear" data-h="${i}" title="Więcej opcji" aria-label="Więcej opcji" style="margin-left:auto;background:none;border:0;color:var(--mute);font-size:14px;cursor:pointer;padding:0 4px">⚙</button>` : ""}</div>${(!RO && h.sk && v && v.s === "v" && szOpenSk === h.sk) ? `<div class="szrow" style="margin:6px 0"><span style="flex:1;min-width:120px">🥧 ${esc(h.sk)}</span><button class="szb ${(v.sz && v.sz[h.sk]) ? "on" : ""}" data-sk="${esc(h.sk)}">${(v.sz && v.sz[h.sk]) ? "Jadłem ✓" : "Jadłem?"}</button>${(v.sz && v.sz[h.sk]) ? `<span class="szs">${[1,2,3,4,5].map(k => `<button data-sk="${esc(h.sk)}" data-i="${k}" class="${((v.sz[h.sk].r||0)>=k)?"on":""}">★</button>`).join("")}</span>` : ""}</div>` : ""}<p>${esc(h.o)}</p><div class="hkmenu" data-h="${i}" style="display:none;margin:2px 0 6px"><button class="btn sm hktrip" data-h="${i}">＋ Do wyjazdu</button>${(!RO && SBC && store.sb) ? ` <button class="btn sm hkrep" data-h="${i}">⚠ Zgłoś błąd</button>` : ""}</div>${(store.admin && !RO && SBC) ? `<button class="hkdel" data-h="${i}" title="Usuń szlak (admin)" aria-label="Usuń szlak (admin)">🗑</button>` : ""}
-      ${hikeFriends(r, i, v)}${(v && v.s === "p") ? "" : `<div class="szs hs" style="margin:4px 0 2px">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v && v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div>`}${noteUi}
-      <a target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}">Szukaj opisu i mapy ↗</a></div></div>`; }).join("");
+      <div class="hb"><button type="button" class="hkhead" data-o="${i}" aria-expanded="${op}"><span class="hkt"><span class="hkn">${esc(h.n)}</span><span class="hkm"><span class="d${dfi < 0 ? 1 : dfi} hdf">${esc(h.d)}</span>${h.t ? `<span class="hkti">${IC.clock}${esc(h.t)}</span>` : ""}${myR}${avg}${ate ? `<span class="hkpie2">🥧</span>` : ""}${frH ? `<span class="hkfr">${IC.users}</span>` : ""}</span></span><span class="hkch">${IC.chev}</span></button>
+      ${op ? `<div class="hkx">${h.o ? `<p>${esc(h.o)}</p>` : ""}${frH}${stars}${noteUi}${szRow}${acts}</div>` : ""}</div></div>`; }).join("");
   const frsec = (!showOp && !RO && friendsHtml(r.id)) ? `<div id="opfr">${friendsHtml(r.id)}</div>` : "";
   const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b>${(secOn || r.hikes.length < 4) ? "" : `<button class="btn sm" id="hkdir" type="button" onclick="toggleHkDir()" style="padding:4px 10px;font-size:12px">${hkDir > 0 ? "Od łatwych ↓" : "Od trudnych ↑"}</button>`}</div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
   const sks0 = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
@@ -2293,9 +2327,9 @@ function renderSheet(){
   const szsec = (RO && sks.length && v && v.s === "v") ? `<div class="sect"><div class="sh"><b>Szarlotki w schroniskach</b></div>${szList()}</div>` : "";
   let body = "", top = "";
   if (!v) {
-    top = `<div class="two" style="margin:4px 0 12px"><button class="btn ok" id="sadd">✓ Byłem</button><button class="btn warn" id="splan">📅 Planuję</button></div>`;
+    top = `<div class="two" style="margin:4px 0 12px"><button class="btn ok" id="sadd">✓ Byłem</button><button class="btn warn" id="splan">${IC.cal} Planuję</button></div>`;
   } else {
-    const seg = `<div class="seg" id="sstat" style="margin:4px 0 2px"><button data-s="v" class="${v.s==="v"?"on":""}">✓ Byłem</button><button data-s="p" class="${v.s==="p"?"on":""}">📅 Planuję</button></div>`;
+    const seg = `<div class="seg" id="sstat" style="margin:4px 0 2px"><button data-s="v" class="${v.s==="v"?"on":""}">✓ Byłem</button><button data-s="p" class="${v.s==="p"?"on":""}">${IC.cal} Planuję</button></div>`;
     let mid = "";
     if (v.s === "v") {
       mid = `<div class="sect"><div class="sh"><b>${W ? "Wizyty" : "Kiedy byłem"}</b><button class="btn sm pri" id="saddstay">${W ? "+ Dodaj wizytę" : "+ Dodaj rok"}</button></div>
@@ -2317,7 +2351,7 @@ function renderSheet(){
   $("sheet").innerHTML = `<div class="grab"></div>
     ${sheetNav()}<div class="hero hsil"><svg class="hsv" viewBox="0 0 200 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><path d="M0 80 L50 24 L74 52 L104 8 L150 62 L170 40 L200 80 Z"/></svg><div class="flg">${flag(r.c.split(",")[0])}</div><div><h2>${esc(r.n)}${gpill}</h2><div class="meta">${r.c.split(",").map(c => esc(cname(c))).join(", ")}${W ? " " + pbadge(r) : ""}${(SBC && ratingLine(r.id)) ? " · " + ratingLine(r.id) : ""}</div></div><button class="hgear" id="hgear" title="Opcje">⚙</button></div>
     ${r.ds ? `<div style="margin:10px 2px 2px;font-size:13px;line-height:1.5;color:var(--mute)">${esc(r.ds)}</div>` : ""}
-    <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : W ? "" : (() => { const L = r.hikes.filter(x => !x.del), c = [0,1,2].map(i => L.filter(x => x.d === DIFF[i]).length); return `<div class="tile"><b>${c[0]}·${c[1]}·${c[2]}</b><span>łatwe · średnie · trudne</span></div>`; })()}</div><div class="small wxn" id="wxn" style="margin:8px 2px 0;min-height:16px"></div>
+    <div class="tiles">${t1}${t2}${W && r.e ? `<div class="tile"><b>${r.e} m</b><span>najwyższy punkt</span></div>` : W ? "" : (() => { const L = r.hikes.filter(x => !x.del), c = [0,1,2].map(i => L.filter(x => x.d === DIFF[i]).length); const T = c[0] + c[1] + c[2] || 1; return `<div class="tile dbt"><div class="dbar">${c.map((n, k) => n ? `<i class="db${k}" style="flex:${n}"></i>` : "").join("")}</div><span>${["łatwe", "średnie", "trudne"].map((w, k) => c[k] ? `${c[k]}&nbsp;<em class="dbl">${w}</em>` : "").filter(Boolean).join(" · ")}</span></div>`; })()}</div><div class="small wxn" id="wxn" style="margin:8px 2px 0;min-height:16px"></div>
     <a class="offl" target="_blank" rel="noopener" href="${href}">${W ? (r.w ? "Oficjalna strona ośrodka" : "Ceny karnetów i informacje") : "Szlaki, mapy i informacje"} <span>↗</span></a>
     ${(W && r.auto && !RO && SBC) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy. <button class="btn sm" id="sgfix" style="margin-left:4px">Zaproponuj poprawę</button></div>` : (W && r.auto) ? `<div class="small" style="margin:8px 2px;color:var(--warn)">⚠ Kilometry tras i wysokość dodane automatycznie, możliwe błędy.</div>` : ""}${top}${opblock}${frsec}${hikes}${szsec}${body}
     <div style="margin-top:12px"><button class="btn" id="sclose" style="width:100%">Zamknij</button></div>`;
@@ -2325,7 +2359,7 @@ function renderSheet(){
   document.querySelectorAll("#sheet .fgo3").forEach(b => b.onclick = () => openProfile(b.dataset.u));
   document.querySelectorAll("#sheet .hnote").forEach(t => t.oninput = () => { const v = visits[curId]; if (!v) return; v.hn = v.hn || {}; const i = +t.dataset.h; if (t.value.trim()) v.hn[i] = t.value; else delete v.hn[i]; scheduleSave(); });
   { const fx = $("sgfix"); if (fx) fx.onclick = () => { closeSheet(); openSuggest(r.n, r); };
-  { const go = d => { const L = LISTIDS, i = L.indexOf(curId) + d; if (i >= 0 && i < L.length) { curId = L[i]; confirmDel = false; armedStay = -1; renderSheet(); $("sheet").scrollTop = 0; mapRefresh(); } }; const a = $("sprev"), b = $("snext"); if (a) a.onclick = () => go(-1); if (b) b.onclick = () => go(1); }
+  { const go = d => { const L = LISTIDS, i = L.indexOf(curId) + d; if (i >= 0 && i < L.length) { hkOpen.clear(); curId = L[i]; confirmDel = false; armedStay = -1; renderSheet(); $("sheet").scrollTop = 0; mapRefresh(); } }; const a = $("sprev"), b = $("snext"); if (a) a.onclick = () => go(-1); if (b) b.onclick = () => go(1); }
   const hg = $("hgear"); if (hg) hg.onclick = e => { e.stopPropagation(); let p = $("nickpop"); if (!p) { p = document.createElement("div"); p.id = "nickpop"; document.body.append(p); }
     const canRep = !RO && SBC && store.sb; p.innerHTML = `<button data-a="w">${W ? (r.w ? "Strona ośrodka ↗" : "Ceny karnetów ↗") : "Szlaki i informacje ↗"}</button>${canRep ? `<button data-a="e">⚠ Zgłoś błąd w danych</button>` : ""}${(canRep && !W) ? `<button data-a="h">＋ Dodaj brakujący szlak</button>` : ""}${(canRep && store.admin) ? `<button data-a="a">✎ Edytuj dane (admin)</button><button data-a="d" style="color:#ff8a8a">🗑 Usuń ośrodek (admin)</button>` : ""}`; p.style.display = "flex";
     const b = hg.getBoundingClientRect(), w = p.offsetWidth; p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, b.right - w)) + "px"; p.style.top = (b.bottom + 6) + "px";
@@ -2339,7 +2373,8 @@ function renderSheet(){
       alert("Dodano do propozycji zmian. Usunięcie zatwierdzisz w panelu admina.");
     } catch(e){ alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); } });
   { const wb = $("wxn"); if (wb) wxNow(r).then(w => { if (w && wb.isConnected) wb.innerHTML = `<span style="opacity:.7">Teraz:</span> ` + wxNowHtml(r, w); }); }
-  document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => toggleHike(+b.dataset.h));
+  document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => { const i = +b.dataset.h, k = curId + ":" + i; if (!(visits[curId] && visits[curId].done[i])) hkOpen.add(k); toggleHike(i); });
+  document.querySelectorAll("#sheet .hkhead").forEach(b => b.onclick = () => { const k = curId + ":" + b.dataset.o; if (hkOpen.has(k)) hkOpen.delete(k); else hkOpen.add(k); renderSheet(); });
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
   document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
   document.querySelectorAll("#sheet .hkpie").forEach(b => b.onclick = () => { szOpenSk = szOpenSk === b.dataset.sk ? null : b.dataset.sk; renderSheet(); });
