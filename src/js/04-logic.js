@@ -6,7 +6,7 @@ function setStatus(id, st){
   const was = visits[id] && visits[id].s;
   if (!visits[id]) visits[id] = newEntry(st); else visits[id].s = st;
   scheduleSave(); renderAll();
-  if (st !== was) { if (st === "v") { burst(); toast("Zapisano na mapie ✓ · " + R.filter(r => isVis(r.id)).length + " z " + R.length); } else if (st === "p") toast("Dodano do planów"); }
+  if (st !== was) { if (st === "v") { burst(id); toast("Zapisano na mapie ✓ · " + R.filter(r => isVis(r.id)).length + " z " + R.length); } else if (st === "p") toast("Dodano do planów"); }
 }
 function stats(){
   const v = R.filter(r => isVis(r.id));

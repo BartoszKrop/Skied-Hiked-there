@@ -784,5 +784,6 @@ $("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("bell").on
 try { if (localStorage.getItem(LSM) !== "w") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
 initStore(); startI18n();
+try { if (!RO && !R.some(r => marked(r.id))) { showAll = true; mapRefresh(); } } catch(e){}
 
 try { applyTheme(); setTimeout(buildFx, 0); matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); } catch(e){}

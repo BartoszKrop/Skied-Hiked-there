@@ -42,7 +42,19 @@ let lastPt = {x: innerWidth / 2, y: innerHeight * .7};
 addEventListener("pointerdown", e => { lastPt = {x: e.clientX, y: e.clientY}; }, true);
 function toast(msg){ let t = $("toast"); if (!t) { t = document.createElement("div"); t.id = "toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.remove("on"); void t.offsetWidth; t.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 2200); }
 function toastUndo(msg, fn){ toast(msg); const t = $("toast"); t.classList.add("u"); const b = document.createElement("button"); b.textContent = "Cofnij"; b.className = "tundo"; b.onclick = () => { fn(); t.classList.remove("on", "u"); }; t.appendChild(b); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on", "u"), 6000); }
-function burst(){ if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const p = document.createElement("i"); p.className = "vring"; p.style.cssText = `left:${lastPt.x}px;top:${lastPt.y}px`; document.body.appendChild(p); setTimeout(() => p.remove(), 700); }
+let _vPulse = null;
+function burst(id){ try { navigator.vibrate && navigator.vibrate(18); } catch (e) {}
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const W = MODE === "w", x = lastPt.x, y = lastPt.y, cols = W ? ["#38e0a0", "#7fd3ff", "#ffffff", "#5ad1ff"] : ["#38e0a0", "#ffc65c", "#ff9f5c", "#ffe29a"];
+  const ring = document.createElement("i"); ring.className = "vring"; ring.style.cssText = `left:${x}px;top:${y}px`; document.body.appendChild(ring); setTimeout(() => ring.remove(), 700);
+  const box = document.createElement("div"); box.className = "vbst"; box.style.cssText = `left:${x}px;top:${y}px`;
+  for (let i = 0; i < 14; i++) { const p = document.createElement("i"), a = (i / 14) * Math.PI * 2 + Math.random() * .4, d = 46 + Math.random() * 42;
+    p.style.cssText = `--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d - 18}px;--r:${(Math.random() * 360) | 0}deg;background:${cols[i % cols.length]};animation-delay:${Math.random() * 60}ms`; if (i % 3 === 0) p.className = "sq"; box.appendChild(p); }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 900);
+  const hb = document.querySelector("#hstats b"); if (hb) { hb.classList.remove("vpop"); void hb.offsetWidth; hb.classList.add("vpop"); setTimeout(() => hb.classList.remove("vpop"), 600); }
+  if (id) { _vPulse = {id, t: Date.now()}; mapPulse(id); } }
+function mapPulse(id){ try { if (typeof ML !== "undefined" && ML) return; const d = dots.find(z => z.r.id === id); if (!d || matchMedia("(prefers-reduced-motion: reduce)").matches) return; const s = scale();
+  const c = mk("circle", {cx: px(d.r.x) + (d._k || 0) * WW, cy: py(d.r.y) + (d._ky || 0) * WH, r: 9 / s, class: "vpulse", "stroke-width": 2.5 / s}); gLbl.append(c); setTimeout(() => c.remove(), 1400); } catch (e) {} }
 function buildFx(){ const h = document.querySelector("header"); if (!h) return; let f = $("fx"); if (!f) { f = document.createElement("div"); f.id = "fx"; h.prepend(f); } f.replaceChildren(); const W = MODE === "w"; if (matchMedia("(prefers-reduced-motion: reduce)").matches) { f.className = W ? "snow" : "sun"; return; } for (let i = 0; i < (W ? 16 : 0); i++) { const p = document.createElement("i"), sz = W ? 6 + Math.random() * 6 : 2 + Math.random() * 2.5; p.style.cssText = `left:${Math.random() * 100}%;width:${sz}px;height:${sz}px;animation-duration:${(W ? 9 : 14) + Math.random() * 9}s;animation-delay:-${Math.random() * 18}s;opacity:${.25 + Math.random() * .4}`; f.appendChild(p); } f.className = W ? "snow" : "sun"; if (!W) { const w = f.offsetWidth + 180; for (let i = 0; i < 4; i++) { const c = document.createElement("b"), d = 80 + Math.random() * 60; c.style.cssText = `top:${8 + Math.random() * 62}%;--w:${w}px;transform:scale(${.7 + Math.random() * .7});animation-duration:${d}s;animation-delay:-${Math.random() * d}s;opacity:${.55 + Math.random() * .4}`; f.appendChild(c); } } }
 function modeFx(){ if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; const o = $("modefx"); if (o) o.remove(); const e = document.createElement("div"); e.id = "modefx"; e.style.background = MODE === "w" ? "radial-gradient(circle at 50% 0%, #2a6ab0, #0b1b34 70%)" : "radial-gradient(circle at 50% 0%, #e0944a, #2b1d12 70%)"; document.body.appendChild(e); setTimeout(() => e.remove(), 800); }
 let _din = 0;
@@ -86,7 +98,7 @@ function setMode(m){
   try { localStorage.setItem(LSM, m); } catch(e){}
   exitFilm(true); fCountry = ""; fCat = ""; $("fcat").value = ""; $("frow6").style.display = "none"; $("frow5").classList.toggle("sm", m !== "w"); fQ = ""; fSort = "k"; fMinKm = 0; fMinEl = 0; fGroup = ""; fMinR = 0; fPrice = 0; $("fminr").value = "0"; $("fminkm").value = "0"; $("fminel").value = "0"; $("frow2").style.display = m === "w" ? "" : "none"; $("q").value = ""; fWx = ""; fWd = 0; fWs = 0; fWc = 0; fixWxOpts(m); $("fwc").value = "0"; $("fwx").value = ""; $("fwd").value = "0"; $("fws").value = "0"; $("fwsort").value = ""; $("fsort").value = "k"; setFStat("all");
   $("fsort").options[0].textContent = m === "w" ? "Najwięksi" : "Najwięcej szlaków"; $("lview").style.display = m === "s" ? "" : "none";
-  buildCountrySelect(); buildGroupSelect(); showAll = false; buildDots(); renderAll();
+  buildCountrySelect(); buildGroupSelect(); showAll = !RO && !R.some(r => marked(r.id)); buildDots(); renderAll();
   const cur = (document.querySelector(".view.on") || {}).id || "v-mapa";
   if (cur === "v-ranking") show("mapa"); else if (cur !== "v-wyjazdy") { if (mapFitted) applyVB(); else fit(); }
 }

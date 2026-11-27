@@ -174,11 +174,15 @@ function fChips(){
 function updateMapUI(){
   try { fChips(); } catch(e){}
   const n = R.filter(r => marked(r.id)).length;
-  const show = !n && !showAll && !hintDone && !hintSeen();
+  const show = !n && !hintDone && !hintSeen(); { const m2 = $("mall2"); if (m2) m2.style.display = showAll ? "none" : ""; }
   $("mapempty").style.display = show ? "flex" : "none";
   if (show) { const W = MODE === "w"; $("welh").textContent = W ? "Gdzie już zjechałeś?" : "Gdzie już byłeś w górach?"; $("wels").textContent = W ? "Zaznacz ośrodki, w których jeździłeś." : "Zaznacz miejsca i szlaki, które już zrobiłeś."; }
   $("mall").textContent = (showAll && !lgOff.size && !filtN()) ? "Ukryj nieoznaczone" : "Pokaż wszystkie"; $("mall").style.display = ""; $("mfilt").innerHTML = IC.filt + " " + tr("Filtry") + (filtN() ? " · " + filtN() : ""); $("mfilt").classList.toggle("pri", !!filtN());
 }
+function chipify(sl, lab){ const f = sl.closest(".fld"); if (!f) return; f.classList.add("chf"); sl.style.display = "none";
+  const row = document.createElement("div"); row.className = "fchips"; [...sl.options].forEach((o, i) => { const b = document.createElement("button"); b.type = "button"; b.className = "fc2" + (o.value === sl.value ? " on" : ""); b.dataset.v = o.value; b.textContent = lab(o.textContent.trim(), i); row.append(b); });
+  row.onclick = e => { const b = e.target.closest("button"); if (!b || b.dataset.v === sl.value) return; sl.value = b.dataset.v; row.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); sl.dispatchEvent(new Event("change")); row.querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.v === sl.value)); };
+  sl.after(row); }
 function openMapFilters(){
   const W = MODE === "w", cnt = () => R.filter(passF).length;
   const draw = () => {
@@ -206,6 +210,8 @@ function openMapFilters(){
     if (W) { $("mfg").onchange = e => { fGroup = e.target.value; $("fgroup").value = fGroup; upd(); }; $("mfk").onchange = e => { fMinKm = +e.target.value; $("fminkm").value = String(fMinKm); upd(); }; $("mfe").onchange = e => { fMinEl = +e.target.value; $("fminel").value = String(fMinEl); upd(); }; }
     $("mfclr").onclick = () => { setView("n"); fCountry = ""; fGroup = ""; fMinKm = 0; fMinEl = 0; $("fcountry").value = ""; $("fgroup").value = ""; $("fminkm").value = "0"; $("fminel").value = "0"; fMinR = 0; $("fminr").value = "0"; fCat = ""; $("fcat").value = ""; fWx = ""; $("fwx").value = ""; fWd = 0; $("fwd").value = "0"; fWc = 0; $("fwc").value = "0"; setFStat("all"); upd(); draw(); };
     $("mfok").onclick = closeAccount;
+    const SH = {mfr: t => t.replace(/\s*i więcej/, "+"), mfk: t => t.replace(/^od (\d+) km.*/, "$1+ km"), mfe: t => t.replace(/^powyżej (\d+) m/, "$1+ m"), mfwc: t => t.replace(/^Chmury\s*/, "")};
+    ["mfv", "mfr", "mfk", "mfe", "mfwd", "mfwx", "mfwc"].forEach(id => { const sl = $(id); if (sl) chipify(sl, (t, i) => i === 0 && !["mfv", "mfwd"].includes(id) ? "Wszystkie" : (SH[id] ? SH[id](t) : t)); });
   };
   draw();
 }
