@@ -31,12 +31,10 @@ function mlData(){
 }
 function mlLayers(){
   const light = document.body.classList.contains("light"), halo = light ? "#f4efe6" : "#0d1726", txt = light ? "#3b3326" : "#dbe6f7", F = ["Noto Sans Regular"];
-  ML.addSource("pu", {type: "geojson", data: mlEmpty(), cluster: true, clusterRadius: 46, clusterMaxZoom: 9});
+  ML.addSource("pu", {type: "geojson", data: mlEmpty()});
   ML.addSource("pm", {type: "geojson", data: mlEmpty()});
-  ML.addLayer({id: "pu-c", type: "circle", source: "pu", filter: ["has", "point_count"], paint: {"circle-color": "rgba(122,168,255,.82)", "circle-stroke-color": "#fff", "circle-stroke-width": 1.5, "circle-radius": ["interpolate", ["linear"], ["get", "point_count"], 3, 12, 50, 20]}});
-  ML.addLayer({id: "pu-n", type: "symbol", source: "pu", filter: ["has", "point_count"], layout: {"text-field": ["to-string", ["get", "point_count"]], "text-font": F, "text-size": 12, "text-allow-overlap": true}, paint: {"text-color": "#fff"}});
-  ML.addLayer({id: "pu-p", type: "circle", source: "pu", filter: ["!", ["has", "point_count"]], paint: {"circle-color": "rgba(122,168,255,.6)", "circle-radius": 5, "circle-stroke-color": "rgba(255,255,255,.35)", "circle-stroke-width": 1}});
-  ML.addLayer({id: "pu-l", type: "symbol", source: "pu", minzoom: 7, filter: ["!", ["has", "point_count"]], layout: {"text-field": ["get", "n"], "text-font": F, "text-size": 11, "text-offset": [0, -1.2], "text-anchor": "bottom", "text-max-width": 12}, paint: {"text-color": txt, "text-halo-color": halo, "text-halo-width": 1.5, "text-opacity": .8}});
+  ML.addLayer({id: "pu-p", type: "circle", source: "pu", paint: {"circle-color": "rgba(122,168,255,.6)", "circle-radius": 5, "circle-stroke-color": "rgba(255,255,255,.35)", "circle-stroke-width": 1}});
+  ML.addLayer({id: "pu-l", type: "symbol", source: "pu", minzoom: 7, layout: {"text-field": ["get", "n"], "text-font": F, "text-size": 11, "text-offset": [0, -1.2], "text-anchor": "bottom", "text-max-width": 12}, paint: {"text-color": txt, "text-halo-color": halo, "text-halo-width": 1.5, "text-opacity": .8}});
   ML.addLayer({id: "pm-h", type: "circle", source: "pm", filter: ["==", ["get", "sel"], 1], paint: {"circle-color": "#5ad1ff", "circle-opacity": .35, "circle-radius": 16}});
   ML.addLayer({id: "pm-p", type: "circle", source: "pm", paint: {"circle-color": ["get", "col"], "circle-radius": ["case", ["==", ["get", "sel"], 1], 8, 6.5], "circle-stroke-color": "#fff", "circle-stroke-width": ["case", ["==", ["get", "sel"], 1], 2.5, 1.5]}});
   ML.addLayer({id: "pm-l", type: "symbol", source: "pm", minzoom: 4, layout: {"text-field": ["get", "n"], "text-font": F, "text-size": 12, "text-offset": [0, -1.3], "text-anchor": "bottom", "text-max-width": 12, "symbol-sort-key": ["-", 0, ["get", "k"]]}, paint: {"text-color": txt, "text-halo-color": halo, "text-halo-width": 1.6}});
@@ -52,11 +50,10 @@ async function mlStart(){
   ML.touchZoomRotate.disableRotation();
   ML.on("load", mlLayers);
   ML.on("moveend", () => { const b = ML.getBounds(); try { localStorage.setItem("skibeen.vb", JSON.stringify([b.getWest() * COS, -b.getNorth(), (b.getEast() - b.getWest()) * COS, b.getNorth() - b.getSouth()].map(n => +n.toFixed(3)))); } catch (e) {} });
-  ML.on("click", e => { const p = e.point, f = ML.queryRenderedFeatures([[p.x - 14, p.y - 14], [p.x + 14, p.y + 14]], {layers: ["pm-p", "pu-c", "pu-p"]}); if (!f.length) return;
+  ML.on("click", e => { const p = e.point, f = ML.queryRenderedFeatures([[p.x - 14, p.y - 14], [p.x + 14, p.y + 14]], {layers: ["pm-p", "pu-p"]}); if (!f.length) return;
     const pm = f.find(x => x.layer.id === "pm-p"), x = pm || f[0];
-    if (x.layer.id === "pu-c") { ML.getSource("pu").getClusterExpansionZoom(x.properties.cluster_id).then(z => ML.easeTo({center: x.geometry.coordinates, zoom: z + .3})); return; }
     openSheet(x.properties.id); });
-  ["pm-p", "pu-c", "pu-p"].forEach(l => { ML.on("mouseenter", l, () => ML.getCanvas().style.cursor = "pointer"); ML.on("mouseleave", l, () => ML.getCanvas().style.cursor = ""); });
+  ["pm-p", "pu-p"].forEach(l => { ML.on("mouseenter", l, () => ML.getCanvas().style.cursor = "pointer"); ML.on("mouseleave", l, () => ML.getCanvas().style.cursor = ""); });
 }
 function mlStop(){ document.body.classList.remove("mlon"); if (ML) { ML.remove(); ML = null; } const el = $("mlmap"); if (el) el.remove(); svg.style.display = ""; mapRefresh(); }
 function mlSet(v){ mlOn = !!v; try { localStorage.setItem("skibeen.ml", mlOn ? "1" : "0"); } catch (e) {} if (mlOn) mlStart(); else mlStop(); }

@@ -258,15 +258,15 @@ body.ro #sheet .btn.sm,body.ro #sheet .x{display:none}
 #modefx{position:fixed;inset:0;z-index:99998;pointer-events:none;animation:modewipe .75s cubic-bezier(.4,0,.2,1) forwards}
 @keyframes modewipe{0%{clip-path:circle(0% at 50% 0%);opacity:.95}60%{clip-path:circle(150% at 50% 0%);opacity:.9}100%{clip-path:circle(150% at 50% 0%);opacity:0}}
 @keyframes dotin{from{opacity:0}to{opacity:1}}
-.din{animation:dotin .45s ease-out}
+.din{animation:none}
 @media(prefers-reduced-motion:reduce){#modefx{display:none}.sk{animation:none}.din{animation:none}}
-@keyframes flipin{0%{opacity:0;transform:translateY(10px) scale(.985);filter:blur(3px)}100%{opacity:1;transform:none;filter:none}}
+@keyframes flipin{from{opacity:.25}to{opacity:1}}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes ringpulse{0%{box-shadow:0 0 0 0 var(--accent)}100%{box-shadow:0 0 0 14px transparent}}
 @media(prefers-reduced-motion:no-preference){
 .view.on{animation:fade .32s ease both}
-main.flip{animation:flipin .5s cubic-bezier(.2,.8,.3,1)}
-header.flip .hstats{animation:flipin .5s cubic-bezier(.2,.8,.3,1)}
+main.flip{animation:flipin .22s ease-out}
+header.flip .hstats{animation:flipin .22s ease-out}
 .mode button.on{transition:color .25s}
 #nav button.on svg,#nav button.on .ic{animation:starpop .4s cubic-bezier(.3,1.6,.5,1)}
 .btn.pri:active{transform:scale(.96)}
@@ -629,6 +629,10 @@ body.wide #sheet{left:0;right:auto;width:var(--pw);top:var(--hh,120px);bottom:0;
 body.wide #sheet .grab{display:none}
 body.wide #sheet .hero h2{font-size:26px}body.wide #sheet .hero .flg{width:56px;height:56px;font-size:30px;border-radius:16px}body.wide #sheet .hero .meta{font-size:14px}
 body.wide #fab{left:auto;right:18px}
+/* wyjazdy na szerokim ekranie: bez mapy, treść wyśrodkowana */
+body.wide.wtr #v-mapa{display:none!important}
+body.wide.wtr #v-wyjazdy{width:auto;right:0;border-right:0;padding-left:max(18px,calc((100% - 880px)/2));padding-right:max(18px,calc((100% - 880px)/2))}
+body.wide.wtr nav{grid-column:1/-1;border-right:0}
 }
 
 /* v209: grupy punktów */

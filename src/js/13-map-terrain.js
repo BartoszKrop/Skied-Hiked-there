@@ -151,22 +151,8 @@ function vbHeavy(full){
     const lab = showNames && ((d._on || d._sel) ? z >= 4 : (z >= 12 || (MODE === "w" && z >= 8 && d.r.k > 100) || (MODE === "s" && z >= 6)));
     if (lab) cand.push(d); else if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; }
   });
-  /* grupowanie nieoznaczonych punktów (byłem/planuję zawsze osobno) */
-  { const cs = 58 / s, cells = new Map();
-    dots.forEach(d => { if (!d._show || d._on || d._sel) { if (d._cl) { d._cl = false; d.c.style.display = d._show ? "" : "none"; d.h.style.display = d._show ? "" : "none"; } return; }
-      const X = px(d.r.x) + (d._k || 0) * WW, Y = py(d.r.y) + (d._ky || 0) * WH; if (X < X0 || X > X1 || Y < Y0 || Y > Y1) return;
-      const k = Math.floor(X / cs) + "," + Math.floor(Y / cs); let c = cells.get(k); if (!c) cells.set(k, c = {L: [], x: 0, y: 0}); c.L.push(d); c.x += X; c.y += Y; });
-    CLU = []; let n = 0;
-    cells.forEach(c => { const cl = c.L.length >= 3 && z < 40;
-      c.L.forEach(d => { if (d._cl !== cl) { d._cl = cl; d.c.style.display = cl ? "none" : ""; d.h.style.display = cl ? "none" : ""; } });
-      if (!cl) return; const x = c.x / c.L.length, y = c.y / c.L.length, r = (11 + Math.min(9, Math.sqrt(c.L.length) * 1.6)) / s;
-      let g = gClu.children[n]; if (!g) { g = mk("g", {class: "clu"}); g.append(mk("circle", {}), mk("text", {"text-anchor": "middle", "dominant-baseline": "central"})); gClu.append(g); }
-      g.style.display = ""; const [ci, tx] = g.children; ci.setAttribute("cx", x); ci.setAttribute("cy", y); ci.setAttribute("r", r); ci.setAttribute("stroke-width", 1.5 / s);
-      tx.setAttribute("x", x); tx.setAttribute("y", y); tx.setAttribute("font-size", 11.5 / s); tx.textContent = c.L.length; CLU.push({x, y, r, n: c.L.length}); n++; });
-    for (let i = n; i < gClu.children.length; i++) gClu.children[i].style.display = "none";
-    for (let i = cand.length - 1; i >= 0; i--) if (cand[i]._cl) { const d = cand[i]; if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; } cand.splice(i, 1); } }
   /* etykiety: bez nakładania się, ważniejsze pierwsze */
-  const boxes = []; CLU.forEach(q => { const cx = (q.x - vb.x) * s, cy = (q.y - vb.y) * s, rr = q.r * s; boxes.push([cx - rr, cy - rr, cx + rr, cy + rr]); });
+  const boxes = [];
   cand.sort((a, b) => (b.r.id === curId) - (a.r.id === curId) || (marked(b.r.id) - marked(a.r.id)) || ((b.r.k || 0) - (a.r.k || 0)));
   cand.forEach(d => { const cx = (px(d.r.x) + (d._k || 0) * WW - vb.x) * s, cy = (py(d.r.y) + (d._ky || 0) * WH - vb.y) * s - d.rad - 10, w = Math.min(dname(d.r).length, filmMode ? 30 : 22) * 6.2 + 6, bx = [cx - w / 2, cy - 7, cx + w / 2, cy + 7];
     if (boxes.some(q => bx[0] < q[2] && bx[2] > q[0] && bx[1] < q[3] && bx[3] > q[1])) { if (d._lab !== false) { d.t.style.display = "none"; d._lab = false; } return; }
