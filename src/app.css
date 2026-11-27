@@ -606,6 +606,8 @@ body:not(.light) .stchips button.on{color:#06121f}
 
 /* v207: zwijany nagłówek */
 body.hcomp header{padding-bottom:6px}
+.hstats.hfade{animation:flipin .24s ease-out}
+body.hm .hstats b,body.hm .hstats small{transition:none!important}
 body.hcomp .hstats{gap:14px;margin-top:6px;flex-wrap:nowrap;overflow:hidden;white-space:nowrap}
 body.hcomp .hstats div{flex-direction:row;align-items:baseline;gap:4px}
 body.hcomp .hstats b{font-size:18px}

@@ -1,5 +1,11 @@
 /* ---------- zakładki i tryb ---------- */
-{ const hc = () => { const v = document.querySelector(".view.on"); const y = (v && v.id !== "v-mapa") ? v.scrollTop : 0, on = document.body.classList.contains("hcomp"); if (!on && y > 56) document.body.classList.add("hcomp"); else if (on && y < 8) document.body.classList.remove("hcomp"); };
+{ const hd0 = document.querySelector("header"), still = matchMedia("(prefers-reduced-motion: reduce)");
+  /* zwijanie nagłówka: wysokość płynnie się zmienia, a treść poniżej przesuwa się razem z nią */
+  const setC = on => { const h0 = hd0.offsetHeight; document.body.classList.add("hm"); document.body.classList.toggle("hcomp", on); const h1 = hd0.offsetHeight; document.body.classList.remove("hm"); if (still.matches || h0 === h1) return;
+    const hs = hd0.querySelector(".hstats"); hd0.style.transition = "none"; hd0.style.height = h0 + "px"; void hd0.offsetHeight; hd0.style.transition = "height .26s cubic-bezier(.2,.8,.3,1)"; hd0.style.height = h1 + "px";
+    if (hs) { hs.classList.remove("hfade"); void hs.offsetWidth; hs.classList.add("hfade"); }
+    clearTimeout(hd0._t); hd0._t = setTimeout(() => { hd0.style.height = ""; hd0.style.transition = ""; if (hs) hs.classList.remove("hfade"); }, 300); };
+  const hc = () => { const v = document.querySelector(".view.on"); const y = (v && v.id !== "v-mapa") ? v.scrollTop : 0, on = document.body.classList.contains("hcomp"); if (!on && y > 56) setC(true); else if (on && y < 8) setC(false); };
   document.querySelectorAll(".view").forEach(v => v.addEventListener("scroll", hc, {passive: true})); window.__hc = hc; }
 { const mq = matchMedia("(min-width:1100px)"), hd = document.querySelector("header"), nv = $("nav");
   const sz = () => { document.body.style.setProperty("--hh", hd.offsetHeight + "px"); if (nv) document.body.style.setProperty("--navh", nv.offsetHeight + "px"); };
