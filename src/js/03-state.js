@@ -129,6 +129,8 @@ function renderRoBar(){
   const f = $("rofr"); if (f) f.onclick = async () => { if (f.dataset.a === "un" && SOC.friends.includes(low) && !(await appConfirm("Przestać obserwować @" + RO.username + "?"))) return; f.disabled = true; if (f.dataset.a === "un") await socAct("remove_friend", {uname: low}); else await sendFriendReq(low); await roRel(); };
 }
 let FRD = {};
+/* po zamknięciu aplikacji filtry, widok mapy i przełączniki legendy wracają do domyślnych */
+try { ["skibeen.vb", "sht-lgoff", "sht-showfr"].forEach(k => localStorage.removeItem(k)); } catch (e) {}
 let showFr = false; try { showFr = localStorage.getItem("sht-showfr") === "1"; } catch (e) {}
 function frIds(){ if (frIds._k !== FRD || frIds._m !== MODE) { const st = new Set(); Object.keys(FRD).forEach(f => { const m = MODE === "w" ? FRD[f].visits : FRD[f].hvisits; m && Object.keys(m).forEach(id => { if (m[id] && m[id].s === "v") st.add(id); }); }); frIds._k = FRD; frIds._m = MODE; frIds._s = st; } return frIds._s; }
 let lgOff = new Set(); try { lgOff = new Set((localStorage.getItem("sht-lgoff") || "").split(",").filter(Boolean)); } catch (e) {}
