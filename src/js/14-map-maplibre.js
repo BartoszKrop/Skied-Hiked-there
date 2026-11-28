@@ -56,7 +56,7 @@ async function mlStart(){
   svg.style.display = "none"; document.body.classList.add("mlon");
   ML = new maplibregl.Map({container: el, style, bounds: [[vb.x / COS, -(vb.y + vb.h)], [(vb.x + vb.w) / COS, -vb.y]], attributionControl: {compact: true}, dragRotate: false, pitchWithRotate: false, touchPitch: false, renderWorldCopies: true, maxZoom: 15});
   ML.touchZoomRotate.disableRotation();
-  ML.on("load", mlLayers);
+  ML.on("load", mlEnsure); ML.on("styledata", mlEnsure);
   ML.on("moveend", () => { const b = ML.getBounds(); try { localStorage.setItem("skibeen.vb", JSON.stringify([b.getWest() * COS, -b.getNorth(), (b.getEast() - b.getWest()) * COS, b.getNorth() - b.getSouth()].map(n => +n.toFixed(3)))); } catch (e) {} });
   ML.on("click", e => { const p = e.point, f = ML.queryRenderedFeatures([[p.x - 14, p.y - 14], [p.x + 14, p.y + 14]], {layers: ["pm-p", "pu-p"]}); if (!f.length) return;
     const pm = f.find(x => x.layer.id === "pm-p"), x = pm || f[0];
@@ -66,7 +66,8 @@ async function mlStart(){
 function mlStop(){  document.body.classList.remove("mlon"); if (ML) { ML.remove(); ML = null; } const el = $("mlmap"); if (el) el.remove(); svg.style.display = ""; mapRefresh(); }
 function mlSet(v){ mlOn = !!v; try { localStorage.setItem("skibeen.ml", mlOn ? "1" : "0"); } catch (e) {} if (mlOn) mlStart(); else mlStop(); }
 { const o = applyTheme; applyTheme = function(){ o(); try { if (ML) mlTheme(); } catch (e) {} }; }
-function mlTheme(){ if (!ML) return; mlStyle().then(st => { if (!ML) return; ML.setStyle(st); ML.once("style.load", mlLayers); }); }
+function mlEnsure(){ if (!ML || mlEnsure._b || ML.getSource("pm") || !ML.isStyleLoaded()) return; mlEnsure._b = 1; try { mlLayers(); } finally { mlEnsure._b = 0; } }
+function mlTheme(){ if (!ML) return; const t = mlTheme._t = (mlTheme._t || 0) + 1; mlStyle().then(st => { if (!ML || t !== mlTheme._t) return; ML.setStyle(st); }); }
 function mapRefresh(){ if (ML) setTimeout(mlData, 0); legSync(); viewSync(); { if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){
   if (ML) { ML.easeTo({zoom: ML.getZoom() - Math.log2(f), duration: 220}); return; }
