@@ -1,4 +1,4 @@
-const C = "sht-v225", SHELL = ["./", "manifest.webmanifest", "icon-192.png", "icon-512.png", "assets/app.6bb78fc535.js", "assets/data.e758d3dd46.js", "assets/app.98ec9bde8c.css"];
+const C = "sht-v226", SHELL = ["./", "manifest.webmanifest", "icon-192.png", "icon-512.png", "assets/app.87f0ab100b.js", "assets/data.e758d3dd46.js", "assets/app.4e4b5a740d.css"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(C).then(c => c.addAll(SHELL.map(u => new Request(u, {cache: "reload"})))).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 // Cache najpierw (szybki start, działa offline), w tle odświeżenie z sieci na następne wejście.

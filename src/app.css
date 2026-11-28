@@ -762,3 +762,7 @@ body.light #wpick{background:rgba(20,30,50,.35)}
 body.light .szb{color:#8a5a00;border-color:rgba(190,120,0,.55)}
 body.light .szb.on{background:rgba(255,190,70,.35);color:#6b4300}
 body.light .szrow{background:rgba(255,190,70,.14);border-color:rgba(190,120,0,.3)}
+#sheet .hike.hk2:has(.hkd) .tk2{flex-direction:column;gap:7px}
+.tick.sz{border-color:rgba(224,138,60,.7);font-size:15px;line-height:1;filter:grayscale(.55);opacity:.8}
+.tick.sz:hover{filter:none;opacity:1}
+.tick.sz.on{background:rgba(255,190,70,.3);border-color:#e08a3c;box-shadow:0 0 12px rgba(224,138,60,.45);filter:none;opacity:1}
