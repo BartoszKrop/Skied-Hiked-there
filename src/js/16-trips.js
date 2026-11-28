@@ -800,17 +800,26 @@ function welcomePick(){
     <small>Tryb zmienisz w każdej chwili przełącznikiem u góry.</small></div>`;
   document.body.append(o);
   const done = () => { o.classList.add("out"); setTimeout(() => { o.remove(); startTour(); }, 260); };
-  const pickCountry = c => { fCountry = c; try { $("fcountry").value = c; } catch (x) {} track("kraj-" + (c || "wszystkie")); renderList(); mapRefresh(); done(); };
+  const finish = c => { fCountry = c; try { $("fcountry").value = c; } catch (x) {} mineDone[MODE] = false; renderAll(); mapRefresh(); done(); };
+  const step3 = c => {
+    const W = MODE === "w", sc = r => W ? (r.k || 0) : (r.hikes || []).filter(h => !h.del).length;
+    const L = R.filter(r => r.c.split(",").includes(c)).sort((x, y) => sc(y) - sc(x)).slice(0, 10), box = o.querySelector(".wpc"); let n = 0;
+    box.innerHTML = `<h2>${flag(c)} ${esc(cname(c))}</h2><p>${tr(W ? "Zaznacz ośrodki, w których już byłeś." : "Zaznacz miejsca, w których już byłeś.")}</p>
+      <div class="wpl">${L.map(r => `<button type="button" class="wpi${isVis(r.id) ? " on" : ""}" data-id="${esc(r.id)}"><span><b>${esc(r.n)}</b><small>${W ? Math.round(r.k || 0) + " km" : sc(r) + " " + plur(sc(r), "szlak", "szlaki", "szlaków")}</small></span><i>✓</i></button>`).join("")}</div>
+      <button type="button" class="btn pri wpdone" style="width:100%;margin-top:12px">${tr("Gotowe")}</button><button type="button" class="wpskip" data-back="1">${tr("← Inne kraje")}</button>`;
+    box.onclick = e => { const it = e.target.closest(".wpi"); if (it) { const id = it.dataset.id; if (isVis(id)) { if (visits[id] && Object.keys(visits[id]).length <= 6) delete visits[id]; else visits[id].s = "n"; } else visits[id] = Object.assign(newEntry("v"), {s: "v"}); it.classList.toggle("on", isVis(id)); n++; scheduleSave(); return; }
+      if (e.target.closest("[data-back]")) { step2(); return; } if (e.target.closest(".wpdone")) { if (n) track("start-zaznaczone-" + n); finish(c); } };
+  };
   const step2 = () => {
     const W = MODE === "w", sc = {}; R.forEach(r => r.c.split(",").forEach(c => { sc[c] = (sc[c] || 0) + (W ? 1 : ((r.hikes || []).filter(h => !h.del).length || 1)); }));
     const pop = ["PL", "AT", "CH", "IT", "FR", "DE", "SI"].filter(c => sc[c]), rest = Object.keys(sc).filter(c => !pop.includes(c)).sort((a, b) => sc[b] - sc[a] || cname(a).localeCompare(cname(b), "pl"));
     const tile = c => `<button type="button" data-c="${esc(c)}" class="wpt"><i>${flag(c)}</i><b>${esc(cname(c))}</b></button>`;
-    o.querySelector(".wpc").innerHTML = `<h2>${tr("Gdzie najczęściej?")}</h2><p>${tr(W ? "Pokażemy najpierw ośrodki z tego kraju." : "Pokażemy najpierw miejsca z tego kraju.")}</p>
+    o.querySelector(".wpc").innerHTML = `<h2>${tr("Gdzie najczęściej?")}</h2><p>${tr("Wybierz kraj, a pokażemy największe miejsca do szybkiego zaznaczenia.")}</p>
       <div class="wpg wpg3">${pop.map(tile).join("")}${rest.length ? `<button type="button" class="wpt wpo" data-more="1"><i>＋</i><b>${tr("Inne")}</b></button>` : ""}</div>
       <div class="wpr" hidden>${rest.map(c => `<button type="button" class="wpq" data-c="${esc(c)}">${flag(c)} ${esc(cname(c))}</button>`).join("")}</div>
-      <button type="button" class="wpskip" data-c="">${tr("Wszystkie kraje")}</button>`;
+      <button type="button" class="wpskip" data-skip="1">${tr("Pomiń")}</button>`;
     const pr = o.querySelector(".wpr");
-    o.querySelector(".wpc").onclick = e => { if (e.target.closest("[data-more]")) { pr.hidden = !pr.hidden; return; } const b = e.target.closest("button[data-c]"); if (b) pickCountry(b.dataset.c); };
+    o.querySelector(".wpc").onclick = e => { if (e.target.closest("[data-more]")) { pr.hidden = !pr.hidden; return; } if (e.target.closest("[data-skip]")) { finish(""); return; } const b = e.target.closest("button[data-c]"); if (b) step3(b.dataset.c); };
   };
   o.onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; try { localStorage.setItem("skibeen.picked", "1"); } catch (x) {} track("start-" + (b.dataset.m === "w" ? "zima" : "lato")); setMode(b.dataset.m); o.onclick = null; step2(); };
 }
