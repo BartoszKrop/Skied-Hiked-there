@@ -945,6 +945,7 @@ function renderStats(){
       <div class="fld"><label>Wklej dane, żeby je wczytać (zastąpią obecne)</label><textarea id="bimp" placeholder='{"visits":{…},"hvisits":{…}}'></textarea></div>
       <button class="btn" id="bload">Wczytaj</button> <span class="small" id="bmsg"></span>
     </div>`}
+    <!-- #PRZED-PUBLIKACJĄ: zweryfikować prawnie to miejsce i treść licencji (OSM/ODbL, OpenFreeMap, OpenMapTiles, Mapzen/AWS Terrain). Pełna lista w CLAUDE.md. Komentarz niewidoczny dla użytkowników. -->
     <div class="small" style="margin:6px 4px 24px">Ośrodki: © współtwórcy OpenStreetMap / OpenSkiMap (licencja ODbL); długości tras bywają zaniżone tam, gdzie mapowanie jest niepełne. Szlaki letnie to ręcznie wybrana lista orientacyjna, czasy i trudność sprawdź w mapach turystycznych przed wyjściem.</div>
     <div class="small" style="margin:-14px 4px 24px">Mapy: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:var(--accent)">współtwórcy OpenStreetMap</a> (ODbL), kafelki <a href="https://openfreemap.org" target="_blank" rel="noopener" style="color:var(--accent)">OpenFreeMap</a>, dane <a href="https://openmaptiles.org" target="_blank" rel="noopener" style="color:var(--accent)">OpenMapTiles</a>, ukształtowanie terenu: Mapzen / AWS Terrain Tiles.</div>`;
   $("rkpick").onchange = e => { statRank[com ? ck : MODE] = e.target.value; renderStats(); };

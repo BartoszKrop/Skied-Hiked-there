@@ -16,3 +16,11 @@ Strona statyczna na GitHub Pages (gałąź `main`, katalog główny). Kod źród
 1. `npm install` (raz), potem edycja plików w `src/`.
 2. Podbicie wersji: `const APPV = "vNNN"` w `src/js/` (build bierze z niej też nazwę cache service workera).
 3. `npm run build`, sprawdzenie w przeglądarce, commit zarówno `src/`, jak i wygenerowanych plików.
+
+## #PRZED-PUBLIKACJĄ (lista do zweryfikowania, gdy właściciel zacznie publikować aplikację)
+Jeśli właściciel zapyta „co mogę zmienić / co jeszcze zrobić”, przypomnij o tej liście. Nie jest widoczna dla użytkowników ani admina.
+- Atrybucja map i danych: stopka Ustawień (`src/js/10-share-social.js`, komentarz `#PRZED-PUBLIKACJĄ`). Atrybucja MapLibre w rogu mapy jest ukryta w CSS (`body.mlon .maplibregl-ctrl-attrib`), a wymagane przez licencje (OSM/ODbL, OpenMapTiles, OpenFreeMap, Mapzen/AWS Terrain) uznanie autorstwa jest tylko w Ustawieniach. Sprawdzić z prawnikiem lub w warunkach dostawców, czy to wystarcza.
+- Nominatim (wyszukiwanie miejsc w zgłoszeniach): publiczny serwer ma limity użycia (ok. 1 zapytanie/s, wymagana identyfikacja aplikacji); przy większym ruchu potrzebny własny lub płatny geokoder.
+- OpenFreeMap i kafelki terenu: sprawdzić warunki użycia przy większym ruchu.
+- Polityka prywatności i regulamin (konta, Supabase, profile publiczne, notatki), zgody RODO, ewentualny baner cookies.
+- Zdjęcia, nazwy i znaki towarowe ośrodków oraz nazwa aplikacji (dostępność nazwy, znak towarowy).
