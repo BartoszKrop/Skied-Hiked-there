@@ -7,7 +7,7 @@ if (mlOn) { try { mlLoad().catch(() => {}); } catch (e) {} }
 async function mlStyle(){
   const light = document.body.classList.contains("light"), sum = document.body.classList.contains("summer");
   let src = {type: "vector", url: "https://tiles.openfreemap.org/planet"}, glyphs = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
-  if (!mlStyle._b) { try { const c = JSON.parse(localStorage.getItem("skibeen.mlb") || "null"); if (c && c.t > Date.now() - 864e5 && c.b && c.b.src) { mlStyle._b = c.b; } } catch (e) {}
+  if (!mlStyle._b) { try { const c = JSON.parse(localStorage.getItem("skibeen.mlb") || "null"); if (c && c.t > Date.now() - 864e5 && c.b && c.b.src) { mlStyle._b = c.b; } } catch (e) {} }
   if (!mlStyle._b) { try { const st = await (await fetch(window.__MLSTYLE || "https://tiles.openfreemap.org/styles/positron")).json(); const k = Object.keys(st.sources || {}).find(k => st.sources[k].type === "vector"); mlStyle._b = {src: k ? st.sources[k] : src, glyphs: st.glyphs || glyphs}; try { localStorage.setItem("skibeen.mlb", JSON.stringify({t: Date.now(), b: mlStyle._b})); } catch (e) {} } catch (e) { mlStyle._b = {src, glyphs}; } }
   src = mlStyle._b.src; glyphs = mlStyle._b.glyphs;
   const C = sum
