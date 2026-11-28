@@ -4,15 +4,21 @@ const ML_SRC = window.__MLSRC || "https://cdn.jsdelivr.net/npm/maplibre-gl@5/dis
 function mlLoad(){ if (window.maplibregl) return Promise.resolve(); if (mlLoad._p) return mlLoad._p;
   mlLoad._p = new Promise((res, rej) => { const l = document.createElement("link"); l.rel = "stylesheet"; l.href = ML_SRC + "maplibre-gl.css"; document.head.append(l); const sc = document.createElement("script"); sc.src = ML_SRC + "maplibre-gl.js"; sc.onload = res; sc.onerror = () => { mlLoad._p = null; rej(new Error("maplibre")); }; document.head.append(sc); }); return mlLoad._p; }
 async function mlStyle(){
-  const light = document.body.classList.contains("light");
+  const light = document.body.classList.contains("light"), sum = document.body.classList.contains("summer");
   let src = {type: "vector", url: "https://tiles.openfreemap.org/planet"}, glyphs = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
-  try { const st = await (await fetch(window.__MLSTYLE || "https://tiles.openfreemap.org/styles/positron")).json(); const k = Object.keys(st.sources || {}).find(k => st.sources[k].type === "vector"); if (k) src = st.sources[k]; if (st.glyphs) glyphs = st.glyphs; } catch (e) {}
-  const C = light ? {bg: "#f4efe6", water: "#c3d6e6", ice: "#ffffff", wood: "rgba(150,170,120,.16)", bnd: "rgba(110,95,70,.5)", lab: "#8a7e69", halo: "#f4efe6", sh: "rgba(70,52,30,.5)", hi: "rgba(255,255,255,.4)"}
-    : {bg: "#0d1726", water: "#0b2336", ice: "rgba(220,235,255,.22)", wood: "rgba(60,110,80,.12)", bnd: "rgba(170,190,220,.32)", lab: "#8193b0", halo: "#0d1726", sh: "rgba(0,0,0,.6)", hi: "rgba(140,170,210,.16)"};
+  if (!mlStyle._b) { try { const st = await (await fetch(window.__MLSTYLE || "https://tiles.openfreemap.org/styles/positron")).json(); const k = Object.keys(st.sources || {}).find(k => st.sources[k].type === "vector"); mlStyle._b = {src: k ? st.sources[k] : src, glyphs: st.glyphs || glyphs}; } catch (e) { mlStyle._b = {src, glyphs}; } }
+  src = mlStyle._b.src; glyphs = mlStyle._b.glyphs;
+  const C = sum
+    ? (light ? {bg: "#f1e8d3", water: "#a9cfe2", ice: "#ffffff", wood: "rgba(84,148,86,.34)", grass: "rgba(150,190,98,.26)", bnd: "rgba(130,90,50,.55)", lab: "#7a6446", halo: "#f1e8d3", sh: "rgba(92,58,24,.5)", hi: "rgba(255,244,214,.55)", txt: "#3b2a1c"}
+      : {bg: "#17130d", water: "#12313c", ice: "rgba(255,238,210,.26)", wood: "rgba(76,140,78,.26)", grass: "rgba(130,170,84,.15)", bnd: "rgba(240,190,130,.35)", lab: "#b39b78", halo: "#17130d", sh: "rgba(0,0,0,.62)", hi: "rgba(255,196,120,.17)", txt: "#f6efe4"})
+    : light ? {bg: "#f4efe6", water: "#c3d6e6", ice: "#ffffff", wood: "rgba(150,170,120,.16)", grass: "rgba(0,0,0,0)", bnd: "rgba(110,95,70,.5)", lab: "#8a7e69", halo: "#f4efe6", sh: "rgba(70,52,30,.5)", hi: "rgba(255,255,255,.4)", txt: "#3b3326"}
+    : {bg: "#0d1726", water: "#0b2336", ice: "rgba(220,235,255,.22)", wood: "rgba(60,110,80,.12)", grass: "rgba(0,0,0,0)", bnd: "rgba(170,190,220,.32)", lab: "#8193b0", halo: "#0d1726", sh: "rgba(0,0,0,.6)", hi: "rgba(140,170,210,.16)", txt: "#dbe6f7"};
+  mlStyle.C = C;
   const F = ["Noto Sans Regular"];
   return {version: 8, glyphs, sources: {omt: src, dem: {type: "raster-dem", tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"], encoding: "terrarium", tileSize: 256, maxzoom: 12, attribution: "Teren: Mapzen / AWS"}}, layers: [
     {id: "bg", type: "background", paint: {"background-color": C.bg}},
     {id: "wood", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 7, filter: ["in", ["get", "class"], ["literal", ["wood", "forest"]]], paint: {"fill-color": C.wood}},
+    {id: "grass", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 6, filter: ["in", ["get", "class"], ["literal", ["grass", "farmland"]]], paint: {"fill-color": C.grass}},
     {id: "ice", type: "fill", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"fill-color": C.ice, "fill-opacity": .8}},
     {id: "water", type: "fill", source: "omt", "source-layer": "water", paint: {"fill-color": C.water}},
     {id: "hs", type: "hillshade", source: "dem", minzoom: 6, paint: {"hillshade-exaggeration": ["interpolate", ["linear"], ["zoom"], 6, 0, 8, .3, 12, .5], "hillshade-shadow-color": C.sh, "hillshade-highlight-color": C.hi, "hillshade-accent-color": "rgba(0,0,0,0)"}},
@@ -30,7 +36,7 @@ function mlData(){
   ["pm-l", "pu-l"].forEach(l => { if (ML.getLayer(l)) ML.setLayoutProperty(l, "visibility", showNames ? "visible" : "none"); });
 }
 function mlLayers(){
-  const light = document.body.classList.contains("light"), halo = light ? "#f4efe6" : "#0d1726", txt = light ? "#3b3326" : "#dbe6f7", F = ["Noto Sans Regular"];
+  const C = mlStyle.C || {}, halo = C.halo || "#0d1726", txt = C.txt || "#dbe6f7", F = ["Noto Sans Regular"];
   ML.addSource("pu", {type: "geojson", data: mlEmpty()});
   ML.addSource("pm", {type: "geojson", data: mlEmpty()});
   ML.addLayer({id: "pu-p", type: "circle", source: "pu", paint: {"circle-color": "rgba(122,168,255,.6)", "circle-radius": 5, "circle-stroke-color": "rgba(255,255,255,.35)", "circle-stroke-width": 1}});
@@ -48,16 +54,22 @@ async function mlStart(){
   svg.style.display = "none"; document.body.classList.add("mlon");
   ML = new maplibregl.Map({container: el, style, bounds: [[vb.x / COS, -(vb.y + vb.h)], [(vb.x + vb.w) / COS, -vb.y]], attributionControl: {compact: true}, dragRotate: false, pitchWithRotate: false, touchPitch: false, renderWorldCopies: true, maxZoom: 15});
   ML.touchZoomRotate.disableRotation();
-  ML.on("load", mlLayers);
+  ML.on("load", mlLayers); mlLegend();
   ML.on("moveend", () => { const b = ML.getBounds(); try { localStorage.setItem("skibeen.vb", JSON.stringify([b.getWest() * COS, -b.getNorth(), (b.getEast() - b.getWest()) * COS, b.getNorth() - b.getSouth()].map(n => +n.toFixed(3)))); } catch (e) {} });
   ML.on("click", e => { const p = e.point, f = ML.queryRenderedFeatures([[p.x - 14, p.y - 14], [p.x + 14, p.y + 14]], {layers: ["pm-p", "pu-p"]}); if (!f.length) return;
     const pm = f.find(x => x.layer.id === "pm-p"), x = pm || f[0];
     openSheet(x.properties.id); });
   ["pm-p", "pu-p"].forEach(l => { ML.on("mouseenter", l, () => ML.getCanvas().style.cursor = "pointer"); ML.on("mouseleave", l, () => ML.getCanvas().style.cursor = ""); });
 }
-function mlStop(){ document.body.classList.remove("mlon"); if (ML) { ML.remove(); ML = null; } const el = $("mlmap"); if (el) el.remove(); svg.style.display = ""; mapRefresh(); }
+function mlStop(){ { const i = $("mlinfo"), l = $("mlleg"); if (i) i.remove(); if (l) l.remove(); }  document.body.classList.remove("mlon"); if (ML) { ML.remove(); ML = null; } const el = $("mlmap"); if (el) el.remove(); svg.style.display = ""; mapRefresh(); }
 function mlSet(v){ mlOn = !!v; try { localStorage.setItem("skibeen.ml", mlOn ? "1" : "0"); } catch (e) {} if (mlOn) mlStart(); else mlStop(); }
 { const o = applyTheme; applyTheme = function(){ o(); try { if (ML) mlTheme(); } catch (e) {} }; }
+function mlLegend(){
+  let b = $("mlinfo"); if (!b) { b = document.createElement("button"); b.id = "mlinfo"; b.type = "button"; b.setAttribute("aria-label", "Legenda mapy"); b.textContent = "?"; $("v-mapa").append(b);
+    b.onclick = () => { let c = $("mlleg"); if (c) { c.remove(); return; } const C = mlStyle.C || {}, sw = (col, t, bd) => `<div><i style="background:${col}${bd ? ";border:1px solid " + bd : ""}"></i>${tr(t)}</div>`;
+      c = document.createElement("div"); c.id = "mlleg"; c.innerHTML = `<b>${tr("Co widać na mapie")}</b>` + sw(C.water, "Woda: jeziora i morza") + sw(C.wood, "Lasy") + (C.grass && C.grass !== "rgba(0,0,0,0)" ? sw(C.grass, "Łąki i pola") : "") + sw(C.ice, "Lodowce i śnieg", "rgba(120,140,170,.5)") + `<div><i class="mlsh"></i>${tr("Ciemniejsze stoki: strona zacieniona, czyli rzeźba gór. Jaśniejsze: strona oświetlona.")}</div>` + `<button type="button" class="btn sm" id="mllx">${tr("Zamknij")}</button>`;
+      $("v-mapa").append(c); $("mllx").onclick = () => c.remove(); }; }
+}
 function mlTheme(){ if (!ML) return; mlStyle().then(st => { if (!ML) return; ML.setStyle(st); ML.once("style.load", mlLayers); }); }
 function mapRefresh(){ if (ML) setTimeout(mlData, 0); legSync(); viewSync(); { if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){

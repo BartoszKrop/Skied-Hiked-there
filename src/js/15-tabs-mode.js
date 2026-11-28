@@ -90,7 +90,7 @@ function setMode(m){
   if (m === MODE) return;
   closeSheet(); MODE = m; syncVisits();
   const T = m === "w" ? WINTER : SUMMER; R = T.R; G = T.G; byId = m === "w" ? byIdW : byIdS;
-  document.body.classList.toggle("summer", m === "s"); flipUI();
+  document.body.classList.toggle("summer", m === "s"); flipUI(); try { if (ML) setTimeout(mlTheme, 0); } catch (e) {}
   document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
     document.querySelector('#nav button[data-t="ranking"]').style.display = m === "w" ? "" : "none";
   document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : ""; requestAnimationFrame(() => navPill(true));
