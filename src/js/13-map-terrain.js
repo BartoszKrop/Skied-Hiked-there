@@ -60,8 +60,6 @@ function mapInit(){
   new ResizeObserver(() => { const rc = svg.getBoundingClientRect(); if (rc.width) { vb.h = vb.w * rc.height / rc.width; applyVB(); } }).observe(svg);
 
   const toggleAll = () => {
-    const allOn = showAll && !lgOff.size && !filtN();
-    if (allOn) { showAll = false; legSync(); mapRefresh(); return; }
     fCountry = ""; fGroup = ""; fMinKm = 0; fMinEl = 0; fMinR = 0; fPrice = 0; fCat = ""; fFilm = ""; fWx = ""; fWd = 0; fWs = 0; fWc = 0; fStat = "all";
     [["fcountry", ""], ["fgroup", ""], ["fminkm", "0"], ["fminel", "0"], ["fminr", "0"], ["fcat", ""], ["fwx", ""], ["fwd", "0"], ["fws", "0"], ["fwc", "0"], ["fstat", "all"]].forEach(([i, v]) => { const e = $(i); if (e) { e.value = v; e.dispatchEvent(new Event("change")); } });
     lgOff.clear(); try { localStorage.setItem("sht-lgoff", ""); } catch (e) {} showAll = true;
@@ -177,7 +175,7 @@ function updateMapUI(){
   const show = !n && !hintDone && !hintSeen(); { const m2 = $("mall2"); if (m2) m2.style.display = showAll ? "none" : ""; }
   $("mapempty").style.display = show ? "flex" : "none";
   if (show) { const W = MODE === "w"; $("welh").textContent = W ? "Gdzie już zjechałeś?" : "Gdzie już byłeś w górach?"; $("wels").textContent = W ? "Zaznacz ośrodki, w których jeździłeś." : "Zaznacz miejsca i szlaki, które już zrobiłeś."; }
-  $("mall").textContent = (showAll && !lgOff.size && !filtN()) ? "Ukryj nieoznaczone" : "Pokaż wszystkie"; $("mall").style.display = ""; $("mfilt").innerHTML = IC.filt + " " + tr("Filtry") + (filtN() ? " · " + filtN() : ""); $("mfilt").classList.toggle("pri", !!filtN());
+  $("mall").textContent = tr("Usuń filtry"); $("mall").style.display = (!showAll || lgOff.size || filtN() || fStat !== "all") ? "" : "none"; $("mfilt").innerHTML = IC.filt + " " + tr("Filtry") + (filtN() ? " · " + filtN() : ""); $("mfilt").classList.toggle("pri", !!filtN());
 }
 function chipify(sl, lab){ const f = sl.closest(".fld"); if (!f) return; f.classList.add("chf"); sl.style.display = "none";
   const row = document.createElement("div"); row.className = "fchips"; [...sl.options].forEach((o, i) => { const b = document.createElement("button"); b.type = "button"; b.className = "fc2" + (o.value === sl.value ? " on" : ""); b.dataset.v = o.value; b.textContent = lab(o.textContent.trim(), i); row.append(b); });
