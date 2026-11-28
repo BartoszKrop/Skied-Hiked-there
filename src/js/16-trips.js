@@ -749,7 +749,9 @@ function pickTripFor(pid, hn){
   $("tpnew").onclick = () => { const x = {id: newTripId(), name: "Nowy wyjazd", from: "", to: "", note: "", items: [], dn: {}, costs: [], pack: [], cur: "zł", mode: MODE}; TRIPS.unshift(x); add(x); closeAccount(); tripOpen = x.id; show("wyjazdy"); };
 }
 
-function renderAll(){ renderHeader(); renderList(); renderTiers(); renderStats(); renderTrips(); mapRefresh(); updateFab(); }
+const mineDone = {};
+function mineDefault(){ try { if (RO || !store || !store.authed || mineDone[MODE] || !R.length) return; if (!R.some(r => marked(r.id))) return; mineDone[MODE] = true; if (fStat === "all") setFStat("mine"); } catch (e) {} }
+function renderAll(){ mineDefault(); renderHeader(); renderList(); renderTiers(); renderStats(); renderTrips(); mapRefresh(); updateFab(); }
 setInterval(() => { try { updateFab(); } catch (e) {} }, 60000);
 /* auto-aktualizacja: po powrocie do aplikacji sprawdź, czy jest nowsza wersja, i przeładuj */
 { let chk = 0; const upd = () => { const n = Date.now(); if (n - chk < 20000) return; chk = n;

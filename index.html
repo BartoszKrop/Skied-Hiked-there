@@ -55,7 +55,7 @@
   <section class="view" id="v-lista">
     <div class="toolbar"><div id="qsug" class="qsug"></div>
       <div style="display:flex;gap:8px;align-items:center"><input type="search" id="q" placeholder="Szukaj ośrodka, miejscowości, regionu…" autocomplete="off" style="flex:1;min-width:0"><button id="qvadd" class="btn pri" aria-label="Zgłoś brakujące miejsce" title="Zgłoś brakujące miejsce" style="display:none;flex:none;width:44px;height:44px;padding:0;font-size:22px;line-height:1;border-radius:12px">＋</button></div>
-      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
+      <div class="frowm"><select id="fstat" aria-label="Status"><option value="all">Wszystkie</option><option value="mine">Moje: byłem i planuję</option><option value="yes">Byłem</option><option value="plan">Planuję</option><option value="no">Nie byłem</option></select><select id="fcountry" aria-label="Kraj"></select><select id="fsort" aria-label="Sortowanie"><option value="k">Najwięksi</option><option value="n">A–Z</option><option value="c">Kraj</option><option value="mr">Moja ocena</option><option value="r">Ocena ogólna</option><option value="p">Priorytet planów</option><option value="fr">Wg znajomych</option><option value="_w" style="display:none">Wg pogody</option></select></div>
       <button class="fmore" id="fmore" type="button">Więcej filtrów<span id="fmoren"></span></button>
       <div id="fextra" style="display:none">
       <div class="row2" id="frow3"><select id="fgroup"></select></div>
@@ -86,7 +86,7 @@
 <div id="sheet"></div>
 
 <script src="assets/data.e758d3dd46.js"></script>
-<script src="assets/app.6d5b84a7ef.js"></script>
+<script src="assets/app.178b62d753.js"></script>
 <div id="splash"><div class="spw"><div class="spi"><img src="icon-192.png" alt="" width="104" height="104" decoding="sync"><i class="spr"></i><i class="spr r2"></i></div><div class="spt"><b>Mountained</b> there</div><div class="spg">Gdzie byłeś w górach?</div><div class="spb"><i></i></div></div></div><script>(function(){var sp=document.getElementById("splash"),h=document.documentElement;if(!sp)return;if(!h.classList.contains("spl")){sp.remove();return}
 var t0=Date.now(),app=0,sw=0,done=0,again=0;try{again=sessionStorage.getItem("skibeen.spl")==="1";sessionStorage.removeItem("skibeen.spl")}catch(e){}
 if(again)sp.classList.add("again");
