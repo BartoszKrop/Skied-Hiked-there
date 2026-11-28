@@ -41,7 +41,7 @@ async function wxAllLoad(){
   return WXL;
 }
 const passF = r => (fStat==="all" || (fStat==="mine" && (marked(r.id) || !!fQ)) || (fStat==="yes" && isVis(r.id)) || (fStat==="plan" && isPlan(r.id)) || (fStat==="no" && !visits[r.id]) || (fStat==="fp" && friendsPlan(r.id).length > 0) || (fStat==="tog" && isPlan(r.id) && friendsPlan(r.id).length > 0) || (fStat==="pfv" && isPlan(r.id) && !isVis(r.id) && friendsAt(r.id).length > 0) || (fStat==="fv" && !isVis(r.id) && friendsAt(r.id).length > 0)) && (!fCountry || r.c.split(",").includes(fCountry)) && (!fMinKm || r.k >= fMinKm) && (!fMinEl || (r.e || 0) >= fMinEl) && (!fGroup || !G[+fGroup] || G[+fGroup].m.includes(r.id)) && (!fMinR || (((rateOf(r.id) || {}).n || 0) > 0 && rateOf(r.id).a >= fMinR)) && (!fPrice || (MODE === "w" && priceTier(r) === fPrice)) && (!fCat || MODE === "w" || (r.cs || ["g"]).includes(fCat)) && (MODE === "w" || (filmMode ? ((r.fm || []).length > 0 && (!fFilm || r.fm.includes(fFilm))) : !r.fo)) && wxOk(r);
-const filtN = () => !!fCat + !!fWx + !!fWs + !!fWc + (fStat !== "all") + !!fCountry + !!fGroup + !!fMinKm + !!fMinEl + !!fMinR + !!fPrice;
+const filtN = () => !!fCat + !!fWx + !!fWs + !!fWc + (fStat !== "all" && fStat !== "mine") + !!fCountry + !!fGroup + !!fMinKm + !!fMinEl + !!fMinR + !!fPrice;
 function buildCountrySelect(){
   const cs = {}; R.forEach(r => r.c.split(",").forEach(c => cs[c] = (cs[c]||0) + 1));
   $("fcountry").innerHTML = `<option value="">Wszystkie kraje</option>` +
@@ -107,7 +107,7 @@ function emptyFix(){
   return `<br><button type="button" class="btn sm" id="efix" data-id="${best.id || ""}" data-d="${best.d == null ? "" : best.d}" data-q="${best.q ? 1 : ""}" style="margin-top:10px">Zdejmij: ${esc(best.t)} → ${best.n}</button>`;
 }
 function renderList(){ setTimeout(syncDD, 0);
-  { const n = filtN() - (fStat !== "all") - !!fCountry; const m = $("fmoren"); if (m) m.textContent = n > 0 ? " · " + n : ""; const b = $("fmore"); if (b) b.classList.toggle("act", n > 0); }
+  { const n = filtN() - (fStat !== "all" && fStat !== "mine") - !!fCountry; const m = $("fmoren"); if (m) m.textContent = n > 0 ? " · " + n : ""; const b = $("fmore"); if (b) b.classList.toggle("act", n > 0); }
   if (wxOn() && !WXL && Date.now() - WXFAIL > 6e4 && R.some(r => r.y != null && !wxa(r.id))) wxAllLoad().then(() => {});
   try { updMore(); } catch(e){}
   try { fChips(); } catch(e){}

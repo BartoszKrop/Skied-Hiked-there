@@ -167,7 +167,7 @@ function fChips(){
   const bx = $("mapfc"); if (!bx) return;
   const L = [["fstat", fStat, "all"], ["fcountry", fCountry, ""], ["fgroup", fGroup, ""], ["fcat", fCat, ""], ["fminr", fMinR, 0], ["fminkm", fMinKm, 0], ["fminel", fMinEl, 0], ["fprice", fPrice, 0], ["fwx", fWx, ""], ["fws", fWs, 0], ["fwc", fWc, 0]];
   const out = [];
-  if (!filmMode && !frMode) L.forEach(([id, v, d]) => { if (v === d || v === "" || v == null) return; const el = $(id); if (!el) return; const o = [...el.options].find(x => x.value === String(v)); if (!o) return; out.push(`<button type="button" class="fc2" data-id="${id}" data-d="${d}">${esc(o.textContent.trim())}<i>×</i></button>`); });
+  if (!filmMode && !frMode) L.forEach(([id, v, d]) => { if (v === d || v === "" || v == null || (id === "fstat" && v === "mine")) return; const el = $(id); if (!el) return; const o = [...el.options].find(x => x.value === String(v)); if (!o) return; out.push(`<button type="button" class="fc2" data-id="${id}" data-d="${d}">${esc(o.textContent.trim())}<i>×</i></button>`); });
   [bx, $("listfc")].forEach(x => { if (!x) return; x.innerHTML = out.join(""); x.style.display = out.length ? "flex" : "none";
     x.querySelectorAll(".fc2").forEach(b => b.onclick = () => { const el = $(b.dataset.id); el.value = b.dataset.d; el.dispatchEvent(new Event("change")); }); });
 }

@@ -802,3 +802,4 @@ body.light .szrow{background:rgba(255,190,70,.14);border-color:rgba(190,120,0,.3
 @media (prefers-reduced-motion:reduce){#tourask{animation:none}}
 .wpc{max-height:calc(100dvh - 40px);overflow:auto;padding-top:0}.wpbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 -20px 10px;padding:12px 16px 10px;background:var(--bg2);border-radius:22px 22px 0 0}
 .wpbar .wpskip{margin:0;padding:6px 2px}.wpbar .btn{margin:0;padding:8px 16px;font-weight:700}.wpc .wpr{padding-bottom:6px}
+.mapfc{left:12px;top:94px}body.wide .mapfc{top:54px;left:12px}
