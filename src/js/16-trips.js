@@ -780,8 +780,20 @@ function showInstBar(){
   const cp = $("instcp"); if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(location.href.split("#")[0]); cp.textContent = "Skopiowano ✓"; } catch(e){ cp.textContent = "Nie udało się"; } };
   $("instx").onclick = () => { hideInstBar(); try { localStorage.setItem("skibeen.instdismiss", "1"); } catch(e){} };
 }
-let instT = null; function scheduleInstBar(){ if (instT) return; instT = setTimeout(showInstBar, 25000); }
-if (isIOS()) scheduleInstBar();
+/* instrukcja instalacji pokazuje się 15 s po zakończeniu powitania i propozycji poradnika */
+let instT = null, instReady = false;
+function scheduleInstBar(){ if (instT || !instReady) return; instT = setTimeout(showInstBar, 15000); }
+function instAfterOnboarding(){ instReady = true; if (isIOS() || instPrompt) scheduleInstBar(); }
+function offerTour(fresh){
+  let seen = false; try { seen = localStorage.getItem("skibeen.tour") === "1"; } catch (e) {}
+  const has = Object.keys(wVisits).length + Object.keys(sVisits).length > 0;
+  if (RO || seen || (!fresh && has)) { instAfterOnboarding(); return; }
+  if ($("tourask")) return; const b = document.createElement("div"); b.id = "tourask"; b.setAttribute("role", "dialog");
+  b.innerHTML = `<button type="button" class="tax" aria-label="Zamknij">✕</button><b>Pokazać krótki poradnik?</b><span>Minuta i wiesz, jak używać aplikacji.</span><div><button type="button" class="btn pri sm tay">Pokaż</button><button type="button" class="btn sm tan">Nie, dzięki</button></div>`;
+  document.body.append(b);
+  const close = go => { try { localStorage.setItem("skibeen.tour", "1"); } catch (e) {} b.classList.add("out"); setTimeout(() => b.remove(), 200); if (go) startTour(true); else instAfterOnboarding(); };
+  b.querySelector(".tay").onclick = () => close(true); b.querySelector(".tan").onclick = () => close(false); b.querySelector(".tax").onclick = () => close(false);
+}
 $("gear").onclick = openSettings; $("frbtn").onclick = openFriends; $("bell").onclick = openInbox; $("acct").onclick = openAccount; updateAcct(); initListControls(); mapInit(); if (mlOn) setTimeout(() => { if (mlOn) mlStart(); }, 50); show(location.hash.slice(1) || "mapa"); setTimeout(welcomePick, 1200);
 try { if (localStorage.getItem(LSM) !== "w") setMode("s"); } catch(e){}
 document.querySelector('#nav button[data-t="wyjazdy"]').style.display = RO ? "none" : "";
@@ -792,14 +804,14 @@ try { applyTheme(); setTimeout(buildFx, 0); matchMedia('(prefers-color-scheme: l
 
 /* pierwsze uruchomienie: wybór zima / lato */
 function welcomePick(){
-  try { if (localStorage.getItem("skibeen.tour") === "1" || localStorage.getItem("skibeen.picked") === "1" || RO || Object.keys(wVisits).length + Object.keys(sVisits).length) { startTour(); return; } } catch (e) { startTour(); return; }
+  try { if (localStorage.getItem("skibeen.tour") === "1" || localStorage.getItem("skibeen.picked") === "1" || RO || Object.keys(wVisits).length + Object.keys(sVisits).length) { offerTour(false); return; } } catch (e) { offerTour(false); return; }
   if ($("wpick")) return; const o = document.createElement("div"); o.id = "wpick";
   o.innerHTML = `<div class="wpc"><h2>Od czego zaczynasz?</h2><p>Zaznaczasz miejsca, w których już byłeś, i planujesz kolejne.</p>
     <div class="wpg"><button data-m="w" class="wpw"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1 19.1 4.9M9 3l3 3 3-3M9 21l3-3 3 3M3 9l3 3-3 3M21 9l-3 3 3 3"/></svg><b>Zima</b><span>Ośrodki narciarskie</span></button>
     <button data-m="s" class="wps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 20 6.5-11 4 6.5 2.5-4L21 20z"/><circle cx="17" cy="5" r="2"/></svg><b>Lato</b><span>Góry i szlaki</span></button></div>
     <small>Tryb zmienisz w każdej chwili przełącznikiem u góry.</small></div>`;
   document.body.append(o);
-  const done = () => { o.classList.add("out"); setTimeout(() => { o.remove(); startTour(); }, 260); };
+  const done = () => { o.classList.add("out"); setTimeout(() => { o.remove(); offerTour(true); }, 260); };
   const finish = c => { fCountry = c; try { $("fcountry").value = c; } catch (x) {} mineDone[MODE] = false; renderAll(); mapRefresh(); done(); };
   const SEL = new Set();
   const step3 = () => {
