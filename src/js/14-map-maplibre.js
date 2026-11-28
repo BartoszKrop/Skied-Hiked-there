@@ -24,7 +24,7 @@ async function mlStyle(){
     {id: "ice", type: "fill", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"fill-color": C.ice, "fill-opacity": .8}},
     {id: "icel", type: "line", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"line-color": C.icel || "rgba(0,0,0,0)", "line-width": .8}},
     {id: "water", type: "fill", source: "omt", "source-layer": "water", paint: {"fill-color": C.water}},
-    {id: "hs", type: "hillshade", source: "dem", minzoom: 6, paint: {"hillshade-exaggeration": ["interpolate", ["linear"], ["zoom"], 6, 0, 8, light && !sum ? .5 : .3, 12, light && !sum ? .75 : .5], "hillshade-shadow-color": C.sh, "hillshade-highlight-color": C.hi, "hillshade-accent-color": "rgba(0,0,0,0)"}},
+    {id: "hs", type: "hillshade", source: "dem", minzoom: 7, paint: {"hillshade-exaggeration": ["interpolate", ["linear"], ["zoom"], 7, 0, 8.5, light && !sum ? .5 : .3, 12, light && !sum ? .75 : .5], "hillshade-shadow-color": C.sh, "hillshade-highlight-color": C.hi, "hillshade-accent-color": "rgba(0,0,0,0)"}},
     {id: "bnd", type: "line", source: "omt", "source-layer": "boundary", filter: ["all", ["<=", ["get", "admin_level"], 2], ["!=", ["get", "maritime"], 1]], paint: {"line-color": C.bnd, "line-width": ["interpolate", ["linear"], ["zoom"], 3, .6, 8, 1.4]}},
     {id: "wname", type: "symbol", source: "omt", "source-layer": "water_name", minzoom: 5, filter: ["!=", ["get", "class"], "river"], layout: {"text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]], "text-font": ["Noto Sans Italic"], "text-size": ["interpolate", ["linear"], ["zoom"], 5, 9.5, 7, 10.5, 12, 13], "text-letter-spacing": .06, "text-max-width": 7, "text-padding": 6}, paint: {"text-color": C.wlab, "text-halo-color": C.halo, "text-halo-width": 1.3}},
     {id: "peak", type: "symbol", source: "omt", "source-layer": "mountain_peak", minzoom: 11, layout: {"text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]], "text-font": F, "text-size": 10.5, "text-offset": [0, .6]}, paint: {"text-color": C.lab, "text-halo-color": C.halo, "text-halo-width": 1.2}},
@@ -34,12 +34,14 @@ const mlEmpty = () => ({type: "FeatureCollection", features: []});
 function mlData(){
   if (!ML || !ML.getSource("pm")) return;
   try { vbHeavy(true); } catch (e) {}
-  const on = [], off = [];
-  dots.forEach(d => { if (!d._show) return; const f = {type: "Feature", geometry: {type: "Point", coordinates: [d.r.x, d.r.y]}, properties: {id: d.r.id, n: dname(d.r), col: d._col || "#7aa8ff", sel: d._sel ? 1 : 0, k: d.r.k || 0}}; (d._on || d._sel ? on : off).push(f); });
+  const on = [], off = [], sg = [];
+  dots.forEach(d => { if (!d._show) return; sg.push(d.r.id + (d._col || "") + (d._sel ? "s" : "") + (d._on ? "o" : "")); const f = {type: "Feature", geometry: {type: "Point", coordinates: [d.r.x, d.r.y]}, properties: {id: d.r.id, n: dname(d.r), col: d._col || "#7aa8ff", sel: d._sel ? 1 : 0, k: d.r.k || 0}}; (d._on || d._sel ? on : off).push(f); });
+  const sig = sg.join("|") + (showNames ? "N" : "n") + (typeof LANG !== "undefined" ? LANG : ""); if (sig === mlData._sig && ML.getLayer("pm-p")) return; mlData._sig = sig;
   ML.getSource("pm").setData({type: "FeatureCollection", features: on}); ML.getSource("pu").setData({type: "FeatureCollection", features: off});
   ["pm-l", "pu-l"].forEach(l => { if (ML.getLayer(l)) ML.setLayoutProperty(l, "visibility", showNames ? "visible" : "none"); });
 }
 function mlLayers(){
+  mlData._sig = "";
   const C = mlStyle.C || {}, halo = C.halo || "#0d1726", txt = C.txt || "#dbe6f7", F = ["Noto Sans Regular"];
   ML.addSource("pu", {type: "geojson", data: mlEmpty()});
   ML.addSource("pm", {type: "geojson", data: mlEmpty()});
@@ -56,7 +58,7 @@ async function mlStart(){
   let el = $("mlmap"); if (!el) { el = document.createElement("div"); el.id = "mlmap"; svg.after(el); }
   const style = await stP; if (!mlOn) return;
   svg.style.display = "none"; document.body.classList.add("mlon");
-  ML = new maplibregl.Map({container: el, style, bounds: [[vb.x / COS, -(vb.y + vb.h)], [(vb.x + vb.w) / COS, -vb.y]], attributionControl: {compact: true}, dragRotate: false, pitchWithRotate: false, touchPitch: false, renderWorldCopies: true, maxZoom: 15});
+  ML = new maplibregl.Map({container: el, style, bounds: [[vb.x / COS, -(vb.y + vb.h)], [(vb.x + vb.w) / COS, -vb.y]], attributionControl: {compact: true}, dragRotate: false, pitchWithRotate: false, touchPitch: false, renderWorldCopies: true, maxZoom: 15, pixelRatio: Math.min(window.devicePixelRatio || 1, 2), fadeDuration: 120, refreshExpiredTiles: false});
   ML.touchZoomRotate.disableRotation();
   ML.on("load", mlEnsure); ML.on("styledata", mlEnsure); ML.on("idle", mlEnsure); ML.on("sourcedata", mlEnsure); ML.on("moveend", mlEnsure);
   ML.on("moveend", () => { const b = ML.getBounds(); try { localStorage.setItem("skibeen.vb", JSON.stringify([b.getWest() * COS, -b.getNorth(), (b.getEast() - b.getWest()) * COS, b.getNorth() - b.getSouth()].map(n => +n.toFixed(3)))); } catch (e) {} });
