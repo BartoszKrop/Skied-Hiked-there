@@ -430,7 +430,7 @@ function dpEnh(inp) {
   lab();
 }
 document.addEventListener("toggle", e => { const d = e.target; if (!d || d.tagName !== "DETAILS" || !d.open || Date.now() - (window.__rrT || 0) < 600) return; d.classList.add("anim"); setTimeout(() => d.classList.remove("anim"), 320); }, true);
-const APPV = "v250";
+const APPV = "v251";
 function settingsCard(){
   return `<div class="card"><h3>Ustawienia</h3><div class="fld"><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="tourbtn" type="button">Pokaż przewodnik</button><button class="btn sm" id="bugbtn" type="button">Zgłoś błąd lub pomysł</button></span></div><div class="fld"><label>JĘZYK / LANGUAGE / SPRACHE</label><select class="sel" id="langsel"><option value="pl">Polski</option><option value="en">English</option><option value="de">Deutsch</option></select></div><div class="fld"><label>MOTYW</label><div class="seg big" id="themeseg"><button data-v="auto">Jak w systemie</button><button data-v="light">Jasny</button><button data-v="dark">Ciemny</button></div></div><div class="fld"><label>MAPA</label><div class="seg big" id="mlseg"><button data-v="0">Klasyczna</button><button data-v="1">Nowa (test)</button></div><div class="small" style="margin-top:4px">Nowa mapa ma kontury lądów i cieniowanie gór po przybliżeniu. Jeśli przycina, wróć do klasycznej.</div></div>${(isStandalone() || !SBC) ? "" : `<div class="fld" style="margin-top:12px"><label>APLIKACJA</label><button class="btn" id="instset" style="width:100%">${IC.phone} Dodaj do ekranu głównego</button><div class="small" id="instmsg" style="margin-top:6px"></div></div>`}<div style="margin-top:10px"><button class="btn" id="lclose" style="width:100%">Zamknij</button></div><div class="small" style="opacity:.55;margin-top:10px;text-align:center">Wersja ${APPV}</div></div>`;
 }
@@ -945,7 +945,8 @@ function renderStats(){
       <div class="fld"><label>Wklej dane, żeby je wczytać (zastąpią obecne)</label><textarea id="bimp" placeholder='{"visits":{…},"hvisits":{…}}'></textarea></div>
       <button class="btn" id="bload">Wczytaj</button> <span class="small" id="bmsg"></span>
     </div>`}
-    <div class="small" style="margin:6px 4px 24px">Ośrodki: © współtwórcy OpenStreetMap / OpenSkiMap (licencja ODbL); długości tras bywają zaniżone tam, gdzie mapowanie jest niepełne. Szlaki letnie to ręcznie wybrana lista orientacyjna, czasy i trudność sprawdź w mapach turystycznych przed wyjściem.</div>`;
+    <div class="small" style="margin:6px 4px 24px">Ośrodki: © współtwórcy OpenStreetMap / OpenSkiMap (licencja ODbL); długości tras bywają zaniżone tam, gdzie mapowanie jest niepełne. Szlaki letnie to ręcznie wybrana lista orientacyjna, czasy i trudność sprawdź w mapach turystycznych przed wyjściem.</div>
+    <div class="small" style="margin:-14px 4px 24px">Mapy: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:var(--accent)">współtwórcy OpenStreetMap</a> (ODbL), kafelki <a href="https://openfreemap.org" target="_blank" rel="noopener" style="color:var(--accent)">OpenFreeMap</a>, dane <a href="https://openmaptiles.org" target="_blank" rel="noopener" style="color:var(--accent)">OpenMapTiles</a>, ukształtowanie terenu: Mapzen / AWS Terrain Tiles.</div>`;
   $("rkpick").onchange = e => { statRank[com ? ck : MODE] = e.target.value; renderStats(); };
   { const pm = $("pgmore"); if (pm) pm.onclick = () => { RKOPEN["pgc" + MODE] = !RKOPEN["pgc" + MODE]; renderStats(); }; }
   { const mb = $("rkmore"); if (mb) mb.onclick = () => { RKOPEN[mb.dataset.k] = !RKOPEN[mb.dataset.k]; renderStats(); }; }

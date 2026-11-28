@@ -809,3 +809,4 @@ body.light .szrow{background:rgba(255,190,70,.14);border-color:rgba(190,120,0,.3
 body.mlon .maplibregl-ctrl-attrib{display:none!important}
 #mlinfo{position:static;width:auto;height:auto;border-radius:12px;box-shadow:none;font:inherit;font-weight:700;min-width:34px}
 #mlleg{right:auto;left:12px;bottom:auto;top:140px}#mlleg .mlat{display:block;font-size:11px;color:var(--mute);line-height:1.4}#mlleg .mlat a{color:var(--accent)}
+#mlinfo,#mlleg{display:none!important}

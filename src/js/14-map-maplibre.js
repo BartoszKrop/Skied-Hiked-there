@@ -56,22 +56,16 @@ async function mlStart(){
   svg.style.display = "none"; document.body.classList.add("mlon");
   ML = new maplibregl.Map({container: el, style, bounds: [[vb.x / COS, -(vb.y + vb.h)], [(vb.x + vb.w) / COS, -vb.y]], attributionControl: {compact: true}, dragRotate: false, pitchWithRotate: false, touchPitch: false, renderWorldCopies: true, maxZoom: 15});
   ML.touchZoomRotate.disableRotation();
-  ML.on("load", mlLayers); mlLegend();
+  ML.on("load", mlLayers);
   ML.on("moveend", () => { const b = ML.getBounds(); try { localStorage.setItem("skibeen.vb", JSON.stringify([b.getWest() * COS, -b.getNorth(), (b.getEast() - b.getWest()) * COS, b.getNorth() - b.getSouth()].map(n => +n.toFixed(3)))); } catch (e) {} });
   ML.on("click", e => { const p = e.point, f = ML.queryRenderedFeatures([[p.x - 14, p.y - 14], [p.x + 14, p.y + 14]], {layers: ["pm-p", "pu-p"]}); if (!f.length) return;
     const pm = f.find(x => x.layer.id === "pm-p"), x = pm || f[0];
     openSheet(x.properties.id); });
   ["pm-p", "pu-p"].forEach(l => { ML.on("mouseenter", l, () => ML.getCanvas().style.cursor = "pointer"); ML.on("mouseleave", l, () => ML.getCanvas().style.cursor = ""); });
 }
-function mlStop(){ { const i = $("mlinfo"), l = $("mlleg"); if (i) i.remove(); if (l) l.remove(); }  document.body.classList.remove("mlon"); if (ML) { ML.remove(); ML = null; } const el = $("mlmap"); if (el) el.remove(); svg.style.display = ""; mapRefresh(); }
+function mlStop(){  document.body.classList.remove("mlon"); if (ML) { ML.remove(); ML = null; } const el = $("mlmap"); if (el) el.remove(); svg.style.display = ""; mapRefresh(); }
 function mlSet(v){ mlOn = !!v; try { localStorage.setItem("skibeen.ml", mlOn ? "1" : "0"); } catch (e) {} if (mlOn) mlStart(); else mlStop(); }
 { const o = applyTheme; applyTheme = function(){ o(); try { if (ML) mlTheme(); } catch (e) {} }; }
-function mlLegend(){
-  let b = $("mlinfo"); if (!b) { b = document.createElement("button"); b.id = "mlinfo"; b.type = "button"; b.className = "btn sm"; b.setAttribute("aria-label", "Legenda mapy"); b.title = "Legenda mapy"; b.textContent = "?"; document.querySelector(".mapchips2").append(b);
-    b.onclick = () => { let c = $("mlleg"); if (c) { c.remove(); return; } const C = mlStyle.C || {}, sw = (col, t, bd) => `<div><i style="background:${col}${bd ? ";border:1px solid " + bd : ""}"></i>${tr(t)}</div>`;
-      c = document.createElement("div"); c.id = "mlleg"; c.innerHTML = `<b>${tr("Co widać na mapie")}</b>` + sw(C.water, "Woda: jeziora i morza") + sw(C.wood, "Lasy") + (C.grass && C.grass !== "rgba(0,0,0,0)" ? sw(C.grass, "Łąki i pola") : "") + sw(C.ice, "Lodowce i śnieg", "rgba(120,140,170,.5)") + `<div><i class="mlsh"></i>${tr("Ciemniejsze stoki: strona zacieniona, czyli rzeźba gór. Jaśniejsze: strona oświetlona.")}</div>` + `<div class="mlat">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://openmaptiles.org" target="_blank" rel="noopener">OpenMapTiles</a> · ${tr("Teren")}: Mapzen / AWS</div>` + `<button type="button" class="btn sm" id="mllx">${tr("Zamknij")}</button>`;
-      $("v-mapa").append(c); $("mllx").onclick = () => c.remove(); }; }
-}
 function mlTheme(){ if (!ML) return; mlStyle().then(st => { if (!ML) return; ML.setStyle(st); ML.once("style.load", mlLayers); }); }
 function mapRefresh(){ if (ML) setTimeout(mlData, 0); legSync(); viewSync(); { if (frMode && !Object.keys(FRD).length) frMode = false; } if (dots.length) { applyVB(); updateMapUI(); } paintCountries(); }
 function zoomAt(f, ctr){
