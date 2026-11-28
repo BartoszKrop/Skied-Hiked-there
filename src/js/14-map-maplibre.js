@@ -11,7 +11,7 @@ async function mlStyle(){
   const C = sum
     ? (light ? {bg: "#f1e8d3", water: "#a9cfe2", ice: "#ffffff", wood: "rgba(84,148,86,.34)", grass: "rgba(150,190,98,.26)", bnd: "rgba(130,90,50,.55)", lab: "#7a6446", halo: "#f1e8d3", sh: "rgba(92,58,24,.5)", hi: "rgba(255,244,214,.55)", txt: "#3b2a1c"}
       : {bg: "#17130d", water: "#12313c", ice: "rgba(255,238,210,.26)", wood: "rgba(76,140,78,.26)", grass: "rgba(130,170,84,.15)", bnd: "rgba(240,190,130,.35)", lab: "#b39b78", halo: "#17130d", sh: "rgba(0,0,0,.62)", hi: "rgba(255,196,120,.17)", txt: "#f6efe4"})
-    : light ? {bg: "#f4efe6", water: "#c3d6e6", ice: "#ffffff", wood: "rgba(150,170,120,.16)", grass: "rgba(0,0,0,0)", bnd: "rgba(110,95,70,.5)", lab: "#8a7e69", halo: "#f4efe6", sh: "rgba(70,52,30,.5)", hi: "rgba(255,255,255,.4)", txt: "#3b3326"}
+    : light ? {bg: "#e8eef5", water: "#9fc3e4", ice: "#ffffff", icel: "rgba(70,110,160,.55)", wood: "rgba(88,138,112,.3)", grass: "rgba(0,0,0,0)", bnd: "rgba(60,80,115,.62)", lab: "#44556f", halo: "#eef3f9", sh: "rgba(36,58,92,.6)", hi: "rgba(255,255,255,.75)", txt: "#1f2c42"}
     : {bg: "#0d1726", water: "#0b2336", ice: "rgba(220,235,255,.22)", wood: "rgba(60,110,80,.12)", grass: "rgba(0,0,0,0)", bnd: "rgba(170,190,220,.32)", lab: "#8193b0", halo: "#0d1726", sh: "rgba(0,0,0,.6)", hi: "rgba(140,170,210,.16)", txt: "#dbe6f7"};
   mlStyle.C = C;
   const F = ["Noto Sans Regular"];
@@ -20,8 +20,9 @@ async function mlStyle(){
     {id: "wood", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 7, filter: ["in", ["get", "class"], ["literal", ["wood", "forest"]]], paint: {"fill-color": C.wood}},
     {id: "grass", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 6, filter: ["in", ["get", "class"], ["literal", ["grass", "farmland"]]], paint: {"fill-color": C.grass}},
     {id: "ice", type: "fill", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"fill-color": C.ice, "fill-opacity": .8}},
+    {id: "icel", type: "line", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"line-color": C.icel || "rgba(0,0,0,0)", "line-width": .8}},
     {id: "water", type: "fill", source: "omt", "source-layer": "water", paint: {"fill-color": C.water}},
-    {id: "hs", type: "hillshade", source: "dem", minzoom: 6, paint: {"hillshade-exaggeration": ["interpolate", ["linear"], ["zoom"], 6, 0, 8, .3, 12, .5], "hillshade-shadow-color": C.sh, "hillshade-highlight-color": C.hi, "hillshade-accent-color": "rgba(0,0,0,0)"}},
+    {id: "hs", type: "hillshade", source: "dem", minzoom: 6, paint: {"hillshade-exaggeration": ["interpolate", ["linear"], ["zoom"], 6, 0, 8, light && !sum ? .5 : .3, 12, light && !sum ? .75 : .5], "hillshade-shadow-color": C.sh, "hillshade-highlight-color": C.hi, "hillshade-accent-color": "rgba(0,0,0,0)"}},
     {id: "bnd", type: "line", source: "omt", "source-layer": "boundary", filter: ["all", ["<=", ["get", "admin_level"], 2], ["!=", ["get", "maritime"], 1]], paint: {"line-color": C.bnd, "line-width": ["interpolate", ["linear"], ["zoom"], 3, .6, 8, 1.4]}},
     {id: "peak", type: "symbol", source: "omt", "source-layer": "mountain_peak", minzoom: 11, layout: {"text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]], "text-font": F, "text-size": 10.5, "text-offset": [0, .6]}, paint: {"text-color": C.lab, "text-halo-color": C.halo, "text-halo-width": 1.2}},
     {id: "country", type: "symbol", source: "omt", "source-layer": "place", maxzoom: 6, filter: ["==", ["get", "class"], "country"], layout: {"text-field": ["coalesce", ["get", "name:" + (LANG === "pl" ? "pl" : LANG)], ["get", "name:latin"], ["get", "name"]], "text-font": F, "text-size": 11, "text-transform": "uppercase", "text-letter-spacing": .12}, paint: {"text-color": C.lab, "text-halo-color": C.halo, "text-halo-width": 1.2}}]};
