@@ -3,10 +3,12 @@ let ML = null, mlOn = false; try { mlOn = localStorage.getItem("skibeen.ml") ===
 const ML_SRC = window.__MLSRC || "https://cdn.jsdelivr.net/npm/maplibre-gl@5/dist/";
 function mlLoad(){ if (window.maplibregl) return Promise.resolve(); if (mlLoad._p) return mlLoad._p;
   mlLoad._p = new Promise((res, rej) => { const l = document.createElement("link"); l.rel = "stylesheet"; l.href = ML_SRC + "maplibre-gl.css"; document.head.append(l); const sc = document.createElement("script"); sc.src = ML_SRC + "maplibre-gl.js"; sc.onload = res; sc.onerror = () => { mlLoad._p = null; rej(new Error("maplibre")); }; document.head.append(sc); }); return mlLoad._p; }
+if (mlOn) { try { mlLoad().catch(() => {}); } catch (e) {} }
 async function mlStyle(){
   const light = document.body.classList.contains("light"), sum = document.body.classList.contains("summer");
   let src = {type: "vector", url: "https://tiles.openfreemap.org/planet"}, glyphs = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
-  if (!mlStyle._b) { try { const st = await (await fetch(window.__MLSTYLE || "https://tiles.openfreemap.org/styles/positron")).json(); const k = Object.keys(st.sources || {}).find(k => st.sources[k].type === "vector"); mlStyle._b = {src: k ? st.sources[k] : src, glyphs: st.glyphs || glyphs}; } catch (e) { mlStyle._b = {src, glyphs}; } }
+  if (!mlStyle._b) { try { const c = JSON.parse(localStorage.getItem("skibeen.mlb") || "null"); if (c && c.t > Date.now() - 864e5 && c.b && c.b.src) { mlStyle._b = c.b; } } catch (e) {}
+  if (!mlStyle._b) { try { const st = await (await fetch(window.__MLSTYLE || "https://tiles.openfreemap.org/styles/positron")).json(); const k = Object.keys(st.sources || {}).find(k => st.sources[k].type === "vector"); mlStyle._b = {src: k ? st.sources[k] : src, glyphs: st.glyphs || glyphs}; try { localStorage.setItem("skibeen.mlb", JSON.stringify({t: Date.now(), b: mlStyle._b})); } catch (e) {} } catch (e) { mlStyle._b = {src, glyphs}; } }
   src = mlStyle._b.src; glyphs = mlStyle._b.glyphs;
   const C = sum
     ? (light ? {bg: "#f1e8d3", wlab: "#2f6f8e", water: "#9cc8de", ice: "#ffffff", wood: "rgba(84,148,86,.34)", grass: "rgba(150,190,98,.26)", bnd: "rgba(120,80,40,.78)", lab: "#7a6446", halo: "#f1e8d3", sh: "rgba(92,58,24,.5)", hi: "rgba(255,244,214,.55)", txt: "#3b2a1c"}
@@ -50,9 +52,9 @@ function mlLayers(){
 }
 async function mlStart(){
   if (ML) return; const box = $("v-mapa"); if (!box) return;
-  try { await mlLoad(); } catch (e) { toast("Nie udało się wczytać nowej mapy"); return; }
+  const stP = mlStyle(); try { await mlLoad(); } catch (e) { toast("Nie udało się wczytać nowej mapy"); return; }
   let el = $("mlmap"); if (!el) { el = document.createElement("div"); el.id = "mlmap"; svg.after(el); }
-  const style = await mlStyle(); if (!mlOn) return;
+  const style = await stP; if (!mlOn) return;
   svg.style.display = "none"; document.body.classList.add("mlon");
   ML = new maplibregl.Map({container: el, style, bounds: [[vb.x / COS, -(vb.y + vb.h)], [(vb.x + vb.w) / COS, -vb.y]], attributionControl: {compact: true}, dragRotate: false, pitchWithRotate: false, touchPitch: false, renderWorldCopies: true, maxZoom: 15});
   ML.touchZoomRotate.disableRotation();
