@@ -19,7 +19,7 @@ async function mlStyle(){
   const F = ["Noto Sans Regular"];
   return {version: 8, glyphs, sources: {omt: src, dem: {type: "raster-dem", tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"], encoding: "terrarium", tileSize: 256, maxzoom: 12, attribution: "Teren: Mapzen / AWS"}}, layers: [
     {id: "bg", type: "background", paint: {"background-color": C.bg}},
-    {id: "wood", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 7, filter: ["in", ["get", "class"], ["literal", ["wood", "forest"]]], paint: {"fill-color": C.wood}},
+    {id: "wood", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 6, filter: ["in", ["get", "class"], ["literal", ["wood", "forest"]]], paint: {"fill-color": C.grass}},
     {id: "grass", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 6, filter: ["in", ["get", "class"], ["literal", ["grass", "farmland"]]], paint: {"fill-color": C.grass}},
     {id: "ice", type: "fill", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"fill-color": C.ice, "fill-opacity": .8}},
     {id: "icel", type: "line", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"line-color": C.icel || "rgba(0,0,0,0)", "line-width": .8}},
