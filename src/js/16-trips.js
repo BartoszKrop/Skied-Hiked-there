@@ -817,9 +817,9 @@ function welcomePick(){
   const step3 = () => {
     const W = MODE === "w", sc = r => W ? (r.k || 0) : (r.hikes || []).filter(h => !h.del).length, box = o.querySelector(".wpc"), cs = [...SEL]; let n = 0;
     const sect = c => `<div class="wph">${flag(c)} ${esc(cname(c))}</div>` + R.filter(r => r.c.split(",")[0] === c).sort((x, y) => sc(y) - sc(x)).slice(0, cs.length > 3 ? 6 : 8).map(r => `<button type="button" class="wpi${isVis(r.id) ? " on" : ""}" data-id="${esc(r.id)}"><span><b>${esc(r.n)}</b><small>${W ? Math.round(r.k || 0) + " km" : sc(r) + " " + plur(sc(r), "szlak", "szlaki", "szlaków")}</small></span><i>✓</i></button>`).join("");
-    box.innerHTML = `<h2>${tr("Gdzie już byłeś?")}</h2><p>${tr(W ? "Zaznacz tyle ośrodków, ile chcesz." : "Zaznacz tyle miejsc, ile chcesz.")}</p>
+    box.innerHTML = `<div class="wpbar"><button type="button" class="wpskip" data-back="1">${tr("← Wróć")}</button><button type="button" class="btn pri sm wpdone">${tr("Gotowe")} ✓</button></div><h2>${tr("Gdzie już byłeś?")}</h2><p>${tr(W ? "Zaznacz tyle ośrodków, ile chcesz." : "Zaznacz tyle miejsc, ile chcesz.")}</p>
       <div class="wpl">${cs.map(sect).join("")}</div>
-      <button type="button" class="btn pri wpdone" style="width:100%;margin-top:12px">${tr("Gotowe")}</button><button type="button" class="wpskip" data-back="1">${tr("← Wróć do krajów")}</button>`;
+`;
     box.onclick = e => { const it = e.target.closest(".wpi"); if (it) { const id = it.dataset.id; if (isVis(id)) { if (visits[id] && Object.keys(visits[id]).length <= 6) delete visits[id]; else visits[id].s = "n"; } else visits[id] = Object.assign(newEntry("v"), {s: "v"}); it.classList.toggle("on", isVis(id)); n++; scheduleSave(); return; }
       if (e.target.closest("[data-back]")) { step2(); return; } if (e.target.closest(".wpdone")) { if (n) track("start-zaznaczone-" + n); finish(cs.length === 1 ? cs[0] : ""); } };
   };
@@ -827,13 +827,13 @@ function welcomePick(){
     const W = MODE === "w", sc = {}; R.forEach(r => r.c.split(",").forEach(c => { sc[c] = (sc[c] || 0) + (W ? 1 : ((r.hikes || []).filter(h => !h.del).length || 1)); }));
     const pop = ["PL", "AT", "CH", "IT", "FR", "DE", "SI"].concat(W ? [] : ["NZ", "CA", "KG", "IS", "NO", "US"]).filter(c => sc[c]), rest = Object.keys(sc).filter(c => !pop.includes(c)).sort((a, b) => sc[b] - sc[a] || cname(a).localeCompare(cname(b), "pl"));
     const tile = c => `<button type="button" data-c="${esc(c)}" class="wpt${SEL.has(c) ? " on" : ""}"><i>${flag(c)}</i><b>${esc(cname(c))}</b></button>`;
-    o.querySelector(".wpc").innerHTML = `<h2>${tr("Gdzie najczęściej?")}</h2><p>${tr("Wybierz jeden kraj albo kilka. Potem zaznaczysz największe miejsca.")}</p>
+    o.querySelector(".wpc").innerHTML = `<div class="wpbar"><button type="button" class="wpskip" data-skip="1">${tr("Pomiń")}</button><button type="button" class="btn pri sm wpnext"${SEL.size ? "" : " disabled"}>${tr("Idź dalej")}${SEL.size ? " (" + SEL.size + ")" : ""} →</button></div><h2>${tr("Gdzie najczęściej?")}</h2><p>${tr("Wybierz jeden kraj albo kilka. Potem zaznaczysz największe miejsca.")}</p>
       <div class="wpg wpg3">${pop.map(tile).join("")}</div>
       ${rest.length ? `<div class="wph2">${tr("Pozostałe kraje")}</div><div class="wpr">${rest.map(c => `<button type="button" class="wpq${SEL.has(c) ? " on" : ""}" data-c="${esc(c)}">${flag(c)} ${esc(cname(c))}</button>`).join("")}</div>` : ""}
-      <button type="button" class="btn pri wpnext" style="width:100%;margin-top:12px"${SEL.size ? "" : " disabled"}>${tr("Idź dalej")}${SEL.size ? " (" + SEL.size + ")" : ""}</button><button type="button" class="wpskip" data-skip="1">${tr("Pomiń")}</button>`;
+`;
     const box = o.querySelector(".wpc"), nx = box.querySelector(".wpnext");
     box.onclick = e => { if (e.target.closest("[data-skip]")) { finish(""); return; } if (e.target.closest(".wpnext")) { if (SEL.size) step3(); return; }
-      const b = e.target.closest("button[data-c]"); if (!b) return; const c = b.dataset.c; if (SEL.has(c)) SEL.delete(c); else SEL.add(c); b.classList.toggle("on", SEL.has(c)); nx.disabled = !SEL.size; nx.textContent = tr("Idź dalej") + (SEL.size ? " (" + SEL.size + ")" : ""); };
+      const b = e.target.closest("button[data-c]"); if (!b) return; const c = b.dataset.c; if (SEL.has(c)) SEL.delete(c); else SEL.add(c); b.classList.toggle("on", SEL.has(c)); nx.disabled = !SEL.size; nx.textContent = tr("Idź dalej") + (SEL.size ? " (" + SEL.size + ")" : "") + " →"; };
   };
   o.onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; try { localStorage.setItem("skibeen.picked", "1"); } catch (x) {} track("start-" + (b.dataset.m === "w" ? "zima" : "lato")); setMode(b.dataset.m); o.onclick = null; step2(); };
 }
