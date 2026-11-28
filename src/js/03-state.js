@@ -167,7 +167,6 @@ function hikeFriends(r, i, v){
   if (done.length) h += `<span class="fc ${meD ? "nv" : me ? "pv" : "fr"}">byli: ${done.slice(0, 4).map(x => "@" + esc(x.u) + (x.st ? " ★" + x.st : "")).join(", ")}${done.length > 4 ? " +" + (done.length - 4) : ""}</span>`;
   if (plan.length) h += `<span class="fc pl${me ? " both" : ""}">${me ? "🤝 razem: " : "chcą: "}${nickList(plan)}</span>`;
   h += `</div>`;
-  done.filter(x => x.hn).slice(0, 2).forEach(x => { h += `<div class="small" data-nt style="white-space:pre-wrap;margin:2px 0">${IC.note} <b>@${esc(x.u)}</b>: ${esc(x.hn.length > 140 ? x.hn.slice(0, 139) + "…" : x.hn)}</div>`; });
   return h;
 }
 async function loadFriendsData(){

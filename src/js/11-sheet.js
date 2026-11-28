@@ -27,12 +27,37 @@ function setHikeRating(i, n){
   if (v.hr[i] === n) delete v.hr[i]; else v.hr[i] = n;
   scheduleSave(); renderAll(); renderSheet();
 }
-let szOpenSk = null; const hkOpen = new Set();
+let szOpenSk = null; const hkOpen = new Set(), hkMore = new Set(), hkAll = new Set(), HOP = {};
+const GEAR = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>';
+async function loadHikeOps(pid){
+  if (RO || !(SBC && store.sb && store.authed)) return; const o = HOP[pid]; if (o && Date.now() - o.t < 120000) return; HOP[pid] = {t: Date.now(), list: o ? o.list : []};
+  try { const r = await store.sb.rpc("get_hike_opinions", {pid}); if (r.error) throw r.error; HOP[pid] = {t: Date.now(), list: r.data || []}; if (curId === pid) renderSheet(); } catch (e) {}
+}
+function hikeOps(r, i){
+  const me = String((store.prof && store.prof.username) || "").toLowerCase(), seen = new Set(), fr = [], ot = [];
+  Object.keys(FRD).forEach(f => { const e = frEntry(f, r.id); if (!e) return; const st = (e.hr && e.hr[i]) || 0, hn = ((e.hn && e.hn[i]) || "").trim(); if (st || hn) { fr.push({u: f, st, hn}); seen.add(f.toLowerCase()); } });
+  ((HOP[r.id] || {}).list || []).forEach(x => { if (+x.hike !== i) return; const u = String(x.username || "").toLowerCase(); if (!u || u === me || seen.has(u)) return; const hn = String(x.note || "").trim(), st = +x.rating || 0; if (!st && !hn) return; seen.add(u); ot.push({u: x.username, st, hn}); });
+  return {fr, ot};
+}
+function hikeOpsHtml(r, i, k){
+  const o = hikeOps(r, i), all = [...o.fr.map(x => [x, 1]), ...o.ot.map(x => [x, 0])]; if (!all.length) return "";
+  const n = hkMore.has(k) ? 99 : 4, row = a => `<div class="hop"><b class="nick" data-u="${esc(a[0].u)}">@${esc(a[0].u)}</b>${a[1] ? ` <span class="hopf">znajomy</span>` : ""}${a[0].st ? ` <span class="hkmy">${"★".repeat(a[0].st)}</span>` : ""}${a[0].hn ? `<div class="small" data-nt style="white-space:pre-wrap">${esc(a[0].hn)}</div>` : ""}</div>`;
+  return `<div class="hops"><div class="small frh">Opinie · ${all.length}</div>${all.slice(0, n).map(row).join("")}${all.length > n ? `<button type="button" class="btn sm hopmore" data-k="${esc(k)}">Pokaż kolejne (${all.length - n})</button>` : ""}</div>`;
+}
 function toggleSz(sk){
   if (!visits[curId]) visits[curId] = newEntry("v");
   const v = visits[curId]; v.s = "v"; v.sz = v.sz || {};
   if (v.sz[sk]) delete v.sz[sk]; else v.sz[sk] = {r: 0};
   scheduleSave(); renderAll(); renderSheet();
+}
+function openSzPop(sk){
+  const v = visits[curId], z = v && v.sz && v.sz[sk];
+  ovBox().innerHTML = `<div class="card szpop"><div class="szpe">🥧</div><h3>Szarlotka</h3><div class="sub">${esc(sk)}</div>
+    <button type="button" class="szb big ${z ? "on" : ""}" id="szt">${z ? "Jadłem ✓" : "Jadłem?"}</button>
+    ${z ? `<div class="szr"><span class="small">Twoja ocena</span><span class="szs">${[1, 2, 3, 4, 5].map(k => `<button type="button" data-i="${k}" aria-label="${k} z 5" class="${(z.r || 0) >= k ? "on" : ""}">★</button>`).join("")}</span></div>` : ""}
+    <button class="btn" id="szx" style="width:100%;margin-top:12px">Gotowe</button></div>`;
+  $("szx").onclick = closeAccount; $("szt").onclick = () => { toggleSz(sk); openSzPop(sk); };
+  document.querySelectorAll(".szpop .szs button").forEach(b => b.onclick = () => { setSzRating(sk, +b.dataset.i); openSzPop(sk); });
 }
 function setSzRating(sk, n){
   const v = visits[curId]; if (!v || !v.sz || !v.sz[sk]) return;
@@ -55,8 +80,11 @@ function renderSheet(){
   const opblock = !showOp ? "" : `<div class="sect"><div class="sh" style="justify-content:flex-start;gap:10px"><b>Opinie</b>${ratingLine(r.id)}</div><div id="opfr">${friendsHtml(r.id)}</div><div id="opsec">${opinionsHtml(r.id)}</div></div>`;
   const secOn = r.id === "h-camino";
   let lastSec = null, lastDf = -2;
+  const hkMarked = W ? 0 : r.hikes.filter((h, i) => !h.del && v && ((v.done && v.done[i]) || (v.hp && v.hp[i]))).length, hkTotal = W ? 0 : r.hikes.filter(h => !h.del).length;
+  const hkFilt = !W && !RO && store.authed && hkMarked > 0 && hkMarked < hkTotal && !hkAll.has(r.id);
   const hikeCards = W ? "" : hikeOrder(r).map(i => { const h = r.hikes[i]; if (h.del) return "";
     const d = !!(v && v.done[i]), pl = !!(v && v.hp && v.hp[i]); if (RO && !d) return "";
+    if (hkFilt && !d && !pl) return "";
     const onlyPlan = !!(v && v.s === "p");
     const dfi = DIFF.indexOf(h.d), dfh = (!secOn && dfi !== lastDf && r.hikes.length > 3) ? `<div class="small dfh" style="margin:12px 0 4px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">${["Łatwe", "Średnie", "Trudne"][dfi < 0 ? 1 : dfi]}</div>` : ""; if (!secOn) lastDf = dfi;
     const sh = dfh + ((secOn && h.s && h.s !== lastSec) ? `<div class="small" style="margin:12px 0 6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase">${esc(h.s)}</div>` : ""); if (secOn && h.s) lastSec = h.s;
@@ -66,17 +94,17 @@ function renderSheet(){
     const q = RATEH[r.id] && RATEH[r.id][i], avg = (q && q.n) ? `<span class="hkavg">★ ${fmtAvg(q.a)} <i>(${q.n})</i></span>` : "";
     const myR = (d && v.hr && v.hr[i]) ? `<span class="hkmy">${"★".repeat(v.hr[i])}</span>` : "";
     const ate = !!(h.sk && v && v.sz && v.sz[h.sk]);
-    const frH = hikeFriends(r, i, v);
-    const szRow = (!RO && h.sk && ate) ? `<div class="szrow" style="margin:6px 0"><span style="flex:1;min-width:120px">🥧 Twoja ocena szarlotki</span><span class="szs">${[1,2,3,4,5].map(k => `<button data-sk="${esc(h.sk)}" data-i="${k}" class="${((v.sz[h.sk].r||0)>=k)?"on":""}">★</button>`).join("")}</span></div>` : "";
-    const szBtn = (!RO && h.sk) ? `<button class="tick sz ${ate ? "on" : ""}" data-sk="${esc(h.sk)}" aria-label="Szarlotka: ${esc(h.sk)}" title="${esc(h.sk)}">🥧</button>` : "";
+    const frH = hikeFriends(r, i, v), ho = hikeOps(r, i), nN = [...ho.fr, ...ho.ot].filter(x => x.hn).length;
+    const pieBtn = (h.sk && (!RO || ate)) ? `<button type="button" class="hkpie${ate ? " on" : ""}" data-sk="${esc(h.sk)}" aria-label="Szarlotka: ${esc(h.sk)}" title="${esc(h.sk)}"${RO ? " disabled" : ""}>🥧</button>` : "";
     const stars = (d && !RO) ? `<div class="hkrl"><span class="small">Twoja ocena</span><div class="szs hs">${[1,2,3,4,5].map(k => `<button data-h="${i}" data-i="${k}" aria-label="${k} z 5" class="${(v.hr && v.hr[i] >= k) ? "on" : ""}">★</button>`).join("")}</div></div>` : "";
-    const acts = `<div class="hka"><a class="btn sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Więcej informacji</a>${!RO ? `<button class="btn sm hktrip" data-h="${i}">${IC.plus} Do wyjazdu</button>` : ""}${(!RO && SBC && store.sb) ? `<button class="btn sm hkrep" data-h="${i}">${IC.warn} Zgłoś błąd</button>` : ""}${(store.admin && !RO && SBC) ? `<button class="btn sm hkdel" data-h="${i}" title="Usuń szlak (admin)" aria-label="Usuń szlak (admin)">${IC.trash}</button>` : ""}</div>`;
+    const hasMenu = !RO && (true || SBC);
+    const acts = `<div class="hka"><a class="btn sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(h.n + " " + r.n + " szlak")}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Więcej informacji</a>${hasMenu ? `<button type="button" class="btn sm hkgear" data-h="${i}" title="Więcej opcji" aria-label="Więcej opcji">${GEAR}</button>` : ""}</div>`;
     return sh + `<div class="hike hk2 ${d?"done":""} ${pl?"planned":""} ${op?"op":""}">
-      ${RO ? `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>` : `<div class="tk2${h.sk ? " tk3" : ""}">${onlyPlan ? "" : `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Byłem">✓</button>`}<button class="tick plan ${pl?"pon":""}" data-p="${i}" aria-label="Planuję">◷</button>${szBtn}</div>`}
-      <div class="hb"><button type="button" class="hkhead" data-o="${i}" aria-expanded="${op}"><span class="hkt"><span class="hkn">${esc(h.n)}</span><span class="hkm"><span class="d${dfi < 0 ? 1 : dfi} hdf">${esc(h.d)}</span>${h.t ? `<span class="hkti">${IC.clock}${esc(h.t)}</span>` : ""}${myR}${avg}${ate ? `<span class="hkpie2">🥧</span>` : ""}${frH ? `<span class="hkfr">${IC.users}</span>` : ""}</span></span><span class="hkch">${IC.chev}</span></button>
-      ${h.o ? `<p class="hkd">${esc(h.o)}</p>` : ""}${op ? `<div class="hkx">${frH}${stars}${noteUi}${szRow}${acts}</div>` : ""}</div></div>`; }).join("");
+      ${RO ? `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Zrobiłem">✓</button>` : `<div class="tk2">${onlyPlan ? "" : `<button class="tick ${d?"on":""}" data-h="${i}" aria-label="Byłem">✓</button>`}<button class="tick plan ${pl?"pon":""}" data-p="${i}" aria-label="Planuję">◷</button></div>`}
+      <div class="hb${pieBtn ? " haspie" : ""}">${pieBtn}<button type="button" class="hkhead" data-o="${i}" aria-expanded="${op}"><span class="hkt"><span class="hkn">${esc(h.n)}</span><span class="hkm"><span class="d${dfi < 0 ? 1 : dfi} hdf">${esc(h.d)}</span>${(h.t || h.km) ? `<span class="hkti">${IC.clock}${esc([h.t, h.km ? h.km + " km" : ""].filter(Boolean).join(" · "))}</span>` : ""}${myR}${avg}${nN ? `<span class="hkno" title="Notatki i opinie">${IC.note}${nN}</span>` : ""}${frH ? `<span class="hkfr">${IC.users}</span>` : ""}</span></span><span class="hkch">${IC.chev}</span></button>
+      ${h.o ? `<p class="hkd">${esc(h.o)}</p>` : ""}${op ? `<div class="hkx">${frH}${hikeOpsHtml(r, i, hk)}${stars}${noteUi}${acts}</div>` : ""}</div></div>`; }).join("");
   const frsec = (!showOp && !RO && friendsHtml(r.id)) ? `<div id="opfr">${friendsHtml(r.id)}</div>` : "";
-  const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b>${(secOn || r.hikes.length < 4) ? "" : `<button class="btn sm" id="hkdir" type="button" onclick="toggleHkDir()" style="padding:4px 10px;font-size:12px">${hkDir > 0 ? "Od łatwych ↓" : "Od trudnych ↑"}</button>`}</div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}</div>`);
+  const hikes = W ? "" : (RO && !hikeCards ? "" : `<div class="sect"><div class="sh"><b>${RO ? "Gdzie był" : "Dokąd można dojść"}</b>${(secOn || r.hikes.length < 4) ? "" : `<button class="btn sm" id="hkdir" type="button" onclick="toggleHkDir()" style="padding:4px 10px;font-size:12px">${hkDir > 0 ? "Od łatwych ↓" : "Od trudnych ↑"}</button>`}</div>${RO ? "" : `<div class="small" style="margin:-4px 0 8px">Zaznacz miejsca, w których byłeś. Albo po prostu „Byłem” powyżej, jeśli nie pamiętasz nazw.</div>`}${hikeCards}${(!RO && store.authed && hkMarked > 0 && hkMarked < hkTotal) ? `<button type="button" class="btn sm hkall" style="margin-top:10px;width:100%">${hkFilt ? "Pokaż wszystkie szlaki (" + hkTotal + ")" : "Pokaż tylko moje (" + hkMarked + ")"}</button>` : ""}</div>`);
   const sks0 = W ? [] : [...new Set(r.hikes.map(h => h.sk).filter(Boolean))];
   const sks = RO ? sks0.filter(sk => v && v.sz && v.sz[sk]) : sks0;
   const szList = () => sks.map(sk => { const z = v.sz && v.sz[sk]; return `<div class="szrow"><span style="flex:1;min-width:140px">${esc(sk)}</span><button class="szb ${z?"on":""}" data-sk="${esc(sk)}">${z ? "Jadłem ✓" : "Jadłem?"}</button>${z ? `<span class="szs">${[1,2,3,4,5].map(i => `<button data-sk="${esc(sk)}" data-i="${i}" class="${(z.r||0)>=i?"on":""}">★</button>`).join("")}</span>` : ""}</div>`; }).join("");
@@ -121,20 +149,25 @@ function renderSheet(){
     const b = hg.getBoundingClientRect(), w = p.offsetWidth; p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, b.right - w)) + "px"; p.style.top = (b.bottom + 6) + "px";
     p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "w") window.open((W && r.w) ? r.w : "https://www.google.com/search?q=" + encodeURIComponent(W ? r.n + " skipass cennik" : r.n + " szlaki piesze"), "_blank", "noopener"); else if (bt.dataset.a === "a") { closeSheet(); openEditPlace(r, null); } else if (bt.dataset.a === "d") { adminHidePlace(r); } else if (bt.dataset.a === "h") { closeSheet(); openAddHike(r, null); } else { closeSheet(); openSuggest(r.n, r); } }; }; }
   if (!RO && SBC && store.sb && $("opsec")) loadOpinions(r.id);
-  document.querySelectorAll("#sheet .hkrep").forEach(b => b.onclick = () => { const h = r.hikes[+b.dataset.h]; if (h) openHikeReport(r, h); });
-  document.querySelectorAll("#sheet .hktrip").forEach(b => b.onclick = () => { const h = r.hikes[+b.dataset.h]; if (h) pickTripFor(r.id, h.n); });
-  document.querySelectorAll("#sheet .hkdel").forEach(b => b.onclick = async () => { const h = r.hikes[+b.dataset.h]; if (!h) return;
+  if (!W) loadHikeOps(r.id);
+  const hikeDel = async h => {
     if (!askTosia("Usunięcie szlaku „" + h.n + "” (" + r.n + ")")) return;
     try { const ins = await store.sb.from("suggestions").insert({user_id: store.uid, username: (store.prof && store.prof.username) || store.name || "", mode: "s", name: ("Usunięcie szlaku: " + r.n).slice(0, 120), country: "", note: ("#id:" + r.id + " · usuń szlak: " + h.n).slice(0, 500)}); if (ins && ins.error) throw ins.error;
       alert("Dodano do propozycji zmian. Usunięcie zatwierdzisz w panelu admina.");
-    } catch(e){ alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); } });
+    } catch(e){ alert("Nie udało się: " + String((e && e.message) || e).slice(0, 90)); } };
+  document.querySelectorAll("#sheet .hkgear").forEach(b => b.onclick = e => { e.stopPropagation(); const h = r.hikes[+b.dataset.h]; if (!h) return; let p = $("nickpop"); if (!p) { p = document.createElement("div"); p.id = "nickpop"; document.body.append(p); }
+    const canRep = SBC && store.sb;
+    p.innerHTML = `<button data-a="t">${IC.plus} Dodaj do wyjazdu</button>${canRep ? `<button data-a="e">${IC.warn} Zgłoś błąd lub poprawkę</button>` : ""}${(canRep && store.admin) ? `<button data-a="d">${IC.trash} Usuń szlak (admin)</button>` : ""}`; p.style.display = "block";
+    const bb = b.getBoundingClientRect(), w = p.offsetWidth; p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, bb.right - w)) + "px"; p.style.top = (bb.bottom + 6) + "px";
+    p.onclick = ev => { const bt = ev.target.closest("button"); if (!bt) return; hideNickPop(); if (bt.dataset.a === "t") pickTripFor(r.id, h.n); else if (bt.dataset.a === "e") openHikeReport(r, h); else if (bt.dataset.a === "d") hikeDel(h); }; });
+  document.querySelectorAll("#sheet .hkall").forEach(b => b.onclick = () => { if (hkAll.has(r.id)) hkAll.delete(r.id); else hkAll.add(r.id); renderSheet(); });
+  document.querySelectorAll("#sheet .hopmore").forEach(b => b.onclick = () => { hkMore.add(b.dataset.k); renderSheet(); });
   { const wb = $("wxn"); if (wb) wxNow(r).then(w => { if (w && wb.isConnected) wb.innerHTML = `<span style="opacity:.7">Teraz:</span> ` + wxNowHtml(r, w); }); }
   document.querySelectorAll("#sheet .hike .tick[data-h]").forEach(b => b.onclick = () => { const i = +b.dataset.h, k = curId + ":" + i; if (!(visits[curId] && visits[curId].done[i])) hkOpen.add(k); toggleHike(i); });
   document.querySelectorAll("#sheet .hkhead").forEach(b => b.onclick = () => { const k = curId + ":" + b.dataset.o; if (hkOpen.has(k)) hkOpen.delete(k); else hkOpen.add(k); renderSheet(); });
   document.querySelectorAll("#sheet .hike .tick[data-p]").forEach(b => b.onclick = () => togglePlanHike(+b.dataset.p));
-  document.querySelectorAll("#sheet .szb, #sheet .tick.sz").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
-  document.querySelectorAll("#sheet .hkpie").forEach(b => b.onclick = () => { szOpenSk = szOpenSk === b.dataset.sk ? null : b.dataset.sk; renderSheet(); });
-  document.querySelectorAll("#sheet .hkgear").forEach(b => b.onclick = () => { const m = document.querySelector('#sheet .hkmenu[data-h="' + b.dataset.h + '"]'); if (m) m.style.display = m.style.display === "none" ? "block" : "none"; });
+  document.querySelectorAll("#sheet .szb").forEach(b => b.onclick = () => toggleSz(b.dataset.sk));
+  document.querySelectorAll("#sheet .hkpie:not([disabled])").forEach(b => b.onclick = () => openSzPop(b.dataset.sk));
   document.querySelectorAll("#sheet .hs button").forEach(b => b.onclick = () => setHikeRating(+b.dataset.h, +b.dataset.i));
   document.querySelectorAll("#sheet .szs:not(.hs) button").forEach(b => b.onclick = () => setSzRating(b.dataset.sk, +b.dataset.i));
   if (!v) { $("sadd").onclick = () => { setStatus(curId, "v"); renderSheet(); }; $("splan").onclick = () => { setStatus(curId, "p"); renderSheet(); }; return; }

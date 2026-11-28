@@ -507,7 +507,7 @@ function openQuickShop(t){
   $("qsx").onclick = closeAccount; $("qsa").onclick = go; $("qsn").onkeydown = e => { if (e.key === "Enter") go(); }; setTimeout(() => $("qsn").focus(), 60);
 }
 const fabRound = () => { const v = $("v-wyjazdy"); return !!(v && v.classList.contains("on") && tripOpen && allTrips().some(x => x.id === tripOpen && !x.ar)); };
-function fabLabel(){ return fabRound() ? "＋" : curTrip() ? "Obecny wyjazd" : "Dodaj"; }
+function fabLabel(){ return fabRound() ? "＋" : "Obecny wyjazd"; }
 function fabClose(){ const w = $("fabw"); if (w) w.classList.remove("open"); const f = $("fabx"); if (f) { f.textContent = fabLabel(); f.classList.toggle("fabround", fabRound()); f.setAttribute("aria-expanded", "false"); } }
 async function finishTrip(t){
   const W = t.mode === "w", store_ = W ? wVisits : sVisits, y = (t.from || "").slice(0, 4) || String(new Date().getFullYear()), m = (t.from || "").slice(5, 7) || "";
@@ -553,7 +553,7 @@ function updateFab() {
       w.classList.add("open"); $("fabx").textContent = fabRound() ? "✕" : "Zamknij"; $("fabx").setAttribute("aria-expanded", "true");
     };
   }
-  const v = $("v-wyjazdy"), has = allTrips().some(x => !x.ar), on = !RO && has && !(v && v.classList.contains("on") && tripsTab === "packs");
+  const v = $("v-wyjazdy"), has = !!curTrip() || fabRound(), on = !RO && has && !(v && v.classList.contains("on") && tripsTab === "packs");
   w.style.display = on ? "block" : "none"; if (!w.classList.contains("open")) { const f = $("fabx"); if (f) { f.textContent = fabLabel(); f.classList.toggle("fabround", fabRound()); } } if (!on) fabClose();
 }
 function openQuickVisit(pre){
@@ -797,7 +797,20 @@ function welcomePick(){
     <button data-m="s" class="wps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 20 6.5-11 4 6.5 2.5-4L21 20z"/><circle cx="17" cy="5" r="2"/></svg><b>Lato</b><span>Góry i szlaki</span></button></div>
     <small>Tryb zmienisz w każdej chwili przełącznikiem u góry.</small></div>`;
   document.body.append(o);
-  o.onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; try { localStorage.setItem("skibeen.picked", "1"); } catch (x) {} track("start-" + (b.dataset.m === "w" ? "zima" : "lato")); setMode(b.dataset.m); o.classList.add("out"); setTimeout(() => { o.remove(); startTour(); }, 260); };
+  const done = () => { o.classList.add("out"); setTimeout(() => { o.remove(); startTour(); }, 260); };
+  const pickCountry = c => { fCountry = c; try { $("fcountry").value = c; } catch (x) {} track("kraj-" + (c || "wszystkie")); renderList(); mapRefresh(); done(); };
+  const step2 = () => {
+    const W = MODE === "w", sc = {}; R.forEach(r => r.c.split(",").forEach(c => { sc[c] = (sc[c] || 0) + (W ? 1 : ((r.hikes || []).filter(h => !h.del).length || 1)); }));
+    const pop = ["PL", "AT", "CH", "IT", "FR", "DE", "SI"].filter(c => sc[c]), rest = Object.keys(sc).filter(c => !pop.includes(c)).sort((a, b) => sc[b] - sc[a] || cname(a).localeCompare(cname(b), "pl"));
+    const tile = c => `<button type="button" data-c="${esc(c)}" class="wpt"><i>${flag(c)}</i><b>${esc(cname(c))}</b></button>`;
+    o.querySelector(".wpc").innerHTML = `<h2>${tr("Gdzie najczęściej?")}</h2><p>${tr(W ? "Pokażemy najpierw ośrodki z tego kraju." : "Pokażemy najpierw miejsca z tego kraju.")}</p>
+      <div class="wpg wpg3">${pop.map(tile).join("")}${rest.length ? `<button type="button" class="wpt wpo" data-more="1"><i>＋</i><b>${tr("Inne")}</b></button>` : ""}</div>
+      <div class="wpr" hidden>${rest.map(c => `<button type="button" class="wpq" data-c="${esc(c)}">${flag(c)} ${esc(cname(c))}</button>`).join("")}</div>
+      <button type="button" class="wpskip" data-c="">${tr("Wszystkie kraje")}</button>`;
+    const pr = o.querySelector(".wpr");
+    o.querySelector(".wpc").onclick = e => { if (e.target.closest("[data-more]")) { pr.hidden = !pr.hidden; return; } const b = e.target.closest("button[data-c]"); if (b) pickCountry(b.dataset.c); };
+  };
+  o.onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; try { localStorage.setItem("skibeen.picked", "1"); } catch (x) {} track("start-" + (b.dataset.m === "w" ? "zima" : "lato")); setMode(b.dataset.m); o.onclick = null; step2(); };
 }
 /* wyszukiwarka na mapie */
 function mapGoTo(r){

@@ -21,7 +21,8 @@ function applyExtra(rows){
       if (d.hidden) { const T = w ? WINTER : SUMMER, ix = T.R.indexOf(r); if (ix >= 0) T.R.splice(ix, 1); delete map[r.id]; (T.G || []).forEach(g => { if (g.m) g.m = g.m.filter(i => map[i]); }); n++; return; }
       if (d.n) { r.n = d.n; r.full = d.n; } if (w && "pt" in d) r.pt = +d.pt || 0; if (w) { if (d.k != null && d.k !== "") r.k = +d.k; if (d.e != null && d.e !== "") r.e = +d.e; if (d.w) r.w = d.w; r.auto = false; }
       if (!w && Array.isArray(d.addHikes)) { r.hikes = r.hikes || []; d.addHikes.forEach(h => { if (h && h.n && !r.hikes.some(z => z.n === h.n)) r.hikes.push(Object.assign({}, h, {added: true})); }); r.k = r.hikes.length; }
-      if (!w && Array.isArray(d.delHikes) && r.hikes) { r.hikes.forEach(h => { if (d.delHikes.includes(h.n)) h.del = true; }); r.k = r.hikes.filter(h => !h.del).length; }
+      if (!w && Array.isArray(d.delHikes) && r.hikes) { r.hikes.forEach(h => { if (d.delHikes.includes(h.on || h.n) || d.delHikes.includes(h.n)) h.del = true; }); r.k = r.hikes.filter(h => !h.del).length; }
+      if (!w && d.editHikes && r.hikes) { r.hikes.forEach(h => { const e = d.editHikes[h.on || h.n]; if (!e) return; if (!h.on) h.on = h.n; ["n", "t", "d", "o"].forEach(k => { if (e[k]) h[k] = e[k]; }); if (e.km) h.km = e.km; }); }
       r.s = norm([r.full, r.n, r.l, r.r, String(r.c).split(",").map(cname).join(" ")].join(" ")); n++; return; }
     if (!x.id || map[x.id] || !d.n) return;
     const c = String(d.c || "").toUpperCase(), lat = +d.y, lon = +d.x;

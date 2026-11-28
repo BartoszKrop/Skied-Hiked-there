@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
+<script>try{if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)document.documentElement.classList.add("spl")}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mountained there – gdzie byłem na nartach i w górach</title>
 <meta name="description" content="Zaznacz ośrodki narciarskie i górskie szlaki, w których byłeś. Mapa, tier lista, plany i podsumowanie sezonu.">
@@ -85,5 +86,15 @@
 <div id="sheet"></div>
 
 <!--@JS-->
-<div id="splash"><div class="spi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="sbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14263f"/><stop offset="1" stop-color="#08111f"/></linearGradient><clipPath id="sm"><path d="M40 410 L196 120 L292 268 L350 186 L472 410 Z"/></clipPath><clipPath id="sl"><path d="M0 0H300L252 512H0Z"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#sbg)"/><g transform="translate(256 266) scale(.9) translate(-256 -266)"><g clip-path="url(#sm)"><rect width="512" height="512" fill="#f4a259"/><rect width="512" height="512" fill="#5ad1ff" clip-path="url(#sl)"/><path d="M196 120 L148 230 L190 214 L214 262 L246 196 Z" fill="#fff" opacity=".9" clip-path="url(#sl)"/><path d="M286 20 L330 20 L238 512 L194 512 Z" fill="#fff" opacity=".95"/></g><path d="M40 428H472" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity=".92"/></g></svg></div><div class="spt"><b>Mountained</b> there</div></div><script>try{ const sp=document.getElementById("splash"); if(sp){ if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){ document.body.classList.add("spl"); setTimeout(()=>{sp.classList.add("out"); setTimeout(()=>sp.remove(),500);},900); } else sp.remove(); } }catch(e){}</script><script>if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) window.addEventListener("load",()=>{const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload();}});navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});});</script></body>
+<div id="splash"><div class="spw"><div class="spi"><img src="icon-192.png" alt="" width="104" height="104" decoding="sync"><i class="spr"></i><i class="spr r2"></i></div><div class="spt"><b>Mountained</b> there</div><div class="spg">Gdzie byłeś w górach?</div><div class="spb"><i></i></div></div></div><script>(function(){var sp=document.getElementById("splash"),h=document.documentElement;if(!sp)return;if(!h.classList.contains("spl")){sp.remove();return}
+var t0=Date.now(),app=0,sw=0,done=0,again=0;try{again=sessionStorage.getItem("skibeen.spl")==="1";sessionStorage.removeItem("skibeen.spl")}catch(e){}
+if(again)sp.classList.add("again");
+function hide(){if(done)return;done=1;sp.classList.add("out");setTimeout(function(){sp.remove();h.classList.remove("spl")},500)}
+function chk(){if(done||!app||!sw)return;var w=Math.max(0,(again?500:1100)-(Date.now()-t0));setTimeout(hide,w)}
+window.__spl={app:function(){app=1;chk()},sw:function(){sw=1;chk()},keep:function(){try{sessionStorage.setItem("skibeen.spl","1")}catch(e){}}};
+setTimeout(function(){app=1;sw=1;chk()},4500);
+window.addEventListener("load",function(){requestAnimationFrame(function(){requestAnimationFrame(function(){__spl.app()})})});
+if(!("serviceWorker" in navigator))sw=1;})()</script>
+<script>if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) window.addEventListener("load",()=>{const S=window.__spl||{keep(){},sw(){}};const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;S.keep();location.reload();}});
+const ok=()=>S.sw();navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update().then(()=>{const w=r.installing||r.waiting;if(!w)return ok();w.addEventListener("statechange",()=>{if(w.state==="activated"||w.state==="redundant")ok()});setTimeout(ok,3000)})).catch(ok);});else if(window.__spl)__spl.sw();</script></body>
 </html>
