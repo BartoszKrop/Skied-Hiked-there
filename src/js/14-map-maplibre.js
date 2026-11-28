@@ -11,16 +11,14 @@ async function mlStyle(){
   if (!mlStyle._b) { try { const st = await (await fetch(window.__MLSTYLE || "https://tiles.openfreemap.org/styles/positron")).json(); const k = Object.keys(st.sources || {}).find(k => st.sources[k].type === "vector"); mlStyle._b = {src: k ? st.sources[k] : src, glyphs: st.glyphs || glyphs}; try { localStorage.setItem("skibeen.mlb", JSON.stringify({t: Date.now(), b: mlStyle._b})); } catch (e) {} } catch (e) { mlStyle._b = {src, glyphs}; } }
   src = mlStyle._b.src; glyphs = mlStyle._b.glyphs;
   const C = sum
-    ? (light ? {bg: "#f1e8d3", wlab: "#2f6f8e", water: "#9cc8de", ice: "#ffffff", wood: "rgba(84,148,86,.34)", grass: "rgba(150,190,98,.26)", bnd: "rgba(120,80,40,.78)", lab: "#7a6446", halo: "#f1e8d3", sh: "rgba(92,58,24,.5)", hi: "rgba(255,244,214,.55)", txt: "#3b2a1c"}
-      : {bg: "#17130d", wlab: "#7fb9cf", water: "#17414f", ice: "rgba(255,238,210,.26)", wood: "rgba(76,140,78,.26)", grass: "rgba(130,170,84,.15)", bnd: "rgba(240,190,130,.52)", lab: "#b39b78", halo: "#17130d", sh: "rgba(0,0,0,.62)", hi: "rgba(255,196,120,.17)", txt: "#f6efe4"})
+    ? (light ? {bg: "#e9ead0", wlab: "#2f6f8e", water: "#9cc8de", ice: "#ffffff", wood: "rgba(84,148,86,.34)", grass: "rgba(150,190,98,.26)", bnd: "rgba(120,80,40,.78)", lab: "#7a6446", halo: "#e9ead0", sh: "rgba(92,58,24,.5)", hi: "rgba(255,244,214,.55)", txt: "#3b2a1c"}
+      : {bg: "#171a10", wlab: "#7fb9cf", water: "#17414f", ice: "rgba(255,238,210,.26)", wood: "rgba(76,140,78,.26)", grass: "rgba(130,170,84,.15)", bnd: "rgba(240,190,130,.52)", lab: "#b39b78", halo: "#171a10", sh: "rgba(0,0,0,.62)", hi: "rgba(255,196,120,.17)", txt: "#f6efe4"})
     : light ? {bg: "#e8eef5", wlab: "#2d5f93", water: "#9fc3e4", ice: "#ffffff", icel: "rgba(70,110,160,.55)", wood: "rgba(88,138,112,.3)", grass: "rgba(0,0,0,0)", bnd: "rgba(50,70,105,.78)", lab: "#44556f", halo: "#eef3f9", sh: "rgba(36,58,92,.6)", hi: "rgba(255,255,255,.75)", txt: "#1f2c42"}
     : {bg: "#0d1726", wlab: "#7fb0dc", water: "#103a57", ice: "rgba(220,235,255,.22)", wood: "rgba(60,110,80,.2)", grass: "rgba(0,0,0,0)", bnd: "rgba(190,208,235,.52)", lab: "#8193b0", halo: "#0d1726", sh: "rgba(0,0,0,.6)", hi: "rgba(140,170,210,.16)", txt: "#dbe6f7"};
   mlStyle.C = C;
   const F = ["Noto Sans Regular"];
   return {version: 8, glyphs, sources: {omt: src, dem: {type: "raster-dem", tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"], encoding: "terrarium", tileSize: 256, maxzoom: 12, attribution: "Teren: Mapzen / AWS"}}, layers: [
     {id: "bg", type: "background", paint: {"background-color": C.bg}},
-    {id: "wood", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 6, filter: ["in", ["get", "class"], ["literal", ["wood", "forest"]]], paint: {"fill-color": C.grass}},
-    {id: "grass", type: "fill", source: "omt", "source-layer": "landcover", minzoom: 6, filter: ["in", ["get", "class"], ["literal", ["grass", "farmland"]]], paint: {"fill-color": C.grass}},
     {id: "ice", type: "fill", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"fill-color": C.ice, "fill-opacity": .8}},
     {id: "icel", type: "line", source: "omt", "source-layer": "landcover", filter: ["in", ["get", "class"], ["literal", ["ice", "glacier"]]], paint: {"line-color": C.icel || "rgba(0,0,0,0)", "line-width": .8}},
     {id: "water", type: "fill", source: "omt", "source-layer": "water", paint: {"fill-color": C.water}},
