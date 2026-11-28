@@ -813,7 +813,7 @@ function welcomePick(){
   };
   const step2 = () => {
     const W = MODE === "w", sc = {}; R.forEach(r => r.c.split(",").forEach(c => { sc[c] = (sc[c] || 0) + (W ? 1 : ((r.hikes || []).filter(h => !h.del).length || 1)); }));
-    const pop = ["PL", "AT", "CH", "IT", "FR", "DE", "SI"].filter(c => sc[c]), rest = Object.keys(sc).filter(c => !pop.includes(c)).sort((a, b) => sc[b] - sc[a] || cname(a).localeCompare(cname(b), "pl"));
+    const pop = ["PL", "AT", "CH", "IT", "FR", "DE", "SI"].concat(W ? [] : ["NZ", "CA", "KG", "IS", "NO", "US"]).filter(c => sc[c]), rest = Object.keys(sc).filter(c => !pop.includes(c)).sort((a, b) => sc[b] - sc[a] || cname(a).localeCompare(cname(b), "pl"));
     const tile = c => `<button type="button" data-c="${esc(c)}" class="wpt${SEL.has(c) ? " on" : ""}"><i>${flag(c)}</i><b>${esc(cname(c))}</b></button>`;
     o.querySelector(".wpc").innerHTML = `<h2>${tr("Gdzie najczęściej?")}</h2><p>${tr("Wybierz jeden kraj albo kilka. Potem zaznaczysz największe miejsca.")}</p>
       <div class="wpg wpg3">${pop.map(tile).join("")}</div>
