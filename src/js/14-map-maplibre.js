@@ -1,5 +1,5 @@
 /* ---------- nowa mapa (test): MapLibre + OpenFreeMap + cieniowanie gór ---------- */
-let ML = null, mlOn = false; try { mlOn = localStorage.getItem("skibeen.ml") === "1"; } catch (e) {}
+let ML = null, mlOn = true; try { mlOn = localStorage.getItem("skibeen.ml") !== "0"; } catch (e) {}
 const ML_SRC = window.__MLSRC || "https://cdn.jsdelivr.net/npm/maplibre-gl@5/dist/";
 function mlLoad(){ if (window.maplibregl) return Promise.resolve(); if (mlLoad._p) return mlLoad._p;
   mlLoad._p = new Promise((res, rej) => { const l = document.createElement("link"); l.rel = "stylesheet"; l.href = ML_SRC + "maplibre-gl.css"; document.head.append(l); const sc = document.createElement("script"); sc.src = ML_SRC + "maplibre-gl.js"; sc.onload = res; sc.onerror = () => { mlLoad._p = null; rej(new Error("maplibre")); }; document.head.append(sc); }); return mlLoad._p; }
